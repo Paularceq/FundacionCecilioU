@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "View";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var claimsIdentity = User.Identity as ClaimsIdentity;
+    var claims = claimsIdentity?.Claims;
+}
+
+<h1>View</h1>
+
+@User.Identity.IsAuthenticated
+
+@if (claims != null && claims.Any())
+{
+    <h2>User Claims</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var claim in claims)
+        {
+            <tr>
+                <td>@claim.Type</td>
+                <td>@claim.Value</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No claims found for the current user.</p>
+}

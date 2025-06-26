@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "No autorizado";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="col-lg-6">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-body text-center py-5">
+            <h1 class="display-1">401</h1>
+            <p class="lead">No autorizado</p>
+            <p>El acceso a este recurso está denegado.</p>
+            <a asp-controller="Dashboard" asp-action="Index">
+                <i class="fas fa-arrow-left me-1"></i>
+                Volver al Panel
+            </a>
+        </div>
+    </div>
+</div>

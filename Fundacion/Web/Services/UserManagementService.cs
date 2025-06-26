@@ -1,0 +1,50 @@
+﻿using Shared.Dtos;
+using Shared.Models;
+using System.Reflection;
+using Web.Http;
+using Web.Models.UserManagement;
+
+namespace Web.Services
+{
+    public class UserManagementService
+    {
+        private readonly ApiClient _apiClient;
+
+        public UserManagementService(ApiClient apiClient)
+        {
+            _apiClient = apiClient;
+        }
+        public async Task<Result<IEnumerable<UsertoListDto>>> GetAllUsersAsync()
+        {
+            var result = await _apiClient.GetAsync<IEnumerable<UsertoListDto>>("UserManagement/AllUsers");
+            if (result.IsFailure)
+                return Result<IEnumerable<UsertoListDto>>.Failure(result.Errors);
+            return Result<IEnumerable<UsertoListDto>>.Success(result.Value);
+        }
+
+        public async Task<Result> AddUserAsync(AddUserViewModel model)
+        {
+            // 1. Convertir ViewModel a DTO
+            var dto = new NewUserDto
+            {
+                Nombre = model.Nombre,
+                Apellidos = model.Apellidos,
+                Email = model.Email,
+                Nacionalidad = model.Nacionalidad,
+                Identificacion = model.Identificacion,
+                
+            };
+
+            // 2. Enviar el request al backend
+            var response = await _apiClient.PostAsync("UserManagement/AddUser", dto);
+
+            // 3. Validar el resultado
+            if (response.IsFailure)
+                return Result.Failure(response.Errors);
+
+            return Result.Success();
+        }
+
+    }
+}
+

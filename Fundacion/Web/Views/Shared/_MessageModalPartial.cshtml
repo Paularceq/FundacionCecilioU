@@ -1,0 +1,81 @@
+﻿@using Web.Enums
+@model Web.Models.Common.MessageModalViewModel
+
+@{
+    var showBullets = Model.Messages?.Count() > 1;
+    var modalTitle = Model.Type switch
+    {
+        MessageType.Error => "Error",
+        MessageType.Success => "Éxito",
+        MessageType.Info => "Información",
+        _ => "Mensaje"
+    };
+
+    var bgClass = Model.Type switch
+    {
+        MessageType.Error => "bg-danger text-white",
+        MessageType.Success => "bg-success text-white",
+        MessageType.Info => "bg-info text-dark",
+        _ => "bg-secondary text-white"
+    };
+
+    var iconClass = Model.Type switch
+    {
+        MessageType.Error => "fa-solid fa-circle-exclamation",
+        MessageType.Success => "fa-solid fa-circle-check",
+        MessageType.Info => "fa-solid fa-circle-info",
+        _ => "fa-solid fa-message"
+    };
+
+    var btnClass = Model.Type switch
+    {
+        MessageType.Error => "btn-danger",
+        MessageType.Success => "btn-success",
+        MessageType.Info => "btn-info",
+        _ => "btn-secondary"
+    };
+}
+
+@if (Model.Messages != null && Model.Messages.Any())
+{
+    <div class="modal fade show d-block" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header @bgClass">
+                    <h5 class="modal-title" id="messageModalLabel">
+                        <i class="@iconClass me-2"></i> @modalTitle
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <ul class="mb-0 @(showBullets ? "" : "list-unstyled")">
+                        @foreach (var msg in Model.Messages)
+                        {
+                            <li>@msg</li>
+                        }
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn @btnClass" id="btnCloseModal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+
+    <script>
+        document.getElementById("btnCloseModal").addEventListener("click", function() {
+            var modal = document.getElementById("messageModal");
+            modal.classList.remove("show", "d-block");
+            modal.classList.add("d-none");
+            document.querySelector(".modal-backdrop")?.remove();
+
+            @* Redirección si existe *@
+            @if (!string.IsNullOrEmpty(Model.RedirectUrl))
+            {
+                    <text>
+                    window.location.href = '@Model.RedirectUrl';
+                    </text>
+            }
+        });
+    </script>
+}
