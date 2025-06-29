@@ -1,8 +1,83 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_LayoutPublic.cshtml";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Sección principal con video y mensaje -->
+<section class="py-5 border-bottom">
+    <div class="container px-5 my-5">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/p9potmrnmG0"
+                            title="La Importancia de Estudiar"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="fw-bolder">Fundación Cecilio Umaña</h1>
+                <p class="lead fw-normal text-muted mb-0">
+                    En la Fundación Cecilio Umaña creemos que la educación transforma vidas. Queremos motivarte a seguir aprendiendo, superar tus límites y construir tu futuro con esfuerzo y esperanza. ¡Estamos contigo!
+                </p>
+                <a class="btn btn-primary btn-lg mt-4" asp-controller="Auth" asp-action="Register">¡Solicita tu beca!</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to action -->
+<section class="py-5 bg-light">
+    <div class="container px-5 my-5">
+        <div class="text-center">
+            <h2 class="fw-bolder">¡Ayúdanos a transformar vidas a través de la educación!</h2>
+            <p class="lead mb-4">Tu aporte puede hacer una gran diferencia. Cada contribución ayuda a jóvenes de bajos recursos a continuar su educación.</p>
+            <a class="btn btn-primary btn-lg" href="#">Donar ahora</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features section -->
+<!-- Features section con tarjetas clicables -->
+<section class="py-5">
+    <div class="container px-5 my-5">
+        <div class="row gx-5">
+
+            <!-- Tarjeta: Misión -->
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <a asp-controller="Home" asp-action="QuienesSomos" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm border-0 hover-shadow">
+                        <div class="card-body">
+                            <h2 class="h4 fw-bolder text-primary">Nuestra Misión</h2>
+                            <p class="mb-0">Brindar apoyo educativo a jóvenes de bajos recursos mediante becas completas y acompañamiento académico.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Tarjeta: ¿Cómo ayudar? -->
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <a asp-controller="Home" asp-action="Donaciones" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm border-0 hover-shadow">
+                        <div class="card-body">
+                            <h2 class="h4 fw-bolder text-primary">¿Cómo ayudar?</h2>
+                            <p class="mb-0">Puedes donar económicamente o convertirte en voluntario de nuestra organización.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Tarjeta: Contacto -->
+            <div class="col-lg-4">
+                <a asp-controller="Home" asp-action="Contacto" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm border-0 hover-shadow">
+                        <div class="card-body">
+                            <h2 class="h4 fw-bolder text-primary">Contacto</h2>
+                            <p class="mb-0">¿Tienes dudas o sugerencias? Ponte en contacto con nosotros fácilmente.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
