@@ -1,6 +1,5 @@
 ﻿using Shared.Dtos;
 using Shared.Models;
-using System.Reflection;
 using Web.Http;
 using Web.Models.UserManagement;
 
@@ -32,7 +31,7 @@ namespace Web.Services
                 Email = model.Email,
                 Nacionalidad = model.Nacionalidad,
                 Identificacion = model.Identificacion,
-                
+                Roles = model.SelectedRoles.ToArray(),
             };
 
             // 2. Enviar el request al backend
@@ -43,6 +42,13 @@ namespace Web.Services
                 return Result.Failure(response.Errors);
 
             return Result.Success();
+        }
+        public async Task<Result<IEnumerable<RoleDto>>> GetAllRolesAsync()
+        {
+            var result = await _apiClient.GetAsync<IEnumerable<RoleDto>>("UserManagement/AllRoles");
+            if (result.IsFailure)
+                return Result<IEnumerable<RoleDto>>.Failure(result.Errors);
+            return Result<IEnumerable<RoleDto>>.Success(result.Value);
         }
 
     }

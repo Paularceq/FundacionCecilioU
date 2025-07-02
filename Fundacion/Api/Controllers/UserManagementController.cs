@@ -37,6 +37,16 @@ namespace Api.Controllers
             }
             return NoContent();
         }
+        [HttpGet("AllRoles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            var result = await _userManagementService.GetAllRoles();
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+            return Ok(result.Value);
+        }
     }
 
 }

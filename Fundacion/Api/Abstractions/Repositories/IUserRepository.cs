@@ -9,5 +9,6 @@ namespace Api.Abstractions.Repositories
         Task<User> GetUserByEmailAsync(string email);
         Task<User> UpdateUserAsync(User user);
         Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User> GetUserByIdentificacionAsync(string identificacion);
     }
 }
