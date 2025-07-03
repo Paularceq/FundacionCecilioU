@@ -11,11 +11,39 @@ namespace Api.Database
         {
             // Configure your entities here
             // Example: modelBuilder.Entity<YourEntity>().ToTable("YourTableName");
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ActivityDonation>()
+                .HasOne<Donation>().WithOne()
+                .HasForeignKey<ActivityDonation>(e => e.Id);
+
+            
+            modelBuilder.Entity<MonetaryDonation>()
+                .HasOne<Donation>().WithOne()
+                .HasForeignKey<MonetaryDonation>(e => e.Id);
+
+            modelBuilder.Entity<ProductsDonation>()
+               .HasOne<Donation>().WithOne()
+               .HasForeignKey<ProductsDonation>(e => e.Id);
+
+            modelBuilder.Entity<DonationProduct>()
+               .HasOne<ProductsDonation>().WithOne()
+               .HasForeignKey<DonationProduct>(e => e.Id);
+
+
         }
 
         // Define DbSet properties for your entities
         // public DbSet<YourEntity> YourEntities { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+
+        public DbSet<ActivityDonation> ActivityDonations { get; set; }
+        public DbSet<Donation> Donations { get; set; }
+
+        public DbSet<DonationProduct> DonationProducts { get; set; }
+
+        public DbSet<MonetaryDonation> MonetaryDonations { get; set; }
+
+        public DbSet<ProductsDonation> ProductsDonations { get; set; }
     }
 }
