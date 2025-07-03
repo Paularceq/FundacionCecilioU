@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Web.Extensions;
 using Web.Models.UserManagement;
 using Web.Services;
 
@@ -22,20 +24,56 @@ namespace Web.Controllers
             return View(users.Value);
         }
 
-        //    [Authorize]
-        //    [HttpGet]
-        //    //public async Task<IActionResult> AddUserAsync()
-        //    {
-        //        //var roles = // obtener roles del api (RoleController->RoleService->RoleRepository)
-        //        //var model = new AddUserViewModel { Roles = roles };
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> AddUserAsync()
+        {
+            var roles = await _userManagementService.GetAllRolesAsync();
+            var model = new AddUserViewModel
+            {
+                Roles = roles.Value.Select(role=>new SelectListItem
+                {
+                    Value = role.Name,
+                    Text = role.Description,
+                }).ToList()
+            };
 
-        //        // return View(model);
-        //    }
 
-        //    //[HttpPost]
-        //    //public async Task<IActionResult> AddUserAsync(AddUserViewModel model)...
-        //
+            return View(model);
+        }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AddUserAsync(AddUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var roles = await _userManagementService.GetAllRolesAsync();
+                model.Roles = roles.Value.Select(role => new SelectListItem
+                {
+                    Value = role.Name,
+                    Text = role.Description,
+                }).ToList();
+                return View(model);
+            }
+            var result = await _userManagementService.AddUserAsync(model);
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+                var roles = await _userManagementService.GetAllRolesAsync();
+                model.Roles = roles.Value.Select(role => new SelectListItem
+                {
+                    Value = role.Name,
+                    Text = role.Description,
+                }).ToList();
+                return View(model);
+            }
+            return RedirectToAction("Index");
+        }
+
+
     }
+
+
 }
 
 
