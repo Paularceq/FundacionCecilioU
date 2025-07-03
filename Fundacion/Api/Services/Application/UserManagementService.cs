@@ -44,6 +44,11 @@ namespace Api.Services.Application
             {
                 return Result.Failure("El correo electrónico ya está en uso.");
             }
+             existingUser = await _userRepository.GetUserByIdentificacionAsync(userDto.Identificacion);
+            if (existingUser != null)
+            {
+                return Result.Failure("La identificacion ya está en uso.");
+            }
             var temporaryPassword = _passwordService.GeneratePassword(8);
             var newUser = new User
             {
@@ -72,6 +77,16 @@ namespace Api.Services.Application
             var emailContent = await _emailTemplateService.RenderTemplateAsync(subject, header, body);
             await _emailService.SendEmailAsync(newUser.Email, subject, emailContent);
             return Result.Success();
+        }
+        public async Task<Result<IEnumerable<RoleDto>>> GetAllRoles()
+        {
+            var roles = await _roleRepository.GetAllRolesAsync();
+            var roleDtos = roles.Select(r => new RoleDto
+            {
+                Name = r.Name,
+                Description = r.Description
+            });
+            return Result<IEnumerable<RoleDto>>.Success(roleDtos);
         }
     }
 }
