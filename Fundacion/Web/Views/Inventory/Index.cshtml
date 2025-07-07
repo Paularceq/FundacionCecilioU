@@ -1,0 +1,66 @@
+﻿@model IEnumerable<Shared.Dtos.ProductStockDto>
+
+@{
+    ViewData["Title"] = "Inventario";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Inventario de productos</h1>
+        <a asp-action="RegisterProduct" class="btn btn-primary">
+            <i class="fas fa-boxes-stacked me-2"></i> Registrar producto
+        </a>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.First().Id)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+                <th>@Html.DisplayNameFor(model => model.First().UnitOfMeasure)</th>
+                <th>@Html.DisplayNameFor(model => model.First().MinimumStock)</th>
+                <th>@Html.DisplayNameFor(model => model.First().CurrentStock)</th>
+                <th>@Html.DisplayNameFor(model => model.First().IsLowStock)</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.UnitOfMeasure</td>
+                    <td>@item.MinimumStock</td>
+                    <td>@item.CurrentStock</td>
+                    <td>
+                        @if (item.IsLowStock)
+                        {
+                            <span class="badge bg-danger">
+                                <i class="fas fa-triangle-exclamation me-1"></i> Bajo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Suficiente
+                            </span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-pen-to-square"></i>
+                        </a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">
+                            <i class="fas fa-circle-info"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

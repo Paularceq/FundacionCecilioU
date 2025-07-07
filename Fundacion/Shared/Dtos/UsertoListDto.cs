@@ -1,6 +1,6 @@
 ﻿namespace Shared.Dtos
 {
-    public class UsertoListDto
+    public class UserToListDto
     {
         public int Id { get; set; }
         public string Identificacion { get; set; }

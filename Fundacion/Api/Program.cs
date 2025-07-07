@@ -44,6 +44,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -54,6 +55,8 @@ builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IInventoryMovementRepository, InventoryMovementRepository>();
 
 var app = builder.Build();
 
@@ -70,8 +73,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Use custom middlewares
-app.UseMiddleware<UnhandledExceptionMiddleware>();
 app.UseMiddleware<ModelStateValidationMiddleware>();
+app.UseMiddleware<TransactionalMiddleware>();
+app.UseMiddleware<UnhandledExceptionMiddleware>();
 
 app.MapControllers();
 

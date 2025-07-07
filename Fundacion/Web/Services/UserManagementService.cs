@@ -13,12 +13,12 @@ namespace Web.Services
         {
             _apiClient = apiClient;
         }
-        public async Task<Result<IEnumerable<UsertoListDto>>> GetAllUsersAsync()
+        public async Task<Result<IEnumerable<UserToListDto>>> GetAllUsersAsync()
         {
-            var result = await _apiClient.GetAsync<IEnumerable<UsertoListDto>>("UserManagement/AllUsers");
+            var result = await _apiClient.GetAsync<IEnumerable<UserToListDto>>("UserManagement/AllUsers");
             if (result.IsFailure)
-                return Result<IEnumerable<UsertoListDto>>.Failure(result.Errors);
-            return Result<IEnumerable<UsertoListDto>>.Success(result.Value);
+                return Result<IEnumerable<UserToListDto>>.Failure(result.Errors);
+            return Result<IEnumerable<UserToListDto>>.Success(result.Value);
         }
 
         public async Task<Result> AddUserAsync(AddUserViewModel model)

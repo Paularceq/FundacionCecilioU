@@ -7,6 +7,6 @@ namespace Api.Abstractions.Application
     {
         Task<Result> AddUserAsync(NewUserDto userDto);
         Task<Result<IEnumerable<RoleDto>>> GetAllRoles();
-        Task<Result<IEnumerable<UsertoListDto>>> GetAllUsersAsync();
+        Task<Result<IEnumerable<UserToListDto>>> GetAllUsersAsync();
     }
 }
