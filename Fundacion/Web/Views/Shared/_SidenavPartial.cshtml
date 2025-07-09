@@ -50,10 +50,13 @@
                 </nav>
             </div>
             <div class="sb-sidenav-menu-heading">Complementos</div>
-            <a asp-controller ="UserManagement" asp-action="Index" class="nav-link" >
+            @if(User.IsInRole("AdminUsuarios"))
+            {
+            <a asp-controller="UserManagement" asp-action="Index" class="nav-link">
                 <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
                 Usuarios
             </a>
+            }
             <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Tablas

@@ -19,7 +19,7 @@ namespace Api.Database.Migrations
                         ) VALUES (
                             'Super', 'Admin', 'super@admin.com', 'N/A', '000000000', 
                             -- Password: 'superAdmin123!' hashed with BCrypt or similar, replace as needed
-                            '$2a$11$QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm123456', 
+                            '$2a$11$ywTej7irIgAynefTTuyFUuf6WqHlbMnWspy1IDqMU76BsLJ3MeIzu', 
                             1
                         )
                     END

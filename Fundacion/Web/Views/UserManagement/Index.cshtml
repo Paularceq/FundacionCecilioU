@@ -28,6 +28,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Nacionalidad)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Activo)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -49,11 +52,20 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Nacionalidad)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Activo)
+                </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Editar", "UpdateUser", new { id=item.Id }) |
                 @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
+                @if (item.Activo)
+                {
+                        @Html.ActionLink("Desactivar", "ChangeUserStatus", new { id = item.Id })
+                }
+                else
+                {
+                        @Html.ActionLink("Activar", "ChangeUserStatus", new { id = item.Id })
+                    }
         </tr>
 }
     </tbody>

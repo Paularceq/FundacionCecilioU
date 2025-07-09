@@ -29,6 +29,7 @@ namespace Api.Services.Application
             var userDtos = users.Select(u => new UsertoListDto
             {
                 Id = u.Id,
+                Activo = u.Activo,
                 NombreCompleto = u.NombreCompleto,
                 Email = u.Email,
                 Nacionalidad = u.Nacionalidad,
@@ -44,7 +45,7 @@ namespace Api.Services.Application
             {
                 return Result.Failure("El correo electrónico ya está en uso.");
             }
-             existingUser = await _userRepository.GetUserByIdentificacionAsync(userDto.Identificacion);
+            existingUser = await _userRepository.GetUserByIdentificacionAsync(userDto.Identificacion);
             if (existingUser != null)
             {
                 return Result.Failure("La identificacion ya está en uso.");
@@ -87,6 +88,69 @@ namespace Api.Services.Application
                 Description = r.Description
             });
             return Result<IEnumerable<RoleDto>>.Success(roleDtos);
+        }
+        public async Task<Result> UpdateUserAsync(UpdateUserDto userDto)
+        {
+            var userToUpdate = await _userRepository.GetUserByIdAsync(userDto.Id);
+            if (userToUpdate == null)
+            {
+                return Result.Failure("Usuario no encontrado.");
+            }
+            var otherUser = await _userRepository.GetUserByEmailAsync(userDto.Email);
+            if (otherUser != null && otherUser.Email != userToUpdate.Email)
+            {
+                return Result.Failure("El correo electrónico ya está en uso.");
+            }
+            otherUser = await _userRepository.GetUserByIdentificacionAsync(userDto.Identificacion);
+            if (otherUser != null && otherUser.Identificacion != userToUpdate.Identificacion)
+            {
+                return Result.Failure("La identificacion ya está en uso.");
+            }
+            userToUpdate.Nombre = userDto.Nombre;
+            userToUpdate.Apellidos = userDto.Apellidos;
+            userToUpdate.Email = userDto.Email;
+            userToUpdate.Nacionalidad = userDto.Nacionalidad;
+            userToUpdate.Identificacion = userDto.Identificacion;
+            var roles = await _roleRepository.GetRolesByNamesAsync(userDto.Roles);
+            userToUpdate.Roles = roles.ToList();
+            await _userRepository.UpdateUserAsync(userToUpdate);
+            return Result.Success();
+        }
+        public async Task<Result<UserDto>> GetUserByIdAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return Result<UserDto>.Failure("Usuario no encontrado.");
+            }
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Activo = user.Activo,
+                Nombre = user.Nombre,
+                Apellidos = user.Apellidos,
+                Email = user.Email,
+                Nacionalidad = user.Nacionalidad,
+                Identificacion = user.Identificacion,
+                Roles = user.Roles.Select(r => new RoleDto
+                {
+                    Name = r.Name,
+                    Description = r.Description
+                }).ToList()
+            };
+            return Result<UserDto>.Success(userDto);
+        }
+        public async Task<Result> ChangeUserStatus(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return Result.Failure("Usuario no encontrado.");
+            }
+            user.Activo = !user.Activo;
+            await _userRepository.UpdateUserAsync(user);
+            return Result.Success();
+
         }
     }
 }
