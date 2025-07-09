@@ -1,8 +1,13 @@
-﻿namespace Shared.Enums
+﻿using System.ComponentModel;
+
+namespace Shared.Enums
 {
     public enum MovementType
     {
-        Inbound = 1,  // Equivalent to "Ingreso"
-        Outbound = 2  // Equivalent to "Retiro"
+        [Description("Ingreso")]
+        Inbound = 1,
+
+        [Description("Retiro")]
+        Outbound = 2
     }
 }

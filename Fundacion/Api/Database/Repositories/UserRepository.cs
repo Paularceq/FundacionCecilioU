@@ -48,11 +48,17 @@ namespace Api.Database.Repositories
             return user;
         }
         
-
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _context.Users
                 .Include(u => u.Roles)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByRole(string roleName)
+        {
+            return await _context.Users
+                .Where(u => u.Roles.Any(r => r.Name == roleName))
                 .ToListAsync();
         }
     }

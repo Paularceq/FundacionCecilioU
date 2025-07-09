@@ -1,9 +1,9 @@
 ﻿using Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.Dtos
+namespace Shared.Dtos.Inventory
 {
-    public class ProductStockDto
+    public class ProductWithStockDto
     {
         public int Id { get; set; }
 

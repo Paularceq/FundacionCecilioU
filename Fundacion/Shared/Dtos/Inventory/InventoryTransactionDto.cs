@@ -1,6 +1,6 @@
-﻿namespace Shared.Dtos
+﻿namespace Shared.Dtos.Inventory
 {
-    public class InventoryMovementDto
+    public class InventoryTransactionDto
     {
         public int ProductId { get; set; }
         public decimal Quantity { get; set; }

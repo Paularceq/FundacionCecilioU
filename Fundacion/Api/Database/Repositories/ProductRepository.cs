@@ -1,7 +1,7 @@
 ﻿using Api.Abstractions.Repositories;
 using Api.Database.Entities;
 using Microsoft.EntityFrameworkCore;
-using Shared.Dtos;
+using Shared.Dtos.Inventory;
 using Shared.Enums;
 
 namespace Api.Database.Repositories
@@ -15,12 +15,19 @@ namespace Api.Database.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<ProductStockDto>> GetAllWithStockAsync()
+        public async Task<Product> GetByIdAsync(int id)
+        {
+            return await _context.Products
+                .Include(p => p.Movements)
+                .SingleOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<IEnumerable<ProductWithStockDto>> GetAllWithStockAsync()
         {
             // Consulta todos los productos e incluye sus movimientos de inventario relacionados
             return await _context.Products
                 .Include(p => p.Movements)
-                .Select(p => new ProductStockDto
+                .Select(p => new ProductWithStockDto
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -36,12 +43,12 @@ namespace Api.Database.Repositories
                 .ToListAsync();
         }
 
-        public async Task<ProductStockDto> GetWithStockByIdAsync(int id)
+        public async Task<ProductWithStockDto> GetWithStockByIdAsync(int id)
         {
             // Consulta todos los productos e incluye sus movimientos de inventario relacionados
             return await _context.Products
                 .Include(p => p.Movements)
-                .Select(p => new ProductStockDto
+                .Select(p => new ProductWithStockDto
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -68,6 +75,13 @@ namespace Api.Database.Repositories
         public async Task<Product> AddAsync(Product product)
         {
             _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return product;
+        }
+
+        public async Task<Product> UpdateAsync(Product product)
+        {
+            _context.Products.Update(product);
             await _context.SaveChangesAsync();
             return product;
         }

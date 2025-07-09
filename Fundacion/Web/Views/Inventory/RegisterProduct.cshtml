@@ -8,7 +8,7 @@
 <div class="container">
     <h2 class="mb-4">Registrar nuevo producto</h2>
 
-    <form method="post">
+    <form method="post" class="border p-4 rounded shadow-sm bg-light">
         <div class="mb-3">
             <label asp-for="Name" class="form-label">Nombre del producto</label>
             <input asp-for="Name" class="form-control" placeholder="Ej: Arroz blanco" />
@@ -46,7 +46,7 @@
 
         <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-success">
-                Registrar producto
+                <i class="fas fa-check me-2"></i> Registrar producto
             </button>
         </div>
     </form>
