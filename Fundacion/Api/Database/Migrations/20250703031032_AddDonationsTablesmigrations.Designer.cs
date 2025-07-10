@@ -4,6 +4,7 @@ using Api.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250703031032_AddDonationsTablesmigrations")]
+    partial class AddDonationsTablesmigrations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,40 +63,25 @@ namespace Api.Database.Migrations
                     b.ToTable("Donations");
                 });
 
-            modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
+            modelBuilder.Entity("Api.Database.Entities.DonationProduct", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Comment")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ProductsDonationId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Type")
+                    b.Property<int>("Unit")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("ProductsDonationId");
 
-                    b.ToTable("InventoryMovements");
+                    b.ToTable("DonationProducts");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
@@ -113,31 +101,6 @@ namespace Api.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MonetaryDonations");
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("MinimumStock")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("UnitOfMeasure")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
@@ -179,9 +142,6 @@ namespace Api.Database.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Apellidos")
                         .IsRequired()
@@ -244,19 +204,17 @@ namespace Api.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
+            modelBuilder.Entity("Api.Database.Entities.DonationProduct", b =>
                 {
-                    b.HasOne("Api.Database.Entities.Product", "Product")
-                        .WithMany("Movements")
-                        .HasForeignKey("ProductId")
+                    b.HasOne("Api.Database.Entities.ProductsDonation", null)
+                        .WithOne()
+                        .HasForeignKey("Api.Database.Entities.DonationProduct", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Api.Database.Entities.ProductsDonation", null)
-                        .WithMany("InventoryMovements")
+                        .WithMany("Products")
                         .HasForeignKey("ProductsDonationId");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
@@ -292,14 +250,9 @@ namespace Api.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Api.Database.Entities.Product", b =>
-                {
-                    b.Navigation("Movements");
-                });
-
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
                 {
-                    b.Navigation("InventoryMovements");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }
