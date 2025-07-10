@@ -71,6 +71,10 @@ namespace Api.Services.Application
             {
                 return Result<LoginResponseDto>.Failure("Credenciales inválidas.");
             }
+            if (!user.Activo)
+            {
+                return Result<LoginResponseDto>.Failure("El usuario está inactivo. Contactarse con soporte tecnico");
+            }
             if (!_passwordService.VerifyPassword(loginDto.Password, user.PasswordHash))
             {
                 return Result<LoginResponseDto>.Failure("Credenciales inválidas.");
