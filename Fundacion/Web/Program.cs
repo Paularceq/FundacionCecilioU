@@ -34,6 +34,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Register application services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<InventoryService>();
 
 var app = builder.Build();

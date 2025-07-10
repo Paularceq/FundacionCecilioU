@@ -51,11 +51,14 @@
                 </nav>
             </div>
             <div class="sb-sidenav-menu-heading">Complementos</div>
-            <a asp-controller ="UserManagement" asp-action="Index" class="nav-link" >
-                <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
-                Usuarios
-            </a>
-           @if (User.IsInRole(Roles.AdminInventario))
+            @if (User.IsInRole("AdminUsuarios"))
+            {
+                <a asp-controller="UserManagement" asp-action="Index" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
+                    Usuarios
+                </a>
+            }
+            @if (User.IsInRole(Roles.AdminInventario))
             {
                 <a asp-controller="Inventory" asp-action="Index" class="nav-link">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>

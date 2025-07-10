@@ -44,6 +44,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // Register infrastructure services
