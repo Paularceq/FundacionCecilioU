@@ -1,11 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Fundacion",
-    "\\Fundacion\\Api",
-    "\\Fundacion\\Api\\Controllers",
-    "\\Fundacion\\Api\\Database",
-    "\\Fundacion\\Web"
+    "\\Fundacion"
   ],
   "SelectedNode": "\\Fundacion\\Proyecto_Becas.sln",
   "PreviewInSolutionExplorer": false

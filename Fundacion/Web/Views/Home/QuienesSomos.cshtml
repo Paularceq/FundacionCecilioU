@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Quiénes Somos";
+    Layout = "~/Views/Shared/_LayoutPublic.cshtml";
+}
+
+<section class="py-5 bg-light">
+    <div class="container px-5 my-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-primary">¿Quiénes Somos?</h2>
+            <p class="lead text-muted">Somos la Fundación Cecilio Umaña, una organización sin fines de lucro dedicada a brindar oportunidades educativas a jóvenes de bajos recursos.</p>
+        </div>
+
+        <!-- Fundador -->
+        <div class="row align-items-center mb-5">
+            <div class="col-md-4 d-flex justify-content-center">
+                <img src="~/img/img1.jpg" alt="Fundador" class="img-fluid rounded shadow-lg" style="max-width: 80%; height: auto;">
+            </div>
+            <div class="col-md-8">
+                <h3 class="text-primary">Fundador</h3>
+                <p>
+                    El presbítero Cecilio Umaña (1794–1871) fue una destacada figura en la historia de Costa Rica, reconocido no solo por su liderazgo político como el primer Presidente de la Asamblea Ordinaria del Estado en 1825, sino también por su incansable labor humanitaria. Hombre visionario y profundamente comprometido con el bienestar social, Umaña donó generosamente extensas tierras que hoy conforman el distrito de San Vicente de Moravia, demostrando con hechos su deseo de construir un país más justo y solidario.
+                </p>
+                <p>
+                    Además, fue un ferviente benefactor del Hospital San Juan de Dios, apoyando con recursos e influencia una institución clave para la salud pública nacional. Su legado trasciende el tiempo y se convierte en el fundamento moral e inspirador de nuestra Fundación. Hoy, honramos su memoria impulsando oportunidades educativas para jóvenes de escasos recursos, con la misma convicción de que el conocimiento y la solidaridad son las herramientas más poderosas para transformar vidas y comunidades.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ubicación Actual con espaciado superior y padding izquierdo -->
+    <div class="row align-items-center mb-5" style="margin-top: 100px;">
+        <!-- Texto a la izquierda con padding -->
+        <div class="col-md-7 ps-md-5">
+            <h4 class="text-primary">Ubicación Actual</h4>
+            <p>
+                La Fundación se reúne en un edificio con más de 100 años de historia, que lleva orgullosamente el nombre de su fundador, el presbítero Cecilio Umaña. Este edificio está ubicado al costado de la Iglesia de Moravia, justo frente a la parada de buses, en una zona de fácil acceso para la comunidad.
+            </p>
+            <p>
+                A lo largo del tiempo, este espacio se ha convertido en un punto de encuentro para la solidaridad y el desarrollo personal. En sus instalaciones se imparten clases y talleres abiertos a la comunidad, incluyendo <strong>costura, artes marciales, música, manualidades</strong>, entre otros. Estas actividades no solo brindan herramientas prácticas, sino que también fomentan la disciplina, la creatividad y el crecimiento integral de niños, jóvenes y adultos.
+            </p>
+            <p>
+                El edificio no es solo un lugar físico, sino un reflejo vivo del compromiso social de la Fundación, al servicio del bienestar y la educación de quienes más lo necesitan.
+            </p>
+        </div>
+
+        <!-- Imagen a la derecha -->
+        <div class="col-md-5 d-flex justify-content-center">
+            <img src="~/img/img3.jpg" alt="Ubicación Actual" class="img-fluid rounded shadow" style="max-width: 80%;">
+        </div>
+    </div>
+
+    <!-- Misión y Visión -->
+    <style>
+        .equal-img {
+            object-fit: contain;
+            height: 250px;
+            width: 100%;
+        }
+    </style>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <img src="~/img/Mision.png" class="card-img-top equal-img" alt="Misión Fundación">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Misión</h5>
+                    <p class="card-text">
+                        Ayudar a jóvenes de bajos recursos a completar sus estudios colegiales, apoyándolos económicamente y motivándolos a convertirse en profesionales. Brindamos becas principalmente a estudiantes de Moravia y zonas aledañas.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <img src="~/img/Vision.png" class="card-img-top equal-img" alt="Visión Fundación">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Visión</h5>
+                    <p class="card-text">
+                        Ser una institución referente en apoyo educativo, promoviendo el acceso equitativo a la educación secundaria y fomentando el desarrollo integral de jóvenes comprometidos con su comunidad y su futuro.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

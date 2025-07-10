@@ -44,6 +44,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();

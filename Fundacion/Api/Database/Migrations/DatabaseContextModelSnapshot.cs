@@ -140,6 +140,9 @@ namespace Api.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Apellidos")
                         .IsRequired()
                         .HasMaxLength(100)

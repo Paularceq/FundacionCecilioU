@@ -33,6 +33,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<UserProfileService>();
 
 var app = builder.Build();
 

@@ -47,6 +47,36 @@ namespace Api.Controllers
             }
             return Ok(result.Value);
         }
+        [HttpPut("UpdateUser")]
+        public async Task<IActionResult> UpdateUser(UpdateUserDto userDto)
+        {
+            var result = await _userManagementService.UpdateUserAsync(userDto);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+            return NoContent();
+        }
+        [HttpGet("UserById/{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var result = await _userManagementService.GetUserByIdAsync(id);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+            return Ok(result.Value);
+        }
+        [HttpPost("ChangeUserStatus/{id}")]
+        public async Task<IActionResult> ChangeUserStatus(int id)
+        {
+            var result = await _userManagementService.ChangeUserStatus(id);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+            return NoContent();
+        }
     }
 
 }
