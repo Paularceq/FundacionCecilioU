@@ -33,7 +33,7 @@ namespace Web.Http
 
             if (response.IsSuccessStatusCode)
                 return Result.Success();
-
+            string content = await response.Content.ReadAsStringAsync();
             var errors = await response.Content.ReadFromJsonAsync<List<string>>();
             return Result.Failure(errors?.ToArray() ?? ["Error desconocido"]);
         }

@@ -26,6 +26,12 @@ namespace Api.Database.Repositories
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+        public async Task<User> GetUserByIdentificacionAsync(string identificacion)
+        {
+            return await _context.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Identificacion == identificacion);
+        }
 
         public async Task<User> AddUserAsync(User user)
         {
