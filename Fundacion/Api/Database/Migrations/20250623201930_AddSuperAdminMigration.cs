@@ -18,8 +18,8 @@ namespace Api.Database.Migrations
                             [Nombre], [Apellidos], [Email], [Nacionalidad], [Identificacion], [PasswordHash], [RequiereCambioDePassword]
                         ) VALUES (
                             'Super', 'Admin', 'super@admin.com', 'N/A', '000000000', 
-                            -- Password: 'superAdmin123!' hashed with BCrypt or similar, replace as needed
-                            '$2a$11$ywTej7irIgAynefTTuyFUuf6WqHlbMnWspy1IDqMU76BsLJ3MeIzu', 
+                            -- Password: 'superAdmin123!' hashed with BCrypt
+                            '$2a$11$UNHFtiOBSPAMGkiO8Wh.uujDP4sQUIIOT5gsGxs9OhfT/gJ4qhSWK', 
                             1
                         )
                     END

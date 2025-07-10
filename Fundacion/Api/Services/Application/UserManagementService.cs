@@ -23,10 +23,10 @@ namespace Api.Services.Application
             _emailTemplateService = emailTemplateService;
             _roleRepository = roleRepository;
         }
-        public async Task<Result<IEnumerable<UsertoListDto>>> GetAllUsersAsync()
+        public async Task<Result<IEnumerable<UserToListDto>>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllUsersAsync();
-            var userDtos = users.Select(u => new UsertoListDto
+            var userDtos = users.Select(u => new UserToListDto
             {
                 Id = u.Id,
                 Activo = u.Activo,
@@ -35,7 +35,7 @@ namespace Api.Services.Application
                 Nacionalidad = u.Nacionalidad,
                 Identificacion = u.Identificacion
             });
-            return Result<IEnumerable<UsertoListDto>>.Success(userDtos);
+            return Result<IEnumerable<UserToListDto>>.Success(userDtos);
 
         }
         public async Task<Result> AddUserAsync(NewUserDto userDto)

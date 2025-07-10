@@ -1,4 +1,5 @@
-﻿<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+﻿@using Shared.Constants
+<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
     <div class="sb-sidenav-menu">
         <div class="nav">
             <div class="sb-sidenav-menu-heading">Principal</div>
@@ -50,12 +51,19 @@
                 </nav>
             </div>
             <div class="sb-sidenav-menu-heading">Complementos</div>
-            @if(User.IsInRole("AdminUsuarios"))
+            @if (User.IsInRole("AdminUsuarios"))
             {
-            <a asp-controller="UserManagement" asp-action="Index" class="nav-link">
-                <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
-                Usuarios
-            </a>
+                <a asp-controller="UserManagement" asp-action="Index" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
+                    Usuarios
+                </a>
+            }
+            @if (User.IsInRole(Roles.AdminInventario))
+            {
+                <a asp-controller="Inventory" asp-action="Index" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    Inventario
+                </a>
             }
             <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>

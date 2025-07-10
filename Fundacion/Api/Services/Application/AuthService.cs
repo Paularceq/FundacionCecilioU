@@ -55,7 +55,7 @@ namespace Api.Services.Application
                 RequiereCambioDePassword = false
             };
 
-            var defaultRole = await _roleRepository.GetRoleByNameAsync(Roles.Solicitante);
+            var defaultRole = await _roleRepository.GetRoleByNameAsync(Roles.Estudiante);
 
             newUser.Roles.Add(defaultRole);
 

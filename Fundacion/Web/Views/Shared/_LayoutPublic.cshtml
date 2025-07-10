@@ -30,13 +30,21 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="QuienesSomos">¿Quiénes somos?</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Donaciones">Donaciones</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contacto">Contacto</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Auth" asp-action="Login">Iniciar sesión</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Auth" asp-action="Register">Registrarse</a></li>
-                </ul>
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-item nav-link" asp-controller="Home" asp-action="QuienesSomos">¿Quiénes somos?</a>
+                    <a class="nav-item nav-link" asp-controller="Home" asp-action="Donaciones">Donaciones</a>
+                    <a class="nav-item nav-link" asp-controller="Home" asp-action="Contacto">Contacto</a>
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <a class="nav-item nav-link" asp-area="" asp-controller="Auth" asp-action="Login">Iniciar sesión</a>
+                        <a class="nav-item nav-link" asp-area="" asp-controller="Auth" asp-action="Register">Registrarse</a>
+                    }
+                    else
+                    {
+                        <a class="nav-item nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index">Ir al portal</a>
+                        <a class="nav-item nav-link" asp-area="" asp-controller="Auth" asp-action="Logout">Cerrar sesión</a>
+                    }
+                </div>
             </div>
         </div>
     </nav>
