@@ -3,7 +3,9 @@
     public class ProductsDonation
     {
         public int Id { get; set; }
-        public ICollection<DonationProduct> Products { get; set; }
+        public ICollection<InventoryMovement> InventoryMovements { get; set; }
+
+        
 
     }
 }

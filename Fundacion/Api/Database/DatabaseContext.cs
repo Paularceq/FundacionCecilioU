@@ -25,9 +25,6 @@ namespace Api.Database
                .HasOne<Donation>().WithOne()
                .HasForeignKey<ProductsDonation>(e => e.Id);
 
-            modelBuilder.Entity<DonationProduct>()
-               .HasOne<ProductsDonation>().WithOne()
-               .HasForeignKey<DonationProduct>(e => e.Id);
 
 
             modelBuilder.Entity<Product>()
@@ -42,7 +39,7 @@ namespace Api.Database
         public DbSet<ActivityDonation> ActivityDonations { get; set; }
         public DbSet<Donation> Donations { get; set; }
 
-        public DbSet<DonationProduct> DonationProducts { get; set; }
+        
 
         public DbSet<MonetaryDonation> MonetaryDonations { get; set; }
 
