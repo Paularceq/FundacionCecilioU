@@ -39,6 +39,5 @@ namespace Api.Database.Repositories
 
                 .ToListAsync();
         }
-
     }
 }

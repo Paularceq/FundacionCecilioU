@@ -27,7 +27,7 @@ namespace Web.Models.UserManagement
         public string Identificacion { get; set; }
 
         // Lista de roles {"RoleName" : "RoleDescripcion"} para usar en una lista de checks
-        public List <SelectListItem> Roles { get; set; } = new List<SelectListItem>();
+        public List<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
         public List<string> SelectedRoles { get; set; } = new List<string>();
 
     }

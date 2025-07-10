@@ -10,5 +10,6 @@ namespace Api.Abstractions.Repositories
         Task<User> UpdateUserAsync(User user);
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task<User> GetUserByIdentificacionAsync(string identificacion);
+        Task<IEnumerable<User>> GetUsersByRole(string roleName);
     }
 }
