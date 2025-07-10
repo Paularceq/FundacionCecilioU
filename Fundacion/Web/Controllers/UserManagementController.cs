@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 using Web.Extensions;
 using Web.Models.UserManagement;
 using Web.Services;
@@ -129,19 +130,26 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangeUserStatusAsync(int id)
         {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            if (id == userId)
+            {
+                this.SetErrorMessage("No puedes cambiar el estado de tu propio usuario.");
+                return RedirectToAction("Index");
+            }
             var user = await _userManagementService.GetUserByIdAsync(id);
+
             if (user.IsFailure)
             {
                 this.SetErrorMessage(user.Errors);
                 return RedirectToAction("Index");
-            }
+            }           
             var result = await _userManagementService.ChangeUserStatusAsync(id);
             if (result.IsFailure)
             {
                 this.SetErrorMessage(result.Errors);
                 return RedirectToAction("Index");
             }
-            this.SetSuccessMessage($"El usuario {user.Value.NombreCompleto} ha sido {(user.Value.Activo ? "activado" : "desactivado")} correctamente.");
+            this.SetSuccessMessage($"El usuario {user.Value.NombreCompleto} ha sido {(user.Value.Activo ? "Desactivado" : "Activado")} correctamente.");
             return RedirectToAction("Index");
         }
 
