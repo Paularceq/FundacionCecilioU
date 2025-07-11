@@ -24,5 +24,8 @@ namespace Api.Database.Repositories
             _context.MonetaryDonations.Add(monetarydonation);
             await _context.SaveChangesAsync();
         }
+
+        //crear metodo que consulta todas las donaciones
+
     }
 }

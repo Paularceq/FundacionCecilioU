@@ -27,6 +27,8 @@ namespace Api.Controllers
             }
             return Ok();
         }
+
+        //crear endpoint para consultar las donaciones en el donation service 
     }
     
 }
