@@ -1,0 +1,44 @@
+﻿@model Web.Models.Donation.AddMonetaryDonationViewModel
+
+@{
+    ViewData["Title"] = "Agregar Donación Monetaria";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="AddMonetaryDonation" method="post">
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Identification" class="control-label"></label>
+        <input asp-for="Identification" class="form-control" />
+        <span asp-validation-for="Identification" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SelectedCurrency" class="control-label"></label>
+        <select asp-for="SelectedCurrency" asp-items="Model.AvailableCurrencies" class="form-control">
+            <option value="">-- Seleccione una moneda --</option>
+        </select>
+        <span asp-validation-for="SelectedCurrency" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Donar</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
