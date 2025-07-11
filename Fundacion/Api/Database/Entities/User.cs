@@ -7,6 +7,8 @@ namespace Api.Database.Entities
         [Key]
         public int Id { get; set; }
 
+        public bool Activo { get; set; } = true;
+
         [Required]
         [StringLength(100)]
         public string Nombre { get; set; }

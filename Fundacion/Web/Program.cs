@@ -5,10 +5,9 @@ using Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout as needed
@@ -16,14 +15,15 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Register HttpClient and custom handler for API calls
 builder.Services.AddTransient<ApiClientAuthHandler>();
-
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<ApiClientAuthHandler>();
 
+// Configure authentication using cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -31,8 +31,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Auth/Denied";
     });
 
+// Register application services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<DonationService>();
 
 var app = builder.Build();
 

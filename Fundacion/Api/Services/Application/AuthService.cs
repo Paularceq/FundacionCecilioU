@@ -55,7 +55,7 @@ namespace Api.Services.Application
                 RequiereCambioDePassword = false
             };
 
-            var defaultRole = await _roleRepository.GetRoleByNameAsync(Roles.Solicitante);
+            var defaultRole = await _roleRepository.GetRoleByNameAsync(Roles.Estudiante);
 
             newUser.Roles.Add(defaultRole);
 
@@ -70,6 +70,10 @@ namespace Api.Services.Application
             if (user == null)
             {
                 return Result<LoginResponseDto>.Failure("Credenciales inválidas.");
+            }
+            if (!user.Activo)
+            {
+                return Result<LoginResponseDto>.Failure("El usuario está inactivo. Contactarse con soporte tecnico");
             }
             if (!_passwordService.VerifyPassword(loginDto.Password, user.PasswordHash))
             {
