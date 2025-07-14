@@ -2,38 +2,78 @@
 @using System.Security.Claims
 
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Perfil de Usuario";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     var claimsIdentity = User.Identity as ClaimsIdentity;
     var claims = claimsIdentity?.Claims;
 }
 
-<h1>View</h1>
+<style>
+    .foundation-hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 75vh; /* Puedes ajustar a 80vh o más si quieres más espacio vertical */
+        padding-top: 40px; /* Espacio superior adicional si lo deseas */
+    }
 
-@User.Identity.IsAuthenticated
+    .foundation-logo {
+        max-height: 220px;
+        margin-bottom: 25px;
+    }
 
-@if (claims != null && claims.Any())
-{
-    <h2>User Claims</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var claim in claims)
+    .foundation-name {
+        font-size: 2.7rem;
+        font-weight: bold;
+        color: #003366;
+        margin-bottom: 0.5rem;
+    }
+
+    .foundation-slogan {
+        font-size: 1.3rem;
+        color: #1e3a5f;
+        font-style: italic;
+    }
+
+</style>
+
+<div class="foundation-hero">
+    <div class="text-center">
+        <img src="~/img/Logo.png" alt="Logo Fundación Cecilio Umaña" class="img-fluid foundation-logo" />
+        <h1 class="foundation-name">Fundación Cecilio Umaña</h1>
+        <p class="foundation-slogan">La educación transforma vidas</p>
+    </div>
+</div>
+
+
+
+<div class="container">
+    @* <div class="claim-card">
+        <h4 class="text-primary mb-3"><i class="bi bi-person-lines-fill me-2"></i>Información de Usuario</h4>
+
+        @if (User.Identity?.IsAuthenticated == true && claims != null && claims.Any())
         {
-            <tr>
-                <td>@claim.Type</td>
-                <td>@claim.Value</td>
-            </tr>
+            <table class="table table-bordered claim-table">
+                <thead>
+                    <tr class="text-center">
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in claims)
+                    {
+                        <tr>
+                            <td>@claim.Type</td>
+                            <td>@claim.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No claims found for the current user.</p>
-}
+        else
+        {
+            <p class="no-claims">No se encontraron claims para el usuario actual.</p>
+        }
+    </div> *@
+</div>

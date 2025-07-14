@@ -9,28 +9,35 @@ namespace Api.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure your entities here
-            // Example: modelBuilder.Entity<YourEntity>().ToTable("YourTableName");
             base.OnModelCreating(modelBuilder);
+
+            // ACTIVITY DONATION
             modelBuilder.Entity<ActivityDonation>()
-                .HasOne<Donation>().WithOne()
-                .HasForeignKey<ActivityDonation>(e => e.Id);
+                .HasOne(ad => ad.Donation)
+                .WithMany() // o WithOne() si es uno a uno
+                .HasForeignKey(ad => ad.DonationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            
+            // MONETARY DONATION
             modelBuilder.Entity<MonetaryDonation>()
-                .HasOne<Donation>().WithOne()
-                .HasForeignKey<MonetaryDonation>(e => e.Id);
+                .HasOne(md => md.Donation)
+                .WithMany() // si es uno a uno cambia a WithOne()
+                .HasForeignKey(md => md.DonationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // PRODUCTS DONATION
             modelBuilder.Entity<ProductsDonation>()
-               .HasOne<Donation>().WithOne()
-               .HasForeignKey<ProductsDonation>(e => e.Id);
+                .HasOne(pd => pd.Donation)
+                .WithMany() // o WithOne()
+                .HasForeignKey(pd => pd.DonationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-
-
+            // Enum conversion
             modelBuilder.Entity<Product>()
                 .Property(p => p.UnitOfMeasure)
                 .HasConversion<string>();
         }
+
 
         // Define DbSet properties for your entities
         public DbSet<User> Users { get; set; }
