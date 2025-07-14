@@ -27,6 +27,8 @@ namespace Api.Database.Entities
 
         [Required]
         public DateTime Date { get; set; } = DateTime.UtcNow;
+
+        public int? ProductsDonationId { get; set; } = null;
     }
 
 }

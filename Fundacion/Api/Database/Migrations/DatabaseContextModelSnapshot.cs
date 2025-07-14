@@ -25,15 +25,23 @@ namespace Api.Database.Migrations
             modelBuilder.Entity("Api.Database.Entities.ActivityDonation", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ActivityType")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DonationId")
+                        .HasColumnType("int");
 
                     b.Property<double>("Hours")
                         .HasColumnType("float");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DonationId");
 
                     b.ToTable("ActivityDonations");
                 });
@@ -99,7 +107,10 @@ namespace Api.Database.Migrations
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Ammount")
                         .HasColumnType("float");
@@ -111,6 +122,8 @@ namespace Api.Database.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DonationId");
 
                     b.ToTable("MonetaryDonations");
                 });
@@ -143,9 +156,17 @@ namespace Api.Database.Migrations
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DonationId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DonationId");
 
                     b.ToTable("ProductsDonations");
                 });
@@ -237,11 +258,13 @@ namespace Api.Database.Migrations
 
             modelBuilder.Entity("Api.Database.Entities.ActivityDonation", b =>
                 {
-                    b.HasOne("Api.Database.Entities.Donation", null)
-                        .WithOne()
-                        .HasForeignKey("Api.Database.Entities.ActivityDonation", "Id")
+                    b.HasOne("Api.Database.Entities.Donation", "Donation")
+                        .WithMany()
+                        .HasForeignKey("DonationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Donation");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
@@ -261,20 +284,24 @@ namespace Api.Database.Migrations
 
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
                 {
-                    b.HasOne("Api.Database.Entities.Donation", null)
-                        .WithOne()
-                        .HasForeignKey("Api.Database.Entities.MonetaryDonation", "Id")
+                    b.HasOne("Api.Database.Entities.Donation", "Donation")
+                        .WithMany()
+                        .HasForeignKey("DonationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Donation");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
                 {
-                    b.HasOne("Api.Database.Entities.Donation", null)
-                        .WithOne()
-                        .HasForeignKey("Api.Database.Entities.ProductsDonation", "Id")
+                    b.HasOne("Api.Database.Entities.Donation", "Donation")
+                        .WithMany()
+                        .HasForeignKey("DonationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Donation");
                 });
 
             modelBuilder.Entity("RoleUser", b =>

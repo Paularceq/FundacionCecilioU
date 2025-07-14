@@ -8,7 +8,5 @@
         public Donation Donation { get; set; } // Navegación
 
         public ICollection<InventoryMovement> InventoryMovements { get; set; }
-
-
     }
 }
