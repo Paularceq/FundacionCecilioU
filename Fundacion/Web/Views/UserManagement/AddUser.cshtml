@@ -1,72 +1,129 @@
 ﻿@model Web.Models.UserManagement.AddUserViewModel
 
 @{
-    ViewData["Title"] = "AddUser";
+    ViewData["Title"] = "Agregar Usuario";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
-<h1>AddUser</h1>
+<style>
+    body {
+        background-color: #12263a; /*fondo*/
+    }
 
-<h4>AddUserViewModel</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="AddUser">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Apellidos" class="control-label"></label>
-                <input asp-for="Apellidos" class="form-control" />
-                <span asp-validation-for="Apellidos" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>            
-            <div class="form-group">
-                <label asp-for="Nacionalidad" class="control-label"></label>
-                <input asp-for="Nacionalidad" class="form-control" />
-                <span asp-validation-for="Nacionalidad" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Identificacion" class="control-label"></label>
-                <input asp-for="Identificacion" class="form-control" />
-                <span asp-validation-for="Identificacion" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Roles</label>
-                <div class="form-check">
-                    @foreach (var role in Model.Roles)
-                    {
-                        var isChecked = Model.SelectedRoles.Contains(role.Value);
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   name="SelectedRoles"
-                                   id="role_@role.Value"
-                                   value="@role.Value"
-                                   @(isChecked ? "checked" : "") />
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
 
-                            <label class="form-check-label" for="role_@role.Value">
-                                @role.Text
-                            </label>
+    .checkbox-role {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .checkbox-role:hover {
+            background-color: #e2e6ea;
+        }
+
+        .checkbox-role input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+    .role-container {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background-color: #fff;
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 fw-bold mb-4 text-primary text-center">
+                        <i class="bi bi-person-plus me-2"></i>Agregar Usuario
+                    </h2>
+
+                    <form asp-action="AddUser">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Nombre" class="form-label">Nombre</label>
+                                <input asp-for="Nombre" class="form-control" />
+                                <span asp-validation-for="Nombre" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Apellidos" class="form-label">Apellidos</label>
+                                <input asp-for="Apellidos" class="form-control" />
+                                <span asp-validation-for="Apellidos" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Nacionalidad" class="form-label">Nacionalidad</label>
+                                <input asp-for="Nacionalidad" class="form-control" />
+                                <span asp-validation-for="Nacionalidad" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Identificacion" class="form-label">Identificación</label>
+                                <input asp-for="Identificacion" class="form-control" />
+                                <span asp-validation-for="Identificacion" class="text-danger small"></span>
+                            </div>
                         </div>
-                    }
+
+                        <div class="mb-3 mt-4">
+                            <label class="form-label fw-semibold">Roles</label>
+                            <div class="role-container">
+                                @for (int i = 0; i < Model.Roles.Count; i++)
+                                {
+                                    var role = Model.Roles[i];
+                                    var isChecked = Model.SelectedRoles.Contains(role.Value);
+                                    <div class="checkbox-role">
+                                        <input type="checkbox"
+                                               name="SelectedRoles"
+                                               id="role_@i"
+                                               value="@role.Value"
+                                               @(isChecked ? "checked" : "") />
+                                        <label for="role_@i">@role.Text</label>
+                                    </div>
+                                }
+                            </div>
+                            <span asp-validation-for="SelectedRoles" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-save me-1"></i> Crear
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
+    </div>
+
+    <!-- Logo abajo -->
+    <div class="text-center mt-5 mb-4">
+        <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-

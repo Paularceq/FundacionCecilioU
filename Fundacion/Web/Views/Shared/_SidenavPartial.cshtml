@@ -1,13 +1,45 @@
 ﻿@using Shared.Constants
+
 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
     <div class="sb-sidenav-menu">
         <div class="nav">
             <div class="sb-sidenav-menu-heading">Principal</div>
-            <a class="nav-link" href="index.html">
-                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                Tablero
+
+            @* Menú desplegable de Usuarios *@
+            @if (User.IsInRole("AdminUsuarios"))
+            {
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseUsuarios" aria-expanded="false" aria-controls="collapseUsuarios">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
+                    Usuarios
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseUsuarios" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a asp-controller="UserManagement" asp-action="AddUser" class="nav-link">Agregar Usuario</a>
+                        <a asp-controller="UserManagement" asp-action="Index" class="nav-link">Ver Lista de Usuarios</a>
+                    </nav>
+                </div>
+            }
+
+            @* Inventario *@
+            @if (User.IsInRole(Roles.AdminInventario) || User.IsInRole(Roles.AdminUsuarios))
+            {
+                <a asp-controller="Inventory" asp-action="Index" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    Inventario
+                </a>
+            }
+
+            @* Donaciones Monetarias *@
+            <a asp-controller="Donation" asp-action="AddMonetaryDonation" class="nav-link">
+                <div class="sb-nav-link-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                Donaciones Monetarias
             </a>
+
+            @* ========== COMENTADO: SECCIÓN DE INTERFAZ Y PÁGINAS ========= *@
+            @*
             <div class="sb-sidenav-menu-heading">Interfaz</div>
+
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                 <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                 Diseños
@@ -19,6 +51,7 @@
                     <a class="nav-link" href="layout-sidenav-light.html">Barra Lateral Clara</a>
                 </nav>
             </div>
+
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
                 <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
                 Páginas
@@ -50,29 +83,18 @@
                     </div>
                 </nav>
             </div>
-            <div class="sb-sidenav-menu-heading">Complementos</div>
-            @if (User.IsInRole("AdminUsuarios"))
-            {
-                <a asp-controller="UserManagement" asp-action="Index" class="nav-link">
-                    <div class="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
-                    Usuarios
-                </a>
-            }
-            @if (User.IsInRole(Roles.AdminInventario))
-            {
-                <a asp-controller="Inventory" asp-action="Index" class="nav-link">
-                    <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
-                    Inventario
-                </a>
-            }
+
             <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                 Tablas
             </a>
+            *@
         </div>
     </div>
+
     <div class="sb-sidenav-footer">
         <div class="small">Conectado como:</div>
         @User.Identity.Name
     </div>
 </nav>
+

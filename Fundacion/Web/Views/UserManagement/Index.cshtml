@@ -7,15 +7,59 @@
 }
 
 <style>
+    body {
+        background-color: #e3e6eb; /* gris claro que combina con los paneles */
+    }
+
+    .table-wrapper {
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+    }
+
+    .table {
+        margin-bottom: 0;
+        border-radius: 12px;
+    }
+
     .table-hover tbody tr:hover {
         background-color: #f9f9f9;
         transition: background-color 0.2s ease-in-out;
+    }
+
+    .table thead th {
+        text-align: center !important;
+        vertical-align: middle !important;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #333;
     }
 
     .estado-label {
         border-radius: 999px;
         padding: 4px 12px;
         font-size: 0.75rem;
+    }
+
+    .form-control-sm {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+
+    .btn-success.btn-sm {
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-weight: 500;
+    }
+
+    .dropdown-toggle {
+        border-radius: 6px;
+    }
+
+    .table-bordered {
+        border-color: #dee2e6;
     }
 </style>
 
@@ -29,76 +73,70 @@
     </a>
 </div>
 
-<div class="mb-3">
-    <input type="text" class="form-control form-control-sm w-25" placeholder="Buscar usuario...">
-</div>
-
-<table class="table table-bordered table-hover align-middle shadow-sm rounded-3">
-    <thead class="table-light">
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.First().Id)</th>
-            <th>@Html.DisplayNameFor(model => model.First().Identificacion)</th>
-            <th>@Html.DisplayNameFor(model => model.First().NombreCompleto)</th>
-            <th>@Html.DisplayNameFor(model => model.First().Email)</th>
-            <th>@Html.DisplayNameFor(model => model.First().Nacionalidad)</th>
-            <th class="text-center">Estado</th>
-
-            <th class="text-center">Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<div class="table-wrapper">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@item.Id</td>
-                <td>@item.Identificacion</td>
-                <td>@item.NombreCompleto</td>
-                <td>@item.Email</td>
-                <td>@item.Nacionalidad</td>
-                <td class="text-center">
-                    <span class="fw-semibold estado-label d-inline-block"
-                          style="color:@(item.Activo ? "#28a745" : "#dc3545");">
-                        @(item.Activo ? "Activo" : "Inactivo")
-                    </span>
-
-                </td>
-                <td class="text-center">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            Acción
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" asp-action="UpdateUser" asp-route-id="@item.Id">
-                                    <i class="bi bi-pencil-square"></i> Editar
-                                </a>
-                            </li>
-                            @if (item.Id != userId)
-                            {
-
-                                @if (item.Activo)
-                                {
-                                    <li>
-                                        <a class="dropdown-item text-danger" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
-                                            <i class="bi bi-x-circle"></i> Desactivar
-                                        </a>
-                                    </li>
-                                }
-                                else
-
-                                {
-                                    <li>
-                                        <a class="dropdown-item text-success" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
-                                            <i class="bi bi-check-circle"></i> Activar
-                                        </a>
-                                    </li>
-                                }
-                            }
-                        </ul>
-                    </div>
-                </td>
+                <th>@Html.DisplayNameFor(model => model.First().Id)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Identificacion)</th>
+                <th>@Html.DisplayNameFor(model => model.First().NombreCompleto)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Email)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Nacionalidad)</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acción</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Identificacion</td>
+                    <td>@item.NombreCompleto</td>
+                    <td>@item.Email</td>
+                    <td>@item.Nacionalidad</td>
+                    <td class="text-center">
+                        <span class="fw-semibold estado-label d-inline-block"
+                              style="color:@(item.Activo ? "#28a745" : "#dc3545");">
+                            @(item.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Acción
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-action="UpdateUser" asp-route-id="@item.Id">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                </li>
+                                @if (item.Id != userId)
+                                {
+                                    if (item.Activo)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-danger" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
+                                                <i class="bi bi-x-circle"></i> Desactivar
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-success" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
+                                                <i class="bi bi-check-circle"></i> Activar
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
