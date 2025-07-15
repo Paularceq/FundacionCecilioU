@@ -25,6 +25,11 @@ namespace Api.Database.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public Task<IEnumerable<object>> GetMonetaryDonationsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         //crear metodo que consulta todas las donaciones
 
     }
