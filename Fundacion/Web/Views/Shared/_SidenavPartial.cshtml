@@ -21,20 +21,30 @@
                 </div>
             }
 
-            @* Inventario *@
+            @* Menú desplegable de Inventario *@
             @if (User.IsInRole(Roles.AdminInventario) || User.IsInRole(Roles.AdminUsuarios))
             {
-                <a asp-controller="Inventory" asp-action="Index" class="nav-link">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInventario" aria-expanded="false" aria-controls="collapseInventario">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
                     Inventario
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                 </a>
+                <div class="collapse" id="collapseInventario" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a asp-controller="Inventory" asp-action="RegisterProduct" class="nav-link">Agregar Producto</a>
+                        <a asp-controller="Inventory" asp-action="Index" class="nav-link">Ver Inventario</a>
+                    </nav>
+                </div>
             }
 
             @* Donaciones Monetarias *@
-            <a asp-controller="Donation" asp-action="AddMonetaryDonation" class="nav-link">
-                <div class="sb-nav-link-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                Donaciones Monetarias
-            </a>
+            @if (User.IsInRole(Roles.AdminInventario) || User.IsInRole(Roles.AdminUsuarios))
+            {
+                <a asp-controller="Donation" asp-action="AddMonetaryDonation" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    Donaciones Monetarias
+                </a>
+            }
 
             @* ========== COMENTADO: SECCIÓN DE INTERFAZ Y PÁGINAS ========= *@
             @*

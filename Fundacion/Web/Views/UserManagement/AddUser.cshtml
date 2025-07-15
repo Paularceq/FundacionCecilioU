@@ -7,7 +7,7 @@
 
 <style>
     body {
-        background-color: #12263a; /*fondo*/
+        background-color: #12263a; /* fondo */
     }
 
     .card {
@@ -94,7 +94,7 @@
                                 @for (int i = 0; i < Model.Roles.Count; i++)
                                 {
                                     var role = Model.Roles[i];
-                                    var isChecked = Model.SelectedRoles.Contains(role.Value);
+                                    var isChecked = Model.SelectedRoles != null && Model.SelectedRoles.Contains(role.Value);
                                     <div class="checkbox-role">
                                         <input type="checkbox"
                                                name="SelectedRoles"
@@ -127,3 +127,7 @@
         <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
     </div>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
