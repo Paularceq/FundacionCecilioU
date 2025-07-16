@@ -6,5 +6,6 @@ namespace Api.Abstractions.Repositories
     {
         Task AddDonationAsync(Donation donation);
         Task AddDonationMonetary(MonetaryDonation monetarydonation);
+        Task<IEnumerable<object>> GetMonetaryDonationsAsync();
     }
 }

@@ -5,11 +5,17 @@
 namespace Api.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDonationsTablesmigrations : Migration
+    public partial class AddDonationsTablesMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<int>(
+                name: "ProductsDonationId",
+                table: "InventoryMovements",
+                type: "int",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "Donations",
                 columns: table => new
@@ -29,16 +35,18 @@ namespace Api.Database.Migrations
                 name: "ActivityDonations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ActivityType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Hours = table.Column<double>(type: "float", nullable: false)
+                    Hours = table.Column<double>(type: "float", nullable: false),
+                    DonationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ActivityDonations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ActivityDonations_Donations_Id",
-                        column: x => x.Id,
+                        name: "FK_ActivityDonations_Donations_DonationId",
+                        column: x => x.DonationId,
                         principalTable: "Donations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -48,7 +56,8 @@ namespace Api.Database.Migrations
                 name: "MonetaryDonations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DonationId = table.Column<int>(type: "int", nullable: false),
                     Ammount = table.Column<double>(type: "float", nullable: false),
                     Currency = table.Column<int>(type: "int", nullable: false)
@@ -57,8 +66,8 @@ namespace Api.Database.Migrations
                 {
                     table.PrimaryKey("PK_MonetaryDonations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MonetaryDonations_Donations_Id",
-                        column: x => x.Id,
+                        name: "FK_MonetaryDonations_Donations_DonationId",
+                        column: x => x.DonationId,
                         principalTable: "Donations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -69,57 +78,57 @@ namespace Api.Database.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DonationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductsDonations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductsDonations_Donations_Id",
-                        column: x => x.Id,
+                        name: "FK_ProductsDonations_Donations_DonationId",
+                        column: x => x.DonationId,
                         principalTable: "Donations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "DonationProducts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Unit = table.Column<int>(type: "int", nullable: false),
-                    ProductsDonationId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DonationProducts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DonationProducts_ProductsDonations_Id",
-                        column: x => x.Id,
-                        principalTable: "ProductsDonations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DonationProducts_ProductsDonations_ProductsDonationId",
-                        column: x => x.ProductsDonationId,
-                        principalTable: "ProductsDonations",
-                        principalColumn: "Id");
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryMovements_ProductsDonationId",
+                table: "InventoryMovements",
+                column: "ProductsDonationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DonationProducts_ProductsDonationId",
-                table: "DonationProducts",
-                column: "ProductsDonationId");
+                name: "IX_ActivityDonations_DonationId",
+                table: "ActivityDonations",
+                column: "DonationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MonetaryDonations_DonationId",
+                table: "MonetaryDonations",
+                column: "DonationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductsDonations_DonationId",
+                table: "ProductsDonations",
+                column: "DonationId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_InventoryMovements_ProductsDonations_ProductsDonationId",
+                table: "InventoryMovements",
+                column: "ProductsDonationId",
+                principalTable: "ProductsDonations",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "ActivityDonations");
+            migrationBuilder.DropForeignKey(
+                name: "FK_InventoryMovements_ProductsDonations_ProductsDonationId",
+                table: "InventoryMovements");
 
             migrationBuilder.DropTable(
-                name: "DonationProducts");
+                name: "ActivityDonations");
 
             migrationBuilder.DropTable(
                 name: "MonetaryDonations");
@@ -129,6 +138,14 @@ namespace Api.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "Donations");
+
+            migrationBuilder.DropIndex(
+                name: "IX_InventoryMovements_ProductsDonationId",
+                table: "InventoryMovements");
+
+            migrationBuilder.DropColumn(
+                name: "ProductsDonationId",
+                table: "InventoryMovements");
         }
     }
 }
