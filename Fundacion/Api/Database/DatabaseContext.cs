@@ -27,5 +27,6 @@ namespace Api.Database
         public DbSet<ProductsDonation> ProductsDonations { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
+        public DbSet<SolicitudBeca> SolicitudesBeca { get; set; }
     }
 }
