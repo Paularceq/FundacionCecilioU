@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Shared.Dtos;
 using System.ComponentModel.DataAnnotations;
+using Web.Helpers.Validation;
 
 namespace Web.Models.UserManagement
 {
@@ -27,7 +28,9 @@ namespace Web.Models.UserManagement
         public string Identificacion { get; set; }
 
         // Lista de roles {"RoleName" : "RoleDescripcion"} para usar en una lista de checks
+
         public List<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
+        [MinCount(1, ErrorMessage = "Debe seleccionar al menos un rol.")] 
         public List<string> SelectedRoles { get; set; } = new List<string>();
 
     }
