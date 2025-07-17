@@ -1,5 +1,8 @@
 ﻿using Api.Abstractions.Repositories;
 using Api.Database.Entities;
+using Microsoft.EntityFrameworkCore;
+using Shared.Dtos.Donations;
+using System.Threading.Tasks;
 
 namespace Api.Database.Repositories
 {
@@ -31,6 +34,24 @@ namespace Api.Database.Repositories
         }
 
         //crear metodo que consulta todas las donaciones
+
+        public async Task<IEnumerable <Donation>> GetAllDonationsAsync()
+        {
+
+            return await _context.Donations.ToListAsync();
+
+        }
+
+        public async Task<Donation> GetDonationById(int id)
+        {
+            return await _context.Donations.FindAsync(id);
+        }
+
+        public async Task<MonetaryDonation> GetMonetaryDonation(int donationid)
+        {
+            return await _context.MonetaryDonations.SingleOrDefaultAsync(d => d.DonationId == donationid);
+
+        }
 
     }
 }

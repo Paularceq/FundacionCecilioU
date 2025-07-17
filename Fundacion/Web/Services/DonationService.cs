@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Shared.Dtos.Donations;
+﻿using Shared.Dtos.Donations;
 using Shared.Models;
 using Web.Http;
 using Web.Models.Donation;
@@ -29,7 +28,7 @@ namespace Web.Services
                 Name = addMonetaryDonationViewModel.Name,
             };
 
-            var result = await _apiClient.PostAsync("Donation/Add-MonetaryDonation",dto);
+            var result = await _apiClient.PostAsync("Donation/Add-MonetaryDonation", dto);
 
             if (result.IsFailure)
             {
@@ -39,5 +38,26 @@ namespace Web.Services
         }
 
         // crear metodo que haga el request al Api con HttpGet
+        public async Task<Result<IEnumerable<DonationDto>>> GetAllDonationsAsync()
+        {
+            var result = await _apiClient.GetAsync<IEnumerable<DonationDto>>("Donation");
+            if (result.IsFailure)
+            {
+                return Result<IEnumerable<DonationDto>>.Failure(result.Errors);
+            }
+
+            return Result<IEnumerable<DonationDto>>.Success(result.Value);
+        }
+
+
+        public async Task<Result<DonationDto>> GetDonationDetails(int id)
+        {
+            var result = await _apiClient.GetAsync<DonationDto>($"Donation/{id}");
+            if (result.IsFailure)
+            {
+                return Result<DonationDto>.Failure(result.Errors);
+            }
+            return Result<DonationDto>.Success(result.Value);
+        }
     }
 }
