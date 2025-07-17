@@ -201,10 +201,16 @@ namespace Api.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CartaConsentimientoUrl")
+                    b.Property<byte[]>("CartaConsentimiento")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CartaConsentimientoContentType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CartaNotasUrl")
+                    b.Property<byte[]>("CartaNotas")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CartaNotasContentType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CedulaEstudiante")

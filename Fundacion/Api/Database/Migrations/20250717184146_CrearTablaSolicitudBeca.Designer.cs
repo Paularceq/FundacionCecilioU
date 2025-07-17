@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250716220937_CrearTablaSolicitudBeca")]
+    [Migration("20250717184146_CrearTablaSolicitudBeca")]
     partial class CrearTablaSolicitudBeca
     {
         /// <inheritdoc />
@@ -204,10 +204,16 @@ namespace Api.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CartaConsentimientoUrl")
+                    b.Property<byte[]>("CartaConsentimiento")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CartaConsentimientoContentType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CartaNotasUrl")
+                    b.Property<byte[]>("CartaNotas")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CartaNotasContentType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CedulaEstudiante")
