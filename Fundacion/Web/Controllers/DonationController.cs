@@ -17,16 +17,18 @@ namespace Web.Controllers
             _donationService = donationService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
             // invocar el service para consultar las donaciones y pasarlo al view. Crear la vista con el nuevo dto como modelo
-            return View();
+            var donations = await _donationService.GetAllDonationsAsync();
+            return View(donations.Value);
         }
         [HttpGet]
         public IActionResult AddMonetaryDonation()
         {
-            var model = new AddMonetaryDonationViewModel {
-            AvailableCurrencies = EnumHelper.ToSelectListItems<Currency>()
+            var model = new AddMonetaryDonationViewModel
+            {
+                AvailableCurrencies = EnumHelper.ToSelectListItems<Currency>()
 
             };
             return View(model);
@@ -48,10 +50,21 @@ namespace Web.Controllers
                 this.SetErrorMessage(result.Errors);
                 return View(model);
             }
-            this.SetSuccessMessage("Se agregó la donación correctamente"); 
-                return RedirectToAction("index", "dashboard");
+            this.SetSuccessMessage("Se agregó la donación correctamente");
+            return RedirectToAction("index", "dashboard");
         }
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var result = await _donationService.GetDonationDetails(id);
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+                return RedirectToAction("index");
+            }
+            return View(result.Value);
 
-        
+
+        }
     }
 }

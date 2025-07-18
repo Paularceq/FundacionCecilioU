@@ -18,7 +18,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("add-MonetaryDonation")]
-        public  async Task<IActionResult> AddMonetaryDonationAsync(AddMonetaryDonationDto monetaryDonationDto)
+        public async Task<IActionResult> AddMonetaryDonationAsync(AddMonetaryDonationDto monetaryDonationDto)
         {
             var result = await _donationService.AddMonetaryDonationAsync(monetaryDonationDto);
             if (result.IsFailure)
@@ -28,7 +28,24 @@ namespace Api.Controllers
             return Ok();
         }
 
-        //crear endpoint para consultar las donaciones en el donation service 
+        //crear endpoint para consultar las donaciones en el donation service
+        [HttpGet]
+        public async Task<IActionResult> GetAllDonationsAsync()
+        {
+            var donations = await _donationService.GetAllDonationsAsync();
+            return Ok(donations);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetDonationDetails(int id)
+        {
+            var result = await _donationService.GetDonationDetails(id);
+            if (result.IsFailure)
+            {
+                return NotFound(result.Errors);
+            }
+            return Ok(result.Value);
+        }
+
     }
-    
 }

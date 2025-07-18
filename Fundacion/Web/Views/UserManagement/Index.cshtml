@@ -8,19 +8,15 @@
 
 <style>
     body {
-        background-color: #e3e6eb; /* gris claro que combina con los paneles */
+        background-color: #e3e6eb;
     }
 
     .table-wrapper {
-        overflow: hidden;
+       /*  overflow: hidden; */
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         background-color: #ffffff;
-    }
-
-    .table {
-        margin-bottom: 0;
-        border-radius: 12px;
+        padding: 1rem;
     }
 
     .table-hover tbody tr:hover {
@@ -37,29 +33,20 @@
         color: #333;
     }
 
-    .estado-label {
-        border-radius: 999px;
-        padding: 4px 12px;
-        font-size: 0.75rem;
+    .table td {
+        vertical-align: middle;
     }
 
-    .form-control-sm {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
+    .badge {
+        font-size: 0.8rem;
     }
 
-    .btn-success.btn-sm {
+    .dropdown-menu li a i {
+        width: 16px;
+    }
+
+    .btn {
         border-radius: 6px;
-        padding: 6px 12px;
-        font-weight: 500;
-    }
-
-    .dropdown-toggle {
-        border-radius: 6px;
-    }
-
-    .table-bordered {
-        border-color: #dee2e6;
     }
 </style>
 
@@ -72,7 +59,7 @@
 
         <div class="d-flex flex-wrap align-items-center gap-2">
             <a asp-action="AddUser" class="btn btn-success">
-                <i class="fa-solid fa-cart-flatbed me-2"></i> Crear nuevo usuario
+                <i class="fa-solid fa-user-plus"></i></i> Crear nuevo usuario
             </a>
             <div id="customFilterContainer" class="flex-grow-1" style="min-width: 250px;"></div>
         </div>

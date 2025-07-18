@@ -44,5 +44,53 @@ namespace Api.Services.Application
         }
         // ir a traer el listado del repositorio y listarlo en un nuevo dto
 
+        public async Task<IEnumerable<DonationDto>> GetAllDonationsAsync()
+        {
+            var donations = await _donationsRepository.GetAllDonationsAsync();
+            return donations.Select(d => new DonationDto
+            {
+                Id = d.Id,
+                Name = d.Name,
+                IdentificationNumber = d.IdentificacionNumber,
+                Type = d.Type,
+
+
+
+            });
+        }
+
+        public async Task<Result<DonationDto>>GetDonationDetails(int id)
+        {
+            var donation = await _donationsRepository.GetDonationById(id);
+
+            if (donation == null)
+            {
+                return Result<DonationDto>.Failure("Donation not found");
+            }
+
+            if(donation.Type == DonationType.Monetaria)
+            {
+                var monetaryDonation = await _donationsRepository.GetMonetaryDonation(donation.Id);
+                if (monetaryDonation == null)
+                {
+                    return Result<DonationDto>.Failure("Monetary donation details not found");
+                }
+                return Result<DonationDto>.Success(new DonationDto
+                {
+                    Id = donation.Id,
+                    Name = donation.Name,
+                    IdentificationNumber = donation.IdentificacionNumber,
+                    Type = donation.Type,
+                    Amount = monetaryDonation.Ammount,
+                    Currency = monetaryDonation.Currency
+                });
+            }
+            //hacer lo mismo para los otros tipos de donaciones
+             return Result<DonationDto>.Failure("Donation type not supported");
+
+
+        }
+        }
     }
-}
+
+
