@@ -41,8 +41,11 @@ namespace Api.Database.Entities
 
         // Archivos adjuntos 
 
-        public string? CartaConsentimientoUrl { get; set; }
-        public string? CartaNotasUrl { get; set; }
+        public byte[]? CartaConsentimiento { get; set; }
+        public byte[]? CartaNotas { get; set; }
+
+        public string? CartaConsentimientoContentType { get; set; }
+        public string? CartaNotasContentType { get; set; }
 
         //Otros campos
         public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
