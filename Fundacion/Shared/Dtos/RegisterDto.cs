@@ -27,5 +27,11 @@ namespace Shared.Dtos
         [Required(ErrorMessage = "La identificación es obligatoria.")]
         [StringLength(50, ErrorMessage = "La identificación no puede exceder los 50 caracteres.")]
         public string Identificacion { get; set; }
+        public string Role { get; set; }
+
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [StringLength(15, ErrorMessage = "El teléfono no puede exceder los 8 caracteres.")]
+        public string Telefono { get; set; }
+
     }
 }

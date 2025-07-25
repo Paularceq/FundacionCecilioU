@@ -15,7 +15,19 @@ namespace Api.Database
             modelBuilder.Entity<Product>()
                 .Property(p => p.UnitOfMeasure)
                 .HasConversion<string>();
+                 modelBuilder.Entity<VolunteerRequest>()
+            .HasOne(r => r.Volunteer)
+            .WithMany()
+            .HasForeignKey(r => r.VolunteerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VolunteerRequest>()
+                .HasOne(r => r.Approver)
+                .WithMany()
+                .HasForeignKey(r => r.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
+
 
 
         // Define DbSet properties for your entities
@@ -28,5 +40,8 @@ namespace Api.Database
         public DbSet<Product> Products { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<SolicitudBeca> SolicitudesBeca { get; set; }
+        public DbSet<VolunteerRequest> VolunteerRequests { get; set; }
+        public DbSet<VolunteerHours> VolunteerHours { get; set; }
+
     }
 }
