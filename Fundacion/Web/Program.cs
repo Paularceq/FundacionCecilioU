@@ -37,6 +37,7 @@ builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DonationService>();
+builder.Services.AddScoped<VolunteerRequestService>();
 
 var app = builder.Build();
 

@@ -61,6 +61,8 @@ namespace Web.Services
                 Identificacion = model.Identificacion,
                 Email = model.Email,
                 Password = model.Password,
+                Telefono = model.Telefono,
+                Role = model.Role
             };
 
             var result = await _apiClient.PostAsync("auth/register", dto);

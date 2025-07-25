@@ -53,6 +53,5 @@ namespace Api.Controllers
             return BadRequest(result.Errors);
         }
 
-
     }
 }

@@ -45,6 +45,14 @@
                     Donaciones
                 </a>
             }
+            @* Gestion de Voluntario *@
+            @if (User.IsInRole(Roles.Voluntario) || User.IsInRole(Roles.AdminUsuarios))
+            {
+                <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+                    Voluntario
+                </a>
+            }
 
             @* ========== COMENTADO: SECCIÓN DE INTERFAZ Y PÁGINAS ========= *@
             @*
