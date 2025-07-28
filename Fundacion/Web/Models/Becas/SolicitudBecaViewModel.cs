@@ -33,5 +33,9 @@ namespace Web.Models.Becas
         public IFormFile CartaConsentimiento { get; set; }
 
         public IFormFile CartaNotas { get; set; }
+
+        public string ComentarioAdministrador { get; set; }
+
+        public string Estado { get; set; } = "Pendiente";
     }
 }
