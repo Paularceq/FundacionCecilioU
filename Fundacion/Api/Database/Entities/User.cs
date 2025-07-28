@@ -22,6 +22,9 @@ namespace Api.Database.Entities
         [StringLength(256)]
         public string Email { get; set; }
 
+        [StringLength(8)]
+        public string Telefono { get; set; }
+
         [Required]
         [StringLength(20)]
         public string Nacionalidad { get; set; }

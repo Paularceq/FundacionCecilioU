@@ -43,6 +43,11 @@ namespace Api.Services.Application
             {
                 return Result.Failure("El correo electrónico ya está en uso.");
             }
+            existingUser = await _userRepository.GetUserByIdentificacionAsync(registerDto.Identificacion);
+            if (existingUser != null)
+            {
+                return Result.Failure("La identificacion ya está en uso.");
+            }
 
             var newUser = new User
             {
@@ -54,10 +59,10 @@ namespace Api.Services.Application
                 Identificacion = registerDto.Identificacion,
                 RequiereCambioDePassword = false
             };
+            var asingedRole = registerDto.Role == Roles.Voluntario ? Roles.Voluntario : Roles.Estudiante;
+            var role = await _roleRepository.GetRoleByNameAsync(asingedRole);
 
-            var defaultRole = await _roleRepository.GetRoleByNameAsync(Roles.Estudiante);
-
-            newUser.Roles.Add(defaultRole);
+            newUser.Roles.Add(role);
 
             await _userRepository.AddUserAsync(newUser);
 
