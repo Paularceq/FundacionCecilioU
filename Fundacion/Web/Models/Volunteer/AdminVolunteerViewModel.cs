@@ -7,6 +7,7 @@ namespace Web.Models.Volunteer
     {
         public List<VolunteerRequestDto> PendingRequests { get; set; } = new();
         public List<VolunteerRequestDto> ApprovedRequests { get; set; } = new();
+        public List<VolunteerRequestDto> RejectedRequests { get; set; } = new();
         public List<VolunteerHoursDto> PendingHours { get; set; } = new();
 
         // Estadísticas para dashboard de admin
