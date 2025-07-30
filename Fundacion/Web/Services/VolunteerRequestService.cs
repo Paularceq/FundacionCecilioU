@@ -13,7 +13,7 @@ namespace Web.Services
         {
             _apiClient = apiClient;
         }
-        public async Task<Result > CreateAsync(CreateRequestViewModel requestViewModel,int volunterId)
+        public async Task<Result> CreateAsync(CreateRequestViewModel requestViewModel, int volunterId)
         {
             var requestDto = new VolunteerRequestDto
             {
@@ -25,12 +25,20 @@ namespace Web.Services
             };
             return await _apiClient.PostAsync("volunteerrequest", requestDto);
         }
-        public async Task <List<VolunteerRequestDto>> GetAllByVolunteerIDAsync(int volunteerId)
+        public async Task<List<VolunteerRequestDto>> GetAllByVolunteerIDAsync(int volunteerId)
         {
-           var result = await _apiClient.GetAsync<List<VolunteerRequestDto>>($"volunteerrequest/volunteer/{volunteerId}");
+            var result = await _apiClient.GetAsync<List<VolunteerRequestDto>>($"volunteerrequest/volunteer/{volunteerId}");
             return result.Value;
         }
+        // ===== NUEVOS MÉTODOS =====
 
+
+        public async Task<Result<VolunteerRequestDto>> GetRequestByIdAsync(int requestId)
+        {
+            return await _apiClient.GetAsync<VolunteerRequestDto>($"VolunteerRequest/{requestId}");
+        }
 
     }
+
+
 }
