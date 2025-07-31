@@ -1,18 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Web.Models.Becas
 {
     public class SolicitudBecaViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Se requiere la Cedula del estudiante")]
         [StringLength(20)]
         public string CedulaEstudiante { get; set; }
 
-        [Required]
+        [Required (ErrorMessage = "Se requiere el nombre del estudiante")]
         [StringLength(100)]
+        [Display (Name = "Nombre del Estudiante")]
         public string NombreEstudiante { get; set; }
 
-        [Required]
+
+        [Required(ErrorMessage = "Se requiere rellenar el campo")]
         [EmailAddress]
         public string CorreoContacto { get; set; }
 
@@ -22,11 +25,11 @@ namespace Web.Models.Becas
         [StringLength(250)]
         public string Direccion { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Se requiere el nombre del colegio del Estudiante")]
         [StringLength(100)]
         public string Colegio { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Se requiere el niveleducativo del Estudiante")]
         [StringLength(50)]
         public string NivelEducativo { get; set; }
 
