@@ -48,10 +48,24 @@
             @* Gestion de Voluntario *@
             @if (User.IsInRole(Roles.Voluntario) || User.IsInRole(Roles.AdminUsuarios))
             {
-                <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseVoluntario" aria-expanded="false" aria-controls="collapseVoluntario">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-handshake-angle"></i></div>
                     Voluntario
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                 </a>
+                <div class="collapse" id="collapseVoluntario" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        @if (User.IsInRole(Roles.Voluntario))
+                        {
+                            <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">Mis Solicitudes</a>
+                        }
+                        @if (User.IsInRole(Roles.AdminUsuarios))
+                        {
+                            <a asp-controller="VolunteerAdmin" asp-action="Index" class="nav-link">Administrar Solicitudes</a>
+                            <a asp-controller="VolunteerAdmin" asp-action="PendingHours" class="nav-link">Aprobar Horas</a>
+                        }
+                    </nav>
+                </div>
             }
 
 
