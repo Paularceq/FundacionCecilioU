@@ -7,6 +7,7 @@ namespace Web.Models.Becas
     {
         [Required(ErrorMessage = "Se requiere la Cedula del estudiante")]
         [StringLength(20)]
+        [Display(Name = "Cedula del estudiante")]
         public string CedulaEstudiante { get; set; }
 
         [Required (ErrorMessage = "Se requiere el nombre del estudiante")]
@@ -15,8 +16,9 @@ namespace Web.Models.Becas
         public string NombreEstudiante { get; set; }
 
 
-        [Required(ErrorMessage = "Se requiere rellenar el campo")]
+        [Required(ErrorMessage = "Se requiere el correo del encargado")]
         [EmailAddress]
+        [Display(Name = "Correo del engargado")]
         public string CorreoContacto { get; set; }
 
         [StringLength(20)]
@@ -31,12 +33,14 @@ namespace Web.Models.Becas
 
         [Required(ErrorMessage = "Se requiere el niveleducativo del Estudiante")]
         [StringLength(50)]
+        [Display(Name = "Nivel Educativo")]
         public string NivelEducativo { get; set; }
 
         public IFormFile CartaConsentimiento { get; set; }
 
         public IFormFile CartaNotas { get; set; }
 
+        [Display(Name = "Comentario")]
         public string ComentarioAdministrador { get; set; }
 
         public string Estado { get; set; } = "Pendiente";
