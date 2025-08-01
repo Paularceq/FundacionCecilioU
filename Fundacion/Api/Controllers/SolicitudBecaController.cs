@@ -11,13 +11,8 @@ namespace Api.Controllers
     public class SolicitudesBecaController : ControllerBase
 
     {
-        private readonly HttpClient _httpClient;
-
-        public SolicitudesBecaController(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
         private readonly DatabaseContext _context;
+
 
         public SolicitudesBecaController(DatabaseContext context)
         {
@@ -44,29 +39,32 @@ namespace Api.Controllers
         }
 
         // POST: api/SolicitudesBeca
+     
         [HttpPost]
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
-            if (!ModelState.IsValid)
+           if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
             var solicitud = new SolicitudBeca
             {
                 CedulaEstudiante = dto.CedulaEstudiante,
                 NombreEstudiante = dto.NombreEstudiante,
-                CorreoContacto = dto.CorreoContacto,
+               CorreoContacto = dto.CorreoContacto,
                 TelefonoContacto = dto.TelefonoContacto,
                 Direccion = dto.Direccion,
                 Colegio = dto.Colegio,
                 NivelEducativo = dto.NivelEducativo,
                 CartaConsentimiento = dto.CartaConsentimiento,
-                CartaNotas = dto.CartaNotas,
+                CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
+               CartaNotas = dto.CartaNotas,
+               CartaNotasContentType = dto.CartaNotasContentType,
                 FechaSolicitud = DateTime.UtcNow,
                 Estado = EstadoSolicitud.Pendiente,
                 EsFormularioManual = dto.EsFormularioManual
-            };
-            _context.SolicitudesBeca.Add(solicitud);
-            await _context.SaveChangesAsync();
+           };
+           _context.SolicitudesBeca.Add(solicitud);
+           await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id = solicitud.Id }, solicitud);
         }

@@ -36,9 +36,11 @@ namespace Shared.Dtos.Becas
 
         [Required(ErrorMessage = "La Carta de consentimiento es obligatoria")]
         public byte[] CartaConsentimiento { get; set; }
+        public string CartaConsentimientoContentType { get; set; }
 
         [Required(ErrorMessage ="La carta de notas es obligatoria")]
         public byte[] CartaNotas { get; set; }
+        public string CartaNotasContentType { get; set; }
 
         public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
 

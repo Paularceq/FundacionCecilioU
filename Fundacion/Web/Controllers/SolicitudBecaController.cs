@@ -28,8 +28,8 @@ namespace Web.Controllers
                 return View(model);
 
             // Aquí podrías subir los archivos a disco o a una API si tenés configurado
-            var cartaConsentPath = await GuardarArchivo(model.CartaConsentimiento, "consentimientos");
-            var cartaNotasPath = await GuardarArchivo(model.CartaNotas, "notas");
+            var cartaConsentBytes = await LeerArchivoComoBytes(model.CartaConsentimiento);
+            var cartaNotasBytes = await LeerArchivoComoBytes(model.CartaNotas);
 
             var cliente = _httpClientFactory.CreateClient("API");
 
@@ -42,39 +42,51 @@ namespace Web.Controllers
                 direccion = model.Direccion,
                 colegio = model.Colegio,
                 nivelEducativo = model.NivelEducativo,
-                cartaConsentimientoUrl = cartaConsentPath,
-                cartaNotasUrl = cartaNotasPath,
+                cartaConsentimiento = cartaConsentBytes,
+                cartaConsentimientoContentType = model.CartaConsentimiento?.ContentType,
+                cartaNotas = cartaNotasBytes,
+                cartaNotasContentType = model.CartaNotas?.ContentType,
                 esFormularioManual = false
             };
 
-            var response = await cliente.PostAsJsonAsync("api/SolicitudesBeca", data);
+            var response = await cliente.PostAsJsonAsync("SolicitudesBeca", data);
+            var errorMsg = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
                 return RedirectToAction("Gracias");
 
-            ModelState.AddModelError("", "Ocurrió un error al enviar la solicitud.");
+            //ModelState.AddModelError("", "Ocurrió un error al enviar la solicitud.");
+            ModelState.AddModelError("", $"Ocurrió un error al enviar la solicitud: ");
             return View(model);
         }
-
-        private async Task<string> GuardarArchivo(IFormFile archivo, string subcarpeta)
+        private async Task<byte[]> LeerArchivoComoBytes(IFormFile archivo)
         {
             if (archivo == null || archivo.Length == 0)
                 return null;
-
-            var uploads = Path.Combine(_env.WebRootPath, "uploads", subcarpeta);
-            Directory.CreateDirectory(uploads);
-
-            var fileName = $"{Guid.NewGuid()}_{archivo.FileName}";
-            var filePath = Path.Combine(uploads, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await archivo.CopyToAsync(stream);
-            }
-
-            // Ruta relativa para guardar en la base
-            return $"/uploads/{subcarpeta}/{fileName}";
+            using var ms = new MemoryStream();
+            await archivo.CopyToAsync(ms);
+            return ms.ToArray();
         }
+
+        //private async Task<string> GuardarArchivo(IFormFile archivo, string subcarpeta)
+        //{
+        //    if (archivo == null || archivo.Length == 0)
+        //        return null;
+
+        //    var uploads = Path.Combine(_env.WebRootPath, "uploads", subcarpeta);
+        //    Directory.CreateDirectory(uploads);
+
+        //    var fileName = $"{Guid.NewGuid()}_{archivo.FileName}";
+        //    var filePath = Path.Combine(uploads, fileName);
+
+        //    using (var stream = new FileStream(filePath, FileMode.Create))
+        //    {
+        //        await archivo.CopyToAsync(stream);
+        //    }
+
+        //    // Ruta relativa para guardar en la base
+        //    return $"/uploads/{subcarpeta}/{fileName}";
+        //}
 
         public IActionResult Gracias()
         {
