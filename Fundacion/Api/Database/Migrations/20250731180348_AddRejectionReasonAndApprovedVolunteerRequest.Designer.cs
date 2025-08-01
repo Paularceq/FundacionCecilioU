@@ -4,6 +4,7 @@ using Api.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250731180348_AddRejectionReasonAndApprovedVolunteerRequest")]
+    partial class AddRejectionReasonAndApprovedVolunteerRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,9 +86,6 @@ namespace Api.Database.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OutgoingDonationId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -95,15 +95,10 @@ namespace Api.Database.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OutgoingDonationId");
 
                     b.HasIndex("ProductId");
 
@@ -134,52 +129,6 @@ namespace Api.Database.Migrations
                     b.HasIndex("DonationId");
 
                     b.ToTable("MonetaryDonations");
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("Ammount")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("ApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ApproverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Currency")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RecipientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RequesterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApproverId");
-
-                    b.HasIndex("RecipientId");
-
-                    b.HasIndex("RequesterId");
-
-                    b.ToTable("OutgoingDonations");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>
@@ -508,10 +457,6 @@ namespace Api.Database.Migrations
 
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
                 {
-                    b.HasOne("Api.Database.Entities.OutgoingDonation", null)
-                        .WithMany("InventoryMovements")
-                        .HasForeignKey("OutgoingDonationId");
-
                     b.HasOne("Api.Database.Entities.Product", "Product")
                         .WithMany("Movements")
                         .HasForeignKey("ProductId")
@@ -534,32 +479,6 @@ namespace Api.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Donation");
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.HasOne("Api.Database.Entities.User", "Approver")
-                        .WithMany()
-                        .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Api.Database.Entities.User", "Recipient")
-                        .WithMany()
-                        .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Api.Database.Entities.User", "Requester")
-                        .WithMany()
-                        .HasForeignKey("RequesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Approver");
-
-                    b.Navigation("Recipient");
-
-                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
@@ -622,11 +541,6 @@ namespace Api.Database.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.Navigation("InventoryMovements");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>

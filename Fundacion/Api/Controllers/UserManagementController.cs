@@ -77,6 +77,17 @@ namespace Api.Controllers
             }
             return NoContent();
         }
+
+        [HttpGet("UsersByRole/{roleName}")]
+        public async Task<IActionResult> GetUsersByRole(string roleName)
+        {
+            var result = await _userManagementService.GetUsersByRole(roleName);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+            return Ok(result.Value);
+        }
     }
 
 }

@@ -37,13 +37,24 @@
                 </div>
             }
 
-            @* Donaciones Monetarias *@
-            @if (User.IsInRole(Roles.AdminInventario) || User.IsInRole(Roles.AdminDonaciones))
+            @* Menú desplegable de Donaciones *@
+            @if (User.IsInRole(Roles.AdminDonaciones) || User.IsInRole(Roles.AdminSistema))
             {
-                <a asp-controller="Donation" asp-action="Index" class="nav-link">
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDonacionesSalientes" aria-expanded="false" aria-controls="collapseDonacionesSalientes">
                     <div class="sb-nav-link-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
                     Donaciones
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                 </a>
+                <div class="collapse" id="collapseDonacionesSalientes" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a asp-controller="Donation" asp-action="Index" class="nav-link">Donaciones recibidas</a>
+                        <a asp-controller="OutgoingDonation" asp-action="Index" class="nav-link">Donaciones realizadas</a>
+                        @if (User.IsInRole(Roles.AdminSistema))
+                        {
+                            <a asp-controller="OutgoingDonation" asp-action="Admin" class="nav-link">Administrar solicitudes</a>
+                        }
+                    </nav>
+                </div>
             }
             @* Gestion de Voluntario *@
             @if (User.IsInRole(Roles.Voluntario) || User.IsInRole(Roles.AdminUsuarios))

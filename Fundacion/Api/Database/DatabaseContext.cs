@@ -15,11 +15,12 @@ namespace Api.Database
             modelBuilder.Entity<Product>()
                 .Property(p => p.UnitOfMeasure)
                 .HasConversion<string>();
-                 modelBuilder.Entity<VolunteerRequest>()
-            .HasOne(r => r.Volunteer)
-            .WithMany()
-            .HasForeignKey(r => r.VolunteerId)
-            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VolunteerRequest>()
+                .HasOne(r => r.Volunteer)
+                .WithMany()
+                .HasForeignKey(r => r.VolunteerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<VolunteerRequest>()
                 .HasOne(r => r.Approver)
@@ -64,11 +65,25 @@ namespace Api.Database
                 .HasIndex(vh => new { vh.VolunteerRequestId, vh.Date })
                 .IsUnique()
                 .HasDatabaseName("UX_VolunteerHours_OnePerDay");
+
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Requester)
+                .WithMany()
+                .HasForeignKey(d => d.RequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Recipient)
+                .WithMany()
+                .HasForeignKey(d => d.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Approver)
+                .WithMany()
+                .HasForeignKey(d => d.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
-        
-
-
-
 
         // Define DbSet properties for your entities
         public DbSet<User> Users { get; set; }
@@ -80,8 +95,8 @@ namespace Api.Database
         public DbSet<Product> Products { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<SolicitudBeca> SolicitudesBeca { get; set; }
+        public DbSet<OutgoingDonation> OutgoingDonations { get; set; }
         public DbSet<VolunteerRequest> VolunteerRequests { get; set; }
         public DbSet<VolunteerHours> VolunteerHours { get; set; }
-
     }
 }

@@ -47,6 +47,7 @@ builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IDonationService, DonationService>();
+builder.Services.AddScoped<IOutgoingDonationService, OutgoingDonationService>();
 builder.Services.AddScoped<IVolunteerRequestService, VolunteerRequestService>();
 
 // Register infrastructure services
@@ -60,8 +61,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IInventoryMovementRepository, InventoryMovementRepository>();
+builder.Services.AddScoped<IOutgoingDonationRepository, OutgoingDonationRepository>();
 builder.Services.AddScoped<IVolunteerRequestRepository, VolunteerRequestRepository>();
-
 builder.Services.AddScoped<IDonationsRepository, DonationsRepository>();
 
 var app = builder.Build();

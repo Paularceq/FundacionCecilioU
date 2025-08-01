@@ -10,6 +10,7 @@ namespace Api.Abstractions.Application
         Task<Result<IEnumerable<RoleDto>>> GetAllRoles();
         Task<Result<IEnumerable<UserToListDto>>> GetAllUsersAsync();
         Task<Result<UserDto>> GetUserByIdAsync(int id);
+        Task<Result<IEnumerable<UserToListDto>>> GetUsersByRole(string roleName);
         Task<Result> UpdateUserAsync(UpdateUserDto userDto);
     }
 }

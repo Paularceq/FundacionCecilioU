@@ -35,9 +35,11 @@ namespace Api.Database.Repositories
                     MinimumStock = p.MinimumStock,
                     // Calcula el stock actual sumando las entradas y restando las salidas
                     CurrentStock = p.Movements
+                        .Where(m => m.Status == RequestStatus.Approved)
                         .Sum(m => m.Type == MovementType.Inbound ? m.Quantity : -m.Quantity),
                     // Determina si el stock actual es igual o menor al mínimo permitido
                     IsLowStock = p.Movements
+                        .Where(m => m.Status == RequestStatus.Approved)
                         .Sum(m => m.Type == MovementType.Inbound ? m.Quantity : -m.Quantity) <= p.MinimumStock
                 })
                 .ToListAsync();
@@ -56,9 +58,11 @@ namespace Api.Database.Repositories
                     MinimumStock = p.MinimumStock,
                     // Calcula el stock actual sumando las entradas y restando las salidas
                     CurrentStock = p.Movements
+                        .Where(m => m.Status == RequestStatus.Approved)
                         .Sum(m => m.Type == MovementType.Inbound ? m.Quantity : -m.Quantity),
                     // Determina si el stock actual es igual o menor al mínimo permitido
                     IsLowStock = p.Movements
+                        .Where(m => m.Status == RequestStatus.Approved)
                         .Sum(m => m.Type == MovementType.Inbound ? m.Quantity : -m.Quantity) <= p.MinimumStock
                 })
                 .SingleOrDefaultAsync(p => p.Id == id);
