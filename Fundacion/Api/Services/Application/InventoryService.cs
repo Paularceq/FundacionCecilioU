@@ -89,7 +89,8 @@ namespace Api.Services.Application
                 ProductId = newProduct.Id,
                 Quantity = dto.InitialQuantity,
                 Type = MovementType.Inbound,
-                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Entrada de stock inicial." : dto.Comment
+                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Entrada de stock inicial." : dto.Comment,
+                Status = RequestStatus.Approved
             };
 
             await _inventoryMovementRepository.AddAsync(movement);
@@ -127,7 +128,8 @@ namespace Api.Services.Application
                 ProductId = product.Id,
                 Quantity = dto.Quantity,
                 Type = MovementType.Inbound,
-                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Stock added" : dto.Comment
+                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Stock added" : dto.Comment,
+                Status = RequestStatus.Approved
             };
 
             await _inventoryMovementRepository.AddAsync(movement);
@@ -153,7 +155,8 @@ namespace Api.Services.Application
                 ProductId = product.Id,
                 Quantity = dto.Quantity,
                 Type = MovementType.Outbound,
-                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Stock withdrawn" : dto.Comment
+                Comment = string.IsNullOrWhiteSpace(dto.Comment) ? "Stock withdrawn" : dto.Comment,
+                Status = RequestStatus.Approved
             };
 
             await _inventoryMovementRepository.AddAsync(movement);

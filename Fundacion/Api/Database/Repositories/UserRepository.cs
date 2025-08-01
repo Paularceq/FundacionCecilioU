@@ -58,7 +58,7 @@ namespace Api.Database.Repositories
         public async Task<IEnumerable<User>> GetUsersByRole(string roleName)
         {
             return await _context.Users
-                .Where(u => u.Roles.Any(r => r.Name == roleName))
+                .Where(u => u.Activo && u.Roles.Any(r => r.Name == roleName))
                 .ToListAsync();
         }
     }

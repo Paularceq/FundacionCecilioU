@@ -8,9 +8,6 @@ namespace Api.Database.Entities
         public string Name { get; set; }
         public string IdentificacionNumber { get; set; }
         public DonationType Type { get; set; }
-
-
-
     }
 }
 

@@ -31,12 +31,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Auth/Denied";
     });
 
-// Register application services
+// Register api services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DonationService>();
+builder.Services.AddScoped<OutgoingDonationService>();
 
 // ===== SERVICIOS DE VOLUNTARIOS =====
 builder.Services.AddScoped<VolunteerRequestService>();

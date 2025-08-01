@@ -1,0 +1,114 @@
+﻿@using Shared.Constants
+@using Shared.Enums
+@using Shared.Extensions
+@model Shared.Dtos.OutgoingDonations.OutgoingDonationDetailsDto
+
+@{
+    ViewData["Title"] = "Detalle de la donación";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container">
+    <h2 class="mb-4"><i class="fas fa-hand-holding-heart me-2"></i> Donación #@Model.Id</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.RequesterName)</dt>
+                <dd class="col-sm-7">@Model.RequesterName</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.RecipientName)</dt>
+                <dd class="col-sm-7">@Model.RecipientName</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.ApproverName)</dt>
+                <dd class="col-sm-7">@Model.ApproverName</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.Status)</dt>
+                <dd class="col-sm-7">
+                    @{
+                        var statusBadge = Model.Status switch
+                        {
+                            RequestStatus.Pending => "bg-warning text-dark",
+                            RequestStatus.Approved => "bg-success",
+                            RequestStatus.Rejected => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @statusBadge">@Model.StatusDescription</span>
+                </dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.RequestDate)</dt>
+                <dd class="col-sm-7">@Model.RequestDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.ApprovalDate)</dt>
+                <dd class="col-sm-7">
+                    @(Model.ApprovalDate.HasValue? Model.ApprovalDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                </dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.Type)</dt>
+                <dd class="col-sm-7">@Model.TypeDescription</dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (Model.Type == DonationType.InKind)
+    {
+        <h4 class="mb-3">Productos donados</h4>
+
+        @if (!Model.Products.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No hay productos registrados en esta donación.
+            </div>
+        }
+        else
+        {
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Html.DisplayNameFor(m => m.Products.First().Name)</th>
+                        <th>@Html.DisplayNameFor(m => m.Products.First().UnitOfMeasure)</th>
+                        <th>@Html.DisplayNameFor(m => m.Products.First().RequestedQuantity)</th>
+                        <th>@Html.DisplayNameFor(m => m.Products.First().CurrentStock)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Products)
+                    {
+                        <tr>
+                            <td>@p.Name</td>
+                            <td>@p.UnitOfMeasure.GetDescription()</td>
+                            <td>@p.RequestedQuantity</td>
+                            <td>@p.CurrentStock</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+    @if (User.IsInRole(Roles.AdminSistema))
+    {
+        @if (Model.Status == RequestStatus.Pending)
+        {
+           <div class="my-4">
+                <a asp-action="Resolve" asp-route-id="@Model.Id" asp-route-isApproved="true" class="btn btn-success mt-4 me-2 d-inline">
+                    <i class="fas fa-check me-2"></i> Aprobar
+                </a>
+                <a asp-action="Resolve" asp-route-id="@Model.Id" asp-route-isApproved="false" class="btn btn-danger mt-4 me-2 d-inline">
+                    <i class="fas fa-times me-2"></i> Rechazar
+                </a>
+           </div>
+        }
+
+        <a asp-action="Admin" class="btn btn-secondary mt-4">
+            <i class="fas fa-arrow-left me-2"></i> Volver al listado
+        </a>
+    }
+    else
+    {
+        <a asp-action="Index" class="btn btn-secondary mt-4">
+            <i class="fas fa-arrow-left me-2"></i> Volver al listado
+        </a>
+    }
+</div>

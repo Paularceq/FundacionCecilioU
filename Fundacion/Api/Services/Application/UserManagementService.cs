@@ -152,5 +152,20 @@ namespace Api.Services.Application
             return Result.Success();
 
         }
+
+        public async Task<Result<IEnumerable<UserToListDto>>> GetUsersByRole(string roleName)
+        {
+            var users = await _userRepository.GetUsersByRole(roleName);
+            var userDtos = users.Select(u => new UserToListDto
+            {
+                Id = u.Id,
+                Activo = u.Activo,
+                NombreCompleto = u.NombreCompleto,
+                Email = u.Email,
+                Nacionalidad = u.Nacionalidad,
+                Identificacion = u.Identificacion
+            });
+            return Result<IEnumerable<UserToListDto>>.Success(userDtos);
+        }
     }
 }

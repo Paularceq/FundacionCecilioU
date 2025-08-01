@@ -2,9 +2,7 @@
 {
     public enum DonationType
     {
-        Monetaria,
-        Producto,
-        Actividad,
-
+        Monetary,
+        InKind,
     }
 }
