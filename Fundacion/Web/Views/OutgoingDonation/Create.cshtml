@@ -1,0 +1,97 @@
+﻿@model Web.Models.OutgoingDonation.CreateOutgoingDonationViewModel
+
+@{
+    ViewData["Title"] = "Solicitud de donación";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="h2 mb-4">@ViewData["Title"]</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="SelectedStudentId" class="form-label">Estudiante beneficiario</label>
+            <select asp-for="SelectedStudentId" class="form-select" asp-items="Model.Students">
+                <option value="">-- Seleccione un estudiante --</option>
+            </select>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle" id="productTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50%">Producto</th>
+                        <th style="width: 20%">Cantidad</th>
+                        <th style="width: 20%">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.SelectedProducts.Count(); i++)
+                    {
+                        <tr>
+                            <td>
+                                <select asp-for="SelectedProducts[@i].Id" class="form-select" asp-items="Model.Products">
+                                    <option value="">-- Seleccione un producto --</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input asp-for="SelectedProducts[@i].Quantity" class="form-control" type="number" min="1" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-danger" onclick="removeRow(this)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary" onclick="addRow()">
+                <i class="bi bi-plus-lg"></i> Agregar producto
+            </button>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let rowIndex = @Model.SelectedProducts.Count();
+
+        function addRow() {
+            const products = @Html.Raw(Json.Serialize(Model.Products));
+
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>
+                    <select name="SelectedProducts[${rowIndex}].Id" class="form-select">
+                        <option value="">-- Seleccione un producto --</option>
+                        ${products.map(p => `<option value="${p.value}">${p.text}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="SelectedProducts[${rowIndex}].Quantity" class="form-control" min="1" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger" onclick="removeRow(this)">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </td>
+            `;
+
+            document.querySelector("#productTable tbody").appendChild(row);
+            rowIndex++;
+        }
+
+        function removeRow(button) {
+            button.closest('tr').remove();
+        }
+    </script>
+}

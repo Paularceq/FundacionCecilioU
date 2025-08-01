@@ -23,7 +23,7 @@ namespace Api.Services.Application
             {
                 IdentificacionNumber = dto.Identification,
 
-                Type = DonationType.Monetaria,
+                Type = DonationType.Monetary,
 
                 Name = dto.Name,
 
@@ -68,7 +68,7 @@ namespace Api.Services.Application
                 return Result<DonationDto>.Failure("Donation not found");
             }
 
-            if(donation.Type == DonationType.Monetaria)
+            if(donation.Type == DonationType.Monetary)
             {
                 var monetaryDonation = await _donationsRepository.GetMonetaryDonation(donation.Id);
                 if (monetaryDonation == null)

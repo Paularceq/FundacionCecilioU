@@ -15,8 +15,25 @@ namespace Api.Database
             modelBuilder.Entity<Product>()
                 .Property(p => p.UnitOfMeasure)
                 .HasConversion<string>();
-        }
 
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Requester)
+                .WithMany()
+                .HasForeignKey(d => d.RequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Recipient)
+                .WithMany()
+                .HasForeignKey(d => d.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OutgoingDonation>()
+                .HasOne(d => d.Approver)
+                .WithMany()
+                .HasForeignKey(d => d.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
 
         // Define DbSet properties for your entities
         public DbSet<User> Users { get; set; }
@@ -28,5 +45,6 @@ namespace Api.Database
         public DbSet<Product> Products { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<SolicitudBeca> SolicitudesBeca { get; set; }
+        public DbSet<OutgoingDonation> OutgoingDonations { get; set; }
     }
 }

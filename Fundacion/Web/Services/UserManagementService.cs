@@ -13,6 +13,7 @@ namespace Web.Services
         {
             _apiClient = apiClient;
         }
+
         public async Task<Result<IEnumerable<UserToListDto>>> GetAllUsersAsync()
         {
             var result = await _apiClient.GetAsync<IEnumerable<UserToListDto>>("UserManagement/AllUsers");
@@ -43,6 +44,7 @@ namespace Web.Services
 
             return Result.Success();
         }
+
         public async Task<Result<IEnumerable<RoleDto>>> GetAllRolesAsync()
         {
             var result = await _apiClient.GetAsync<IEnumerable<RoleDto>>("UserManagement/AllRoles");
@@ -50,6 +52,7 @@ namespace Web.Services
                 return Result<IEnumerable<RoleDto>>.Failure(result.Errors);
             return Result<IEnumerable<RoleDto>>.Success(result.Value);
         }
+
         public async Task<Result> UpdateUserAsync(UpdateUserViewModel model)
         {
             // 1. Convertir ViewModel a DTO
@@ -70,6 +73,7 @@ namespace Web.Services
                 return Result.Failure(response.Errors);
             return Result.Success();
         }
+
         public async Task<Result<UserDto>> GetUserByIdAsync(int id)
         {
             var result = await _apiClient.GetAsync<UserDto>($"UserManagement/UserById/{id}");
@@ -78,14 +82,21 @@ namespace Web.Services
             return Result<UserDto>.Success(result.Value);
 
         }
+
         public async Task<Result> ChangeUserStatusAsync(int id)
         {
-            var url = $"UserManagement/ChangeUserStatus/{id}";
-            var response = await _apiClient.PostAsync(url);
+            var response = await _apiClient.PostAsync($"UserManagement/ChangeUserStatus/{id}");
             if (response.IsFailure)
                 return Result.Failure(response.Errors);
             return Result.Success();
         }
+
+        public async Task<Result<IEnumerable<UserToListDto>>> GetAllByRoleAsync(string roleName)
+        {
+            var result = await _apiClient.GetAsync<IEnumerable<UserToListDto>>($"UserManagement/UsersByRole/{roleName}");
+            if (result.IsFailure)
+                return Result<IEnumerable<UserToListDto>>.Failure(result.Errors);
+            return Result<IEnumerable<UserToListDto>>.Success(result.Value);
+        }
     }
 }
-
