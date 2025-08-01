@@ -74,6 +74,7 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Approved;
                 request.ApproverId = approverId;
+                request.ApprovedAt = DateTime.UtcNow; // ← Hora del rechazo
                 await UpdateRequestAsync(request);
             }
         }
@@ -85,7 +86,8 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Rejected;
                 request.ApproverId = approverId;
-                // Podrías agregar un campo para guardar la razón del rechazo
+                request.ApprovedAt = DateTime.UtcNow; 
+                request.RejectionReason = reason; // ← Razon del rechazo
                 await UpdateRequestAsync(request);
             }
         }

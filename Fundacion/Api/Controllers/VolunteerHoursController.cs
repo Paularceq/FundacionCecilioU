@@ -63,8 +63,7 @@ namespace Api.Controllers
         }
 
         [HttpDelete("{hoursId}")]
-        public async Task<IActionResult> DeleteVolunteerHours
-            (int hoursId)
+        public async Task<IActionResult> DeleteVolunteerHours(int hoursId)
         {
             var result = await _volunteerRequestService.DeleteVolunteerHoursAsync(hoursId);
             if (result.IsFailure)
@@ -76,7 +75,7 @@ namespace Api.Controllers
 
         // ===== APROBACIÓN DE HORAS =====
         [HttpPost("{hoursId}/approve")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
         public async Task<IActionResult> ApproveHours(int hoursId, [FromBody] ApproveHoursRequestDto dto)
         {
             var approveDto = new ApproveRejectHoursDto
@@ -96,7 +95,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("{hoursId}/reject")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
         public async Task<IActionResult> RejectHours(int hoursId, [FromBody] RejectHoursRequestDto dto)
         {
             var rejectDto = new ApproveRejectHoursDto
@@ -117,7 +116,7 @@ namespace Api.Controllers
         }
 
         [HttpGet("pending")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
         public async Task<IActionResult> GetPendingHours()
         {
             var hours = await _volunteerRequestService.GetPendingHoursAsync();
@@ -132,5 +131,4 @@ namespace Api.Controllers
             return Ok(new { isValid = result.IsSuccess, errors = result.Errors });
         }
     }
-
 }
