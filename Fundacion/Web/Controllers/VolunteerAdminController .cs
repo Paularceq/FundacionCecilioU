@@ -1,0 +1,206 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
+using Shared.Enums;
+using Web.Extensions;
+using Web.Models.Volunteer;
+using Web.Services;
+
+namespace Web.Controllers
+{
+    [Authorize(Roles = Roles.AdminSistema)]
+    public class VolunteerAdminController : Controller
+    {
+        private readonly VolunteerRequestService _volunteerRequestService;
+        private readonly VolunteerHoursService _volunteerHoursService;
+
+        public VolunteerAdminController(
+            VolunteerRequestService volunteerRequestService,
+            VolunteerHoursService volunteerHoursService)
+        {
+            _volunteerRequestService = volunteerRequestService;
+            _volunteerHoursService = volunteerHoursService;
+        }
+
+        // ===== GESTIÓN DE SOLICITUDES =====
+        public async Task<IActionResult> Index(string filter = "all")
+        {
+            var allRequests = await _volunteerRequestService.GetAllRequestsAsync();
+
+            var filteredRequests = filter switch
+            {
+                "pending" => allRequests.Where(r => r.State == VolunteerState.Pending).ToList(),
+                "approved" => allRequests.Where(r => r.State == VolunteerState.Approved).ToList(),
+                "rejected" => allRequests.Where(r => r.State == VolunteerState.Rejected).ToList(),
+                _ => allRequests
+            };
+
+            var viewModel = new AdminVolunteerViewModel
+            {
+                PendingRequests = allRequests.Where(r => r.State == VolunteerState.Pending).ToList(),
+                ApprovedRequests = allRequests.Where(r => r.State == VolunteerState.Approved).ToList(),
+                FilterState = filter switch
+                {
+                    "pending" => VolunteerState.Pending,
+                    "approved" => VolunteerState.Approved,
+                    "rejected" => VolunteerState.Rejected,
+                    _ => null
+                }
+            };
+
+            ViewBag.CurrentFilter = filter;
+            ViewBag.FilteredRequests = filteredRequests;
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var result = await _volunteerRequestService.GetRequestByIdAsync(id);
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage("Solicitud no encontrada");
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(result.Value);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var approverId = GetCurrentUserId();
+            var result = await _volunteerRequestService.ApproveRequestAsync(id, approverId);
+
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+            }
+            else
+            {
+                this.SetSuccessMessage("Solicitud aprobada correctamente");
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reject(int id, string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                this.SetErrorMessage("Debe proporcionar una razón para el rechazo");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var approverId = GetCurrentUserId();
+            var result = await _volunteerRequestService.RejectRequestAsync(id, approverId, reason);
+
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+            }
+            else
+            {
+                this.SetSuccessMessage("Solicitud rechazada correctamente");
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ===== GESTIÓN DE HORAS =====
+        public async Task<IActionResult> PendingHours()
+        {
+            var pendingHours = await _volunteerHoursService.GetPendingHoursAsync();
+            return View(pendingHours);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveHours(int hoursId)
+        {
+            var approverId = GetCurrentUserId();
+            var approverName = GetCurrentUserName();
+
+            var result = await _volunteerHoursService.ApproveHoursAsync(hoursId, approverId, approverName);
+
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+            }
+            else
+            {
+                this.SetSuccessMessage("Horas aprobadas correctamente");
+            }
+
+            return RedirectToAction(nameof(PendingHours));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectHours(int hoursId, string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                this.SetErrorMessage("Debe proporcionar una razón para el rechazo");
+                return RedirectToAction(nameof(PendingHours));
+            }
+
+            var approverId = GetCurrentUserId();
+            var approverName = GetCurrentUserName();
+
+            var result = await _volunteerHoursService.RejectHoursAsync(hoursId, approverId, approverName, reason);
+
+            if (result.IsFailure)
+            {
+                this.SetErrorMessage(result.Errors);
+            }
+            else
+            {
+                this.SetSuccessMessage("Horas rechazadas correctamente");
+            }
+
+            return RedirectToAction(nameof(PendingHours));
+        }
+
+        // ===== API ENDPOINTS PARA AJAX =====
+        [HttpPost]
+        public async Task<JsonResult> QuickApprove(int id)
+        {
+            var approverId = GetCurrentUserId();
+            var result = await _volunteerRequestService.ApproveRequestAsync(id, approverId);
+
+            return Json(new
+            {
+                success = result.IsSuccess,
+                message = result.IsSuccess ? "Solicitud aprobada" : string.Join(", ", result.Errors)
+            });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> QuickReject(int id, string reason)
+        {
+            var approverId = GetCurrentUserId();
+            var result = await _volunteerRequestService.RejectRequestAsync(id, approverId, reason);
+
+            return Json(new
+            {
+                success = result.IsSuccess,
+                message = result.IsSuccess ? "Solicitud rechazada" : string.Join(", ", result.Errors)
+            });
+        }
+
+        // ===== REPORTES =====
+       
+
+        // ===== MÉTODOS AUXILIARES =====
+        private int GetCurrentUserId()
+        {
+            return int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        }
+
+        private string GetCurrentUserName()
+        {
+            return User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Administrador";
+        }
+    }
+}

@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Fundacion"
+    "\\Fundacion",
+    "\\Fundacion\\Api"
   ],
-  "SelectedNode": "\\Fundacion\\Proyecto_Becas.sln",
+  "SelectedNode": "\\Fundacion\\Api\\appsettingstemplate.json",
   "PreviewInSolutionExplorer": false
 }

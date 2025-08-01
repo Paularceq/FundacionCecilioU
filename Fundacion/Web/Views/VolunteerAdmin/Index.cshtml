@@ -1,0 +1,521 @@
+﻿@model Web.Models.Volunteer.AdminVolunteerViewModel
+@{
+    ViewData["Title"] = "Administración de Solicitudes de Voluntariado";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var filteredRequests = ViewBag.FilteredRequests as List<Shared.Dtos.Volunteer.VolunteerRequestDto>;
+    var currentFilter = ViewBag.CurrentFilter as string ?? "all";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #e3e6eb;
+        }
+
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9f9f9;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .table thead th {
+            text-align: center !important;
+            vertical-align: middle !important;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .dropdown-menu li a i {
+            width: 16px;
+        }
+
+        .badge {
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .filter-tabs {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tabs .nav-link {
+            border-radius: 8px;
+            color: #6b7280;
+            font-weight: 500;
+            margin: 0 0.25rem;
+        }
+
+        .filter-tabs .nav-link.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .priority-high {
+            border-left: 4px solid #dc2626;
+        }
+
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .priority-low {
+            border-left: 4px solid #10b981;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .quick-approve {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .quick-approve:hover {
+            background-color: #059669;
+            border-color: #059669;
+            color: white;
+        }
+
+        .quick-reject {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .quick-reject:hover {
+            background-color: #b91c1c;
+            border-color: #b91c1c;
+            color: white;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-users-cog me-2"></i> Administración de Solicitudes de Voluntariado
+            </h1>
+            <div>
+                <a asp-action="Reports" class="btn btn-info me-2">
+                    <i class="fas fa-chart-bar me-2"></i> Ver Reportes
+                </a>
+                <a asp-action="PendingHours" class="btn btn-warning">
+                    <i class="fas fa-clock me-2"></i> Horas Pendientes (@Model.PendingHoursApprovals)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-primary mb-1">@Model.TotalVolunteers</h3>
+                        <p class="text-muted mb-0">Total Voluntarios</p>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-warning mb-1">@Model.PendingApprovals</h3>
+                        <p class="text-muted mb-0">Pendientes</p>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-hourglass-half fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-info mb-1">@Model.TotalHoursThisMonth.ToString("N0")</h3>
+                        <p class="text-muted mb-0">Horas Este Mes</p>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-success mb-1">@Model.ApprovedRequests.Count</h3>
+                        <p class="text-muted mb-0">Aprobadas</p>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-tabs">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link @(currentFilter == "all" ? "active" : "")"
+                   asp-action="Index" asp-route-filter="all">
+                    <i class="fas fa-list me-1"></i> Todas (@(Model.PendingRequests.Count + Model.ApprovedRequests.Count))
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentFilter == "pending" ? "active" : "")"
+                   asp-action="Index" asp-route-filter="pending">
+                    <i class="fas fa-clock me-1"></i> Pendientes (@Model.PendingRequests.Count)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentFilter == "approved" ? "active" : "")"
+                   asp-action="Index" asp-route-filter="approved">
+                    <i class="fas fa-check me-1"></i> Aprobadas (@Model.ApprovedRequests.Count)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentFilter == "rejected" ? "active" : "")"
+                   asp-action="Index" asp-route-filter="rejected">
+                    <i class="fas fa-times me-1"></i> Rechazadas
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tabla de Solicitudes -->
+    <div class="table-wrapper">
+        @if (filteredRequests.Any())
+        {
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Voluntario</th>
+                        <th>Institución</th>
+                        <th>Profesión</th>
+                        <th>Horas</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in filteredRequests.OrderByDescending(r => r.CreatedAt))
+                    {
+                        var priorityClass = GetPriorityClass(request.CreatedAt);
+                        <tr class="@priorityClass">
+                            <td>
+                                <strong class="text-primary">#@request.Id</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@request.VolunteerName</strong>
+                                    <br><small class="text-muted">ID: @request.VolunteerId</small>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>@request.Institution</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@request.Profession</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info">@request.Hours h</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@request.CreatedAt.ToString("dd/MM/yyyy")</strong>
+                                    <br><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                @Html.Raw(GetStateBadge(request.State))
+                            </td>
+                            <td class="text-center">
+                                @if (request.State == Shared.Enums.VolunteerState.Pending)
+                                {
+                                    <div class="action-buttons">
+                                        <button class="btn quick-approve"
+                                                onclick="quickApprove(@request.Id)"
+                                                title="Aprobar rápido">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn quick-reject"
+                                                onclick="showRejectModal(@request.Id, '@request.VolunteerName')"
+                                                title="Rechazar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-vertical fa-fw"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@request.Id">
+                                                    <i class="fas fa-eye me-2 text-secondary"></i>Ver Detalles
+                                                </a>
+                                            </li>
+                                            @if (request.State == Shared.Enums.VolunteerState.Approved)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item"
+                                                       asp-controller="Volunteer" asp-action="Dashboard" asp-route-requestId="@request.Id">
+                                                        <i class="fas fa-chart-pie me-2 text-info"></i>Ver Dashboard
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+                <h5>No hay solicitudes @(currentFilter == "all" ? "" : GetFilterText(currentFilter))</h5>
+                <p class="text-muted">
+                    @if (currentFilter == "pending")
+                    {
+                        <text>Todas las solicitudes han sido procesadas.</text>
+                    }
+                    else if (currentFilter == "approved")
+                    {
+                        <text>Aún no hay solicitudes aprobadas.</text>
+                    }
+                    else if (currentFilter == "rejected")
+                    {
+                        <text>No hay solicitudes rechazadas.</text>
+                    }
+                    else
+                    {
+                        <text>No se han recibido solicitudes de voluntariado.</text>
+                    }
+                </p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para Rechazo -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-times-circle text-danger"></i> Rechazar Solicitud
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea rechazar la solicitud de <strong id="volunteerName"></strong>?</p>
+                <div class="mb-3">
+                    <label for="rejectionReason" class="form-label">Razón del rechazo <span class="text-danger">*</span></label>
+                    <textarea id="rejectionReason" class="form-control" rows="3"
+                              placeholder="Explique claramente por qué se rechaza la solicitud..." required></textarea>
+                    <div class="form-text">Esta razón será visible para el voluntario.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">
+                    <i class="fas fa-times me-1"></i> Rechazar Solicitud
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStateBadge(Shared.Enums.VolunteerState state)
+    {
+        return state switch
+        {
+            Shared.Enums.VolunteerState.Approved => "<span class=\"badge bg-success\"><i class=\"fas fa-check\"></i> Aprobada</span>",
+            Shared.Enums.VolunteerState.Rejected => "<span class=\"badge bg-danger\"><i class=\"fas fa-times\"></i> Rechazada</span>",
+            Shared.Enums.VolunteerState.Pending => "<span class=\"badge bg-warning\"><i class=\"fas fa-clock\"></i> Pendiente</span>",
+            _ => "<span class=\"badge bg-secondary\">Desconocido</span>"
+        };
+    }
+
+    string GetPriorityClass(DateTime createdAt)
+    {
+        var daysOld = (DateTime.Now - createdAt).Days;
+        return daysOld switch
+        {
+            > 7 => "priority-high",
+            > 3 => "priority-medium",
+            _ => "priority-low"
+        };
+    }
+
+    string GetFilterText(string filter)
+    {
+        return filter switch
+        {
+            "pending" => "pendientes",
+            "approved" => "aprobadas",
+            "rejected" => "rechazadas",
+            _ => ""
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        let currentRequestId = 0;
+
+        function quickApprove(requestId) {
+            if (confirm('¿Está seguro que desea aprobar esta solicitud?')) {
+                fetch('@Url.Action("QuickApprove")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({ id: requestId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error al procesar la solicitud', 'danger');
+                });
+            }
+        }
+
+        function showRejectModal(requestId, volunteerName) {
+            currentRequestId = requestId;
+            document.getElementById('volunteerName').textContent = volunteerName;
+            document.getElementById('rejectionReason').value = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+            modal.show();
+        }
+
+        document.getElementById('confirmRejectBtn').addEventListener('click', function() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+
+            if (!reason) {
+                showAlert('Debe proporcionar una razón para el rechazo', 'warning');
+                return;
+            }
+
+            fetch('@Url.Action("QuickReject")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ id: currentRequestId, reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('rejectModal'));
+                    modal.hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error al procesar la solicitud', 'danger');
+            });
+        });
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Auto-refresh cada 30 segundos si hay solicitudes pendientes
+        @if (Model.PendingApprovals > 0)
+        {
+                <text>
+                setInterval(() => {
+                    location.reload();
+                }, 30000);
+                </text>
+        }
+    </script>
+}

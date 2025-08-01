@@ -5,9 +5,9 @@ using Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout as needed
@@ -39,6 +39,11 @@ builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<OutgoingDonationService>();
 
+// ===== SERVICIOS DE VOLUNTARIOS =====
+builder.Services.AddScoped<VolunteerRequestService>();
+builder.Services.AddScoped<VolunteerHoursService>();
+//builder.Services.AddScoped<VolunteerDashboardService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -51,11 +56,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

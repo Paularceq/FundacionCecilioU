@@ -1,0 +1,486 @@
+﻿@model List<Shared.Dtos.Volunteer.VolunteerRequestDto>
+@{
+    ViewData["Title"] = "Mis Solicitudes de Voluntariado";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var canCreateNew = !Model.Any(r => r.State == Shared.Enums.VolunteerState.Pending || r.State == Shared.Enums.VolunteerState.Approved);
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #e3e6eb;
+        }
+
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9f9f9;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .table thead th {
+            text-align: center !important;
+            vertical-align: middle !important;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .dropdown-menu li a i {
+            width: 16px;
+        }
+
+        .badge {
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .empty-state-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 3rem 1.5rem;
+        }
+
+        .process-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1.5rem;
+            height: 100%;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .process-card:hover {
+                transform: translateY(-3px);
+            }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .border-primary {
+            border-left: 4px solid #007bff !important;
+        }
+
+        .border-success {
+            border-left: 4px solid #28a745 !important;
+        }
+
+        .border-warning {
+            border-left: 4px solid #ffc107 !important;
+        }
+
+        .border-info {
+            border-left: 4px solid #17a2b8 !important;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-hands-helping me-2"></i> Mis Solicitudes de Voluntariado
+            </h1>
+            <div>
+                @if (canCreateNew)
+                {
+                    <a href="@Url.Action("Create")" class="btn btn-success">
+                        <i class="fas fa-circle-plus me-2"></i> Nueva Solicitud
+                    </a>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" disabled title="Ya tienes una solicitud activa">
+                        <i class="fas fa-ban me-2"></i> Solicitud Activa
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Estadísticas Rápidas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card border-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-primary mb-1">@Model.Count</h3>
+                            <p class="text-muted mb-0">Total Solicitudes</p>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card border-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-success mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Approved)</h3>
+                            <p class="text-muted mb-0">Aprobadas</p>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card border-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-warning mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Pending)</h3>
+                            <p class="text-muted mb-0">Pendientes</p>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card border-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-info mb-1">@Model.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.Hours)</h3>
+                            <p class="text-muted mb-0">Horas Disponibles</p>
+                        </div>
+                        <div class="text-info">
+                            <i class="fas fa-hourglass-half fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Solicitudes -->
+        <div class="table-wrapper">
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Institución</th>
+                        <th>Profesión</th>
+                        <th>Horas</th>
+                        <th>Fecha Creación</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.OrderByDescending(r => r.CreatedAt))
+                    {
+                        <tr>
+                            <td>
+                                <strong class="text-primary">#@request.Id</strong>
+                            </td>
+                            <td>
+                               @*  <div>
+                                    <strong>@request.Institution</strong>
+                                    @if (!string.IsNullOrEmpty(request.ApproverName))
+                                    {
+                                        <br>
+                            
+                                        <small class="text-muted">
+                                            <i class="fas fa-user-check"></i> @request.ApproverName
+                                        </small>
+                                    }
+                                </div> *@
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@request.Profession</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info">@request.Hours h</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@request.CreatedAt.ToString("dd/MM/yyyy")</strong>
+                                    <br><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                @Html.Raw(GetStateBadge(request.State))
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-vertical fa-fw"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        @if (request.State == Shared.Enums.VolunteerState.Approved)
+                                        {
+                                            <li>
+                                                <a href="@Url.Action("Dashboard", "Volunteer", new { requestId = request.Id })"
+                                                   class="dropdown-item">
+                                                    <i class="fas fa-chart-pie me-2 text-info"></i>Dashboard
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="@Url.Action("ManageHours", "Volunteer", new { requestId = request.Id })"
+                                                   class="dropdown-item">
+                                                    <i class="fas fa-clock me-2 text-success"></i>Gestionar Horas
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="@Url.Action("AddHours", "Volunteer", new { requestId = request.Id })"
+                                                   class="dropdown-item">
+                                                    <i class="fas fa-plus me-2 text-primary"></i>Registrar Horas
+                                                </a>
+                                            </li>
+                                        }
+                                        else if (request.State == Shared.Enums.VolunteerState.Rejected)
+                                        {
+                                            <li>
+                                                <a href="#" class="dropdown-item"
+                                                   onclick="showRejectReason(@request.Id, '@(request.ApproverName ?? "Sin especificar")')">
+                                                    <i class="fas fa-info-circle me-2 text-warning"></i>Ver Razón
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a href="#" class="dropdown-item"
+                                               onclick="showRequestDetails(@request.Id, '@request.Institution', '@request.Profession', '@request.Description', @request.Hours)">
+                                                <i class="fas fa-eye me-2 text-secondary"></i>Ver Detalles
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Información adicional -->
+        @if (Model.Any(r => r.State == Shared.Enums.VolunteerState.Approved))
+        {
+            <div class="mt-4">
+                <div class="alert alert-success">
+                    <h6 class="alert-heading d-flex align-items-center">
+                        <i class="fas fa-lightbulb me-2"></i> ¡Tienes solicitudes aprobadas!
+                    </h6>
+                    <p class="mb-2">
+                        Puedes comenzar a registrar tus horas de voluntariado. Recuerda:
+                    </p>
+                    <ul class="mb-0">
+                        <li>Registra tus horas diariamente</li>
+                        <li>Máximo 8 horas por día</li>
+                        <li>Describe detalladamente las actividades realizadas</li>
+                        <li>Las horas deben ser aprobadas por un administrador</li>
+                    </ul>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- Estado vacío -->
+        <div class="empty-state-wrapper text-center">
+            <i class="fas fa-heart fa-5x text-muted mb-4"></i>
+            <h3>¡Bienvenido al Voluntariado!</h3>
+            <p class="text-muted mb-4">
+                Aún no has creado ninguna solicitud de voluntariado.<br>
+                ¡Es el momento perfecto para comenzar a hacer la diferencia!
+            </p>
+            <a href="@Url.Action("Create")" class="btn btn-success btn-lg">
+                <i class="fas fa-circle-plus me-2"></i> Crear Mi Primera Solicitud
+            </a>
+        </div>
+
+        <!-- Proceso de voluntariado -->
+        <div class="row mt-5">
+            <div class="col-12 mb-4">
+                <h4 class="text-center">¿Cómo funciona el proceso?</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="process-card text-center">
+                    <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                    <h5>1. Crear Solicitud</h5>
+                    <p class="text-muted">
+                        Completa el formulario con tus datos profesionales,
+                        institución y descripción del trabajo voluntario que realizarás.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="process-card text-center">
+                    <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                    <h5>2. Aprobación</h5>
+                    <p class="text-muted">
+                        Un administrador revisará tu solicitud y la aprobará.
+                        Recibirás una notificación una vez que sea aprobada.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="process-card text-center">
+                    <i class="fas fa-clock fa-3x text-info mb-3"></i>
+                    <h5>3. Registrar Horas</h5>
+                    <p class="text-muted">
+                        Una vez aprobada, podrás registrar tus horas diarias de trabajo,
+                        describir actividades y hacer seguimiento de tu progreso.
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal para Detalles de Solicitud -->
+<div class="modal fade" id="requestDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle"></i> Detalles de la Solicitud
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>ID de Solicitud:</strong>
+                        <p id="modalRequestId"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Institución:</strong>
+                        <p id="modalInstitution"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Profesión:</strong>
+                        <p id="modalProfession"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Horas Propuestas:</strong>
+                        <p id="modalHours"></p>
+                    </div>
+                    <div class="col-12">
+                        <strong>Descripción del Trabajo:</strong>
+                        <p id="modalDescription"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Razón de Rechazo -->
+<div class="modal fade" id="rejectReasonModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-times-circle text-danger"></i> Razón del Rechazo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong>Solicitud rechazada por:</strong>
+                    <p id="rejectApprover"></p>
+                </div>
+                <p><strong>Razón:</strong></p>
+                <p id="rejectReason">No se proporcionó una razón específica.</p>
+                <hr>
+                <p class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    Puedes crear una nueva solicitud considerando los comentarios del administrador.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="@Url.Action("Create")" class="btn btn-success">
+                    <i class="fas fa-circle-plus me-2"></i> Nueva Solicitud
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStateBadge(Shared.Enums.VolunteerState state)
+    {
+        return state switch
+        {
+            Shared.Enums.VolunteerState.Approved => "<span class=\"badge bg-success\"><i class=\"fas fa-check\"></i> Aprobada</span>",
+            Shared.Enums.VolunteerState.Rejected => "<span class=\"badge bg-danger\"><i class=\"fas fa-times\"></i> Rechazada</span>",
+            Shared.Enums.VolunteerState.Pending => "<span class=\"badge bg-warning\"><i class=\"fas fa-clock\"></i> Pendiente</span>",
+            _ => "<span class=\"badge bg-secondary\">Desconocido</span>"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function showRequestDetails(id, institution, profession, description, hours) {
+            document.getElementById('modalRequestId').textContent = '#' + id;
+            document.getElementById('modalInstitution').textContent = institution;
+            document.getElementById('modalProfession').textContent = profession;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalHours').textContent = hours + ' horas';
+
+            const modal = new bootstrap.Modal(document.getElementById('requestDetailsModal'));
+            modal.show();
+        }
+
+        function showRejectReason(id, approver) {
+            document.getElementById('rejectApprover').textContent = approver;
+            // Aquí podrías hacer una llamada AJAX para obtener la razón específica del rechazo
+
+            const modal = new bootstrap.Modal(document.getElementById('rejectReasonModal'));
+            modal.show();
+        }
+
+        // Auto-refresh cada 30 segundos para ver cambios de estado
+        setInterval(function() {
+            const hasPending = document.querySelector('.bg-warning') !== null;
+            if (hasPending) {
+                // Opcional: refrescar la página o hacer llamada AJAX
+                // location.reload();
+            }
+        }, 30000);
+    </script>
+}
