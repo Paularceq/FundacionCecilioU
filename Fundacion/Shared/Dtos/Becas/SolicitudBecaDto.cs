@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.Dtos
+namespace Shared.Dtos.Becas
 {
     public class SolicitudBecaDto
     {
@@ -34,13 +34,19 @@ namespace Shared.Dtos
         [StringLength(50)]
         public string NivelEducativo { get; set; }
 
-        // Estos campos van a contener los archivos en base64 o alguna referencia si se usa IFormFile en API
-        [Required]
-        public string CartaConsentimientoBase64 { get; set; }
+        [Required(ErrorMessage = "La Carta de consentimiento es obligatoria")]
+        public byte[] CartaConsentimiento { get; set; }
+        public string CartaConsentimientoContentType { get; set; }
 
-        [Required]
-        public string CartaNotasBase64 { get; set; }
+        [Required(ErrorMessage ="La carta de notas es obligatoria")]
+        public byte[] CartaNotas { get; set; }
+        public string CartaNotasContentType { get; set; }
+
+        public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
+
+        public string Estado { get; set; } = "Pendiente";
 
         public bool EsFormularioManual { get; set; } = false;
+
     }
 }
