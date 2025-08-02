@@ -1,72 +1,118 @@
 ﻿@model Web.Models.Becas.SolicitudBecaViewModel
 
 @{
-    ViewData["Title"] = "Formulario de Solicitud de Beca";
+    ViewData["Title"] = "Solicitud de Beca";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
+<style>
+    body {
+        background-color: #12263a;
+    }
 
-<h2 class="mb-4">Formulario de Solicitud de Beca</h2>
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+</style>
 
-<form asp-action="Crear" asp-controller="SolicitudBeca" method="post" enctype="multipart/form-data">
-    <div class="form-group mb-3">
-        <label asp-for="CedulaEstudiante"></label>
-        <input asp-for="CedulaEstudiante" class="form-control" />
-        <span asp-validation-for="CedulaEstudiante" class="text-danger"></span>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 fw-bold mb-4 text-primary text-center">
+                        <i class="bi bi-journal-plus me-2"></i>Solicitud de Beca
+                    </h2>
+
+                    <form asp-action="Crear" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="NombreEstudiante" class="form-label"></label>
+                                <input asp-for="NombreEstudiante" class="form-control" />
+                                <span asp-validation-for="NombreEstudiante" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CedulaEstudiante" class="form-label"></label>
+                                <input asp-for="CedulaEstudiante" class="form-control" />
+                                <span asp-validation-for="CedulaEstudiante" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CorreoContacto" class="form-label"></label>
+                                <input asp-for="CorreoContacto" class="form-control" />
+                                <span asp-validation-for="CorreoContacto" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TelefonoContacto" class="form-label">Teléfono del Encargado</label>
+                                <input asp-for="TelefonoContacto" class="form-control" />
+                                <span asp-validation-for="TelefonoContacto" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Direccion" class="form-label">Dirección</label>
+                                <input asp-for="Direccion" class="form-control" />
+                                <span asp-validation-for="Direccion" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Colegio" class="form-label"></label>
+                                <input asp-for="Colegio" class="form-control" />
+                                <span asp-validation-for="Colegio" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="NivelEducativo" class="form-label"></label>
+                                <input asp-for="NivelEducativo" class="form-control" />
+                                <span asp-validation-for="NivelEducativo" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CartaConsentimiento" class="form-label">Carta de Consentimiento (imagen)</label>
+                                <input asp-for="CartaConsentimiento" type="file" class="form-control" />
+                                <span asp-validation-for="CartaConsentimiento" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CartaNotas" class="form-label">Carta de Notas (imagen)</label>
+                                <input asp-for="CartaNotas" type="file" class="form-control" />
+                                <span asp-validation-for="CartaNotas" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label asp-for="ComentarioAdministrador" class="form-label"></label>
+                                <textarea asp-for="ComentarioAdministrador" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="ComentarioAdministrador" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-send-check me-1"></i> Enviar Solicitud
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="NombreEstudiante"></label>
-        <input asp-for="NombreEstudiante" class="form-control" />
-        <span asp-validation-for="NombreEstudiante" class="text-danger"></span>
+    <!-- Logo -->
+    <div class="text-center mt-5 mb-4">
+        <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="CorreoContacto"></label>
-        <input asp-for="CorreoContacto" class="form-control" />
-        <span asp-validation-for="CorreoContacto" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="TelefonoContacto"></label>
-        <input asp-for="TelefonoContacto" class="form-control" />
-        <span asp-validation-for="TelefonoContacto" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Direccion"></label>
-        <textarea asp-for="Direccion" class="form-control"></textarea>
-        <span asp-validation-for="Direccion" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Colegio"></label>
-        <input asp-for="Colegio" class="form-control" />
-        <span asp-validation-for="Colegio" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="NivelEducativo"></label>
-        <input asp-for="NivelEducativo" class="form-control" />
-        <span asp-validation-for="NivelEducativo" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="CartaConsentimiento">Carta de consentimiento (PDF o imagen):</label>
-        <input asp-for="CartaConsentimiento" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png" />
-        <span asp-validation-for="CartaConsentimiento" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-4">
-        <label asp-for="CartaNotas">Carta de notas (PDF o imagen):</label>
-        <input asp-for="CartaNotas" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png" />
-        <span asp-validation-for="CartaNotas" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
-</form>
+</div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }

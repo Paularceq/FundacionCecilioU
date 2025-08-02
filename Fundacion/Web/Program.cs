@@ -22,7 +22,11 @@ builder.Services.AddHttpClient<ApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<ApiClientAuthHandler>();
-
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 // Configure authentication using cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
