@@ -1,6 +1,7 @@
 ﻿using Api.Abstractions.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
 using Shared.Dtos.Volunteer;
 
 namespace Api.Controllers
@@ -19,13 +20,15 @@ namespace Api.Controllers
 
         // ===== CRUD DE HORAS =====
         [HttpPost]
-        public async Task<IActionResult> CreateVolunteerHours(CreateVolunteerHoursDto dto)
+        public async Task<IActionResult> CreateVolunteerHours([FromBody] CreateVolunteerHoursDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _volunteerRequestService.CreateVolunteerHoursAsync(dto);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok();
         }
 
@@ -34,9 +37,8 @@ namespace Api.Controllers
         {
             var result = await _volunteerRequestService.GetHoursByRequestIdAsync(requestId);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok(result.Value);
         }
 
@@ -45,20 +47,21 @@ namespace Api.Controllers
         {
             var result = await _volunteerRequestService.GetHoursByDateRangeAsync(requestId, startDate, endDate);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok(result.Value);
         }
 
         [HttpPut("{hoursId}")]
-        public async Task<IActionResult> UpdateVolunteerHours(int hoursId, CreateVolunteerHoursDto dto)
+        public async Task<IActionResult> UpdateVolunteerHours(int hoursId, [FromBody] CreateVolunteerHoursDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _volunteerRequestService.UpdateVolunteerHoursAsync(hoursId, dto);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok();
         }
 
@@ -67,17 +70,19 @@ namespace Api.Controllers
         {
             var result = await _volunteerRequestService.DeleteVolunteerHoursAsync(hoursId);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok();
         }
 
         // ===== APROBACIÓN DE HORAS =====
         [HttpPost("{hoursId}/approve")]
-        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
+        [Authorize(Roles = Roles.AdminSistema)]
         public async Task<IActionResult> ApproveHours(int hoursId, [FromBody] ApproveHoursRequestDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var approveDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
@@ -88,16 +93,18 @@ namespace Api.Controllers
 
             var result = await _volunteerRequestService.ApproveHoursAsync(approveDto);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok();
         }
 
         [HttpPost("{hoursId}/reject")]
-        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
+        [Authorize(Roles = Roles.AdminSistema)]
         public async Task<IActionResult> RejectHours(int hoursId, [FromBody] RejectHoursRequestDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var rejectDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
@@ -109,14 +116,13 @@ namespace Api.Controllers
 
             var result = await _volunteerRequestService.RejectHoursAsync(rejectDto);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
+                return BadRequest(new { errors = result.Errors });
+
             return Ok();
         }
 
         [HttpGet("pending")]
-        [Authorize(Roles = "AdminSistema")] // ← CAMBIAR A AdminSistema para ser consistente
+        [Authorize(Roles = Roles.AdminSistema)]
         public async Task<IActionResult> GetPendingHours()
         {
             var hours = await _volunteerRequestService.GetPendingHoursAsync();
@@ -125,8 +131,11 @@ namespace Api.Controllers
 
         // ===== VALIDACIONES =====
         [HttpPost("validate")]
-        public async Task<IActionResult> ValidateHours(CreateVolunteerHoursDto dto)
+        public async Task<IActionResult> ValidateHours([FromBody] CreateVolunteerHoursDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _volunteerRequestService.ValidateHoursAsync(dto);
             return Ok(new { isValid = result.IsSuccess, errors = result.Errors });
         }

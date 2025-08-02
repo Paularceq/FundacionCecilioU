@@ -1,0 +1,411 @@
+﻿@model List<Shared.Dtos.Volunteer.VolunteerHoursDto>
+
+@{
+    ViewData["Title"] = "Horas Pendientes";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+        }
+
+        .badge-hours {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .urgent-row {
+            border-left: 3px solid #dc3545;
+        }
+
+        .activities-text {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-clock text-warning me-2"></i>
+            Horas Pendientes (@Model.Count)
+        </h2>
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <!-- Estado vacío -->
+        <div class="text-center py-5">
+            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">No hay horas pendientes</h4>
+            <p class="text-muted">Todas las horas han sido procesadas</p>
+        </div>
+    }
+    else
+    {
+        <!-- Resumen -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">@Model.Count</h3>
+                        <small class="text-muted">Pendientes</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-info">@Model.Sum(h => h.TotalHours).ToString("F1")</h3>
+                        <small class="text-muted">Total Horas</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">@Model.Select(h => h.VolunteerRequestId).Distinct().Count()</h3>
+                        <small class="text-muted">Voluntarios</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-danger">@Model.Where(h => (DateTime.Now - h.CreatedAt).Days > 3).Count()</h3>
+                        <small class="text-muted">Urgentes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros simples -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <select id="volunteerFilter" class="form-select">
+                            <option value="">Todos los voluntarios</option>
+                            @foreach (var volunteer in Model.GroupBy(h => h.VolunteerName).Select(g => g.Key).OrderBy(name => name))
+                            {
+                                <option value="@volunteer">@volunteer</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="priorityFilter" class="form-select">
+                            <option value="">Todas las prioridades</option>
+                            <option value="urgent">Solo urgentes</option>
+                            <option value="normal">Solo normales</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="hoursTable">
+                    <thead>
+                        <tr>
+                            <th>Voluntario</th>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Horas</th>
+                            <th>Actividades</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var hours in Model.OrderBy(h => h.Date))
+                        {
+                            var isUrgent = (DateTime.Now - hours.CreatedAt).Days > 3;
+                            var urgentClass = isUrgent ? "urgent-row" : "";
+
+                            <tr class="@urgentClass" data-volunteer="@hours.VolunteerName" data-priority="@(isUrgent ? "urgent" : "normal")">
+                                <td>
+                                    <div>
+                                        <strong>@hours.VolunteerName</strong>
+                                        @if (isUrgent)
+                                        {
+                                            <br>
+                                
+                                            <small class="text-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Urgente
+                                            </small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        @hours.Date.ToString("dd/MM/yyyy")
+                                        <br><small class="text-muted">
+                                            @hours.Date.ToString("dddd", new System.Globalization.CultureInfo("es-ES"))
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @hours.StartTime.ToString(@"hh\:mm") - @hours.EndTime.ToString(@"hh\:mm")
+                                </td>
+                                <td>
+                                    <span class="badge bg-info badge-hours">
+                                        @hours.TotalHours.ToString("F1")h
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="activities-text" title="@hours.ActivitiesDescription">
+                                        @hours.ActivitiesDescription
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(hours.Notes))
+                                    {
+                                        <small class="text-muted">
+                                            <i class="fas fa-sticky-note"></i> Con notas
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-success btn-sm"
+                                                onclick="approveHours(@hours.Id, '@hours.VolunteerName')"
+                                                title="Aprobar">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm"
+                                                onclick="showRejectModal(@hours.Id, '@hours.VolunteerName')"
+                                                title="Rechazar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <button class="btn btn-info btn-sm"
+                                                onclick="showDetails('@hours.VolunteerName', '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(Json.Serialize(hours.ActivitiesDescription))', '@Html.Raw(Json.Serialize(hours.Notes))')"
+                                                title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal Rechazar -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rechazar Horas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Rechazar horas de <strong id="rejectVolunteerName"></strong>?</p>
+                <div class="mb-3">
+                    <label class="form-label">Motivo *</label>
+                    <textarea id="rejectReason" class="form-control" rows="3"
+                              placeholder="Explique el motivo del rechazo..." maxlength="300"></textarea>
+                    <small class="text-muted">Máximo 300 caracteres</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">Rechazar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalles -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Registro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        let currentHoursId = 0;
+
+        // Filtros
+        document.getElementById('volunteerFilter').addEventListener('change', applyFilters);
+        document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const volunteerFilter = document.getElementById('volunteerFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const rows = document.querySelectorAll('#hoursTable tbody tr');
+
+            rows.forEach(row => {
+                const volunteer = row.dataset.volunteer;
+                const priority = row.dataset.priority;
+                let show = true;
+
+                if (volunteerFilter && volunteer !== volunteerFilter) show = false;
+                if (priorityFilter && priority !== priorityFilter) show = false;
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('volunteerFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            applyFilters();
+        }
+
+        // Aprobar horas
+        function approveHours(hoursId, volunteerName) {
+            if (!confirm(`¿Aprobar horas de ${volunteerName}?`)) return;
+
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch('@Url.Action("ApproveHours")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `hoursId=${hoursId}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    showAlert('Horas aprobadas exitosamente', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Error al aprobar');
+                }
+            })
+            .catch(error => {
+                showAlert('Error al aprobar las horas', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+            });
+        }
+
+        // Rechazar horas
+        function showRejectModal(hoursId, volunteerName) {
+            currentHoursId = hoursId;
+            document.getElementById('rejectVolunteerName').textContent = volunteerName;
+            document.getElementById('rejectReason').value = '';
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        document.getElementById('confirmRejectBtn').addEventListener('click', function() {
+            const reason = document.getElementById('rejectReason').value.trim();
+
+            if (!reason) {
+                showAlert('Debe proporcionar un motivo', 'warning');
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rechazando...';
+
+            fetch('@Url.Action("RejectHours")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `hoursId=${currentHoursId}&reason=${encodeURIComponent(reason)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    showAlert('Horas rechazadas exitosamente', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Error al rechazar');
+                }
+            })
+            .catch(error => {
+                showAlert('Error al rechazar las horas', 'danger');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.innerHTML = 'Rechazar';
+            });
+        });
+
+        // Ver detalles
+        function showDetails(volunteerName, date, startTime, endTime, activities, notes) {
+            const parsedActivities = JSON.parse(activities);
+            const parsedNotes = notes && notes !== 'null' ? JSON.parse(notes) : '';
+
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="mb-3">
+                    <strong>Voluntario:</strong> ${volunteerName}<br>
+                    <strong>Fecha:</strong> ${date}<br>
+                    <strong>Horario:</strong> ${startTime} - ${endTime}
+                </div>
+                <div class="mb-3">
+                    <strong>Actividades:</strong>
+                    <div class="bg-light p-2 rounded mt-1">${parsedActivities}</div>
+                </div>
+                ${parsedNotes ? `
+                <div>
+                    <strong>Notas:</strong>
+                    <div class="bg-light p-2 rounded mt-1">${parsedNotes}</div>
+                </div>
+                ` : ''}
+            `;
+
+            new bootstrap.Modal(document.getElementById('detailsModal')).show();
+        }
+
+        // Alertas
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+    </script>
+}

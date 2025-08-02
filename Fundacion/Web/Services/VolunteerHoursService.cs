@@ -27,6 +27,31 @@ namespace Web.Services
                     return validationResult;
                 }
 
+                // Obtener la solicitud para validar remaining hours
+                var requestResult = await _apiClient.GetAsync<VolunteerRequestDto>($"VolunteerRequest/{model.RequestId}");
+                if (!requestResult.IsSuccess || requestResult.Value == null)
+                {
+                    return Result.Failure("No se pudo obtener la solicitud de voluntariado para validar horas.");
+                }
+
+                var requestDto = requestResult.Value;
+
+                if (requestDto.State != VolunteerState.Approved)
+                {
+                    return Result.Failure("Solo se pueden registrar horas para solicitudes aprobadas.");
+                }
+
+                if (requestDto.RemainingHours <= 0)
+                {
+                    return Result.Failure("No quedan horas disponibles en esta solicitud.");
+                }
+
+                var toAdd = (decimal)(model.EndTime - model.StartTime).TotalHours;
+                if (toAdd > requestDto.RemainingHours)
+                {
+                    return Result.Failure($"No puedes registrar más de {requestDto.RemainingHours:F1} horas restantes.");
+                }
+
                 var dto = new CreateVolunteerHoursDto
                 {
                     VolunteerRequestId = model.RequestId,
@@ -331,9 +356,6 @@ namespace Web.Services
         }
 
         // ===== ESTADÍSTICAS Y REPORTES =====
-       
-
-        
 
         // ===== BÚSQUEDA Y FILTRADO =====
         public async Task<List<VolunteerHoursDto>> SearchHoursAsync(int requestId, string searchTerm = null, VolunteerState? state = null, DateTime? startDate = null, DateTime? endDate = null)
@@ -419,8 +441,6 @@ namespace Web.Services
             return firstWeek.AddDays((weekNumber - 1) * 7);
         }
 
-      
-
         public async Task<TimeSpan> GetAverageWorkTimeAsync(int requestId)
         {
             try
@@ -448,5 +468,4 @@ namespace Web.Services
             }
         }
     }
-
 }

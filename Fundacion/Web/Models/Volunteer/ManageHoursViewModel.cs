@@ -9,18 +9,31 @@ namespace Web.Models.Volunteer
         public List<VolunteerHoursDto> HoursList { get; set; } = new();
         public bool CanAddMore { get; set; } = true;
 
+        // Horas solicitadas desde la solicitud original
+        public decimal TotalHoursRequested { get; set; }
+
         // Estadísticas rápidas
         public decimal TotalHoursWorked => HoursList.Sum(h => h.TotalHours);
-        public decimal TotalHoursApproved => HoursList.Where(h => h.State == Shared.Enums.VolunteerState.Approved).Sum(h => h.TotalHours);
-        public decimal TotalHoursPending => HoursList.Where(h => h.State == Shared.Enums.VolunteerState.Pending).Sum(h => h.TotalHours);
-        public int TotalDaysWorked => HoursList.Select(h => h.Date.Date).Distinct().Count();
+        public decimal TotalHoursApproved => HoursList
+            .Where(h => h.State == Shared.Enums.VolunteerState.Approved)
+            .Sum(h => h.TotalHours);
+        public decimal TotalHoursPending => HoursList
+            .Where(h => h.State == Shared.Enums.VolunteerState.Pending)
+            .Sum(h => h.TotalHours);
+        public int TotalDaysWorked => HoursList
+            .Select(h => h.Date.Date)
+            .Distinct()
+            .Count();
+
+        // Horas restantes (calculadas)
+        public decimal RemainingHours => TotalHoursRequested - TotalHoursApproved;
 
         // Filtros
         public DateTime? FilterStartDate { get; set; }
         public DateTime? FilterEndDate { get; set; }
         public string? FilterState { get; set; }
 
-        // Para paginación
+        // Paginación
         public int CurrentPage { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public int TotalRecords => HoursList.Count;
@@ -46,7 +59,9 @@ namespace Web.Models.Volunteer
         private static int GetWeekOfYear(DateTime date)
         {
             var culture = System.Globalization.CultureInfo.CurrentCulture;
-            return culture.Calendar.GetWeekOfYear(date, culture.DateTimeFormat.CalendarWeekRule, culture.DateTimeFormat.FirstDayOfWeek);
+            return culture.Calendar.GetWeekOfYear(date,
+                culture.DateTimeFormat.CalendarWeekRule,
+                culture.DateTimeFormat.FirstDayOfWeek);
         }
     }
 }
