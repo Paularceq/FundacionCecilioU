@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shared.Dtos.Becas;
 using System.Net.Http.Headers;
 using Web.Models.Becas;
 
@@ -53,8 +54,7 @@ namespace Web.Controllers
             var errorMsg = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
-                return RedirectToAction("Gracias");
-
+                return RedirectToAction("VerBecas");
             //ModelState.AddModelError("", "Ocurrió un error al enviar la solicitud.");
             ModelState.AddModelError("", $"Ocurrió un error al enviar la solicitud: ");
             return View(model);
@@ -67,30 +67,58 @@ namespace Web.Controllers
             await archivo.CopyToAsync(ms);
             return ms.ToArray();
         }
+        [HttpGet]
+        public async Task<IActionResult> VerBecas()
+        {
+            var cliente = _httpClientFactory.CreateClient("API");
+            var response = await cliente.GetAsync("SolicitudesBeca");
 
-        //private async Task<string> GuardarArchivo(IFormFile archivo, string subcarpeta)
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "No se pudieron cargar las solicitudes.";
+                return View(new List<SolicitudBecaViewModel>());
+            }
+
+            var solicitudesDto = await response.Content.ReadFromJsonAsync<List<SolicitudBecaDto>>();
+
+            var solicitudesViewModel = solicitudesDto.Select(dto => new SolicitudBecaViewModel
+            {
+                CedulaEstudiante = dto.CedulaEstudiante,
+                NombreEstudiante = dto.NombreEstudiante,
+                CorreoContacto = dto.CorreoContacto,
+                TelefonoContacto = dto.TelefonoContacto,
+                Direccion = dto.Direccion,
+                Colegio = dto.Colegio,
+                NivelEducativo = dto.NivelEducativo,
+                Estado = dto.Estado,
+                CartaConsentimientoBytes = dto.CartaConsentimiento,
+                CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
+                CartaNotasBytes = dto.CartaNotas,
+                CartaNotasContentType = dto.CartaNotasContentType
+            }).ToList();
+
+            return View(solicitudesViewModel);
+        }
+        //[HttpGet]
+        //public IActionResult VerBecas()
         //{
-        //    if (archivo == null || archivo.Length == 0)
-        //        return null;
+        //    // Aquí podrías obtener las solicitudes desde tu API o base de datos
+        //    // Por ejemplo, si usás una API:
+        //    var cliente = _httpClientFactory.CreateClient("API");
+        //    var response = cliente.GetAsync("SolicitudesBeca").Result;
 
-        //    var uploads = Path.Combine(_env.WebRootPath, "uploads", subcarpeta);
-        //    Directory.CreateDirectory(uploads);
-
-        //    var fileName = $"{Guid.NewGuid()}_{archivo.FileName}";
-        //    var filePath = Path.Combine(uploads, fileName);
-
-        //    using (var stream = new FileStream(filePath, FileMode.Create))
+        //    if (!response.IsSuccessStatusCode)
         //    {
-        //        await archivo.CopyToAsync(stream);
+        //        ViewBag.Error = "No se pudieron cargar las solicitudes.";
+        //        return View(new List<SolicitudBecaViewModel>());
         //    }
 
-        //    // Ruta relativa para guardar en la base
-        //    return $"/uploads/{subcarpeta}/{fileName}";
+        //    var solicitudes = response.Content.ReadFromJsonAsync<List<SolicitudBecaViewModel>>().Result;
+        //    return View(solicitudes);
         //}
 
-        public IActionResult Gracias()
-        {
-            return View();
-        }
+        //private async Task<string> GuardarArchivo(IFormFile archivo, string subcarpeta)
+
+
     }
 }

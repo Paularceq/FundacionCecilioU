@@ -23,7 +23,26 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var solicitudes = await _context.SolicitudesBeca.ToListAsync();
+            var solicitudes = await _context.SolicitudesBeca
+    .Select(s => new SolicitudBecaDto
+    {
+        CedulaEstudiante = s.CedulaEstudiante,
+        NombreEstudiante = s.NombreEstudiante,
+        CorreoContacto = s.CorreoContacto,
+        TelefonoContacto = s.TelefonoContacto,
+        Direccion = s.Direccion,
+        Colegio = s.Colegio,
+        NivelEducativo = s.NivelEducativo,
+        CartaConsentimiento = s.CartaConsentimiento,
+        CartaConsentimientoContentType = s.CartaConsentimientoContentType,
+        CartaNotas = s.CartaNotas,
+        CartaNotasContentType = s.CartaNotasContentType,
+        FechaSolicitud = s.FechaSolicitud,
+        Estado = s.Estado.ToString(),
+        EsFormularioManual = s.EsFormularioManual
+    })
+    .ToListAsync();
+
             return Ok(solicitudes);
         }
 

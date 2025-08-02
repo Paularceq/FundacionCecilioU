@@ -10,9 +10,9 @@ namespace Web.Models.Becas
         [Display(Name = "Cedula del estudiante")]
         public string CedulaEstudiante { get; set; }
 
-        [Required (ErrorMessage = "Se requiere el nombre del estudiante")]
+        [Required(ErrorMessage = "Se requiere el nombre del estudiante")]
         [StringLength(100)]
-        [Display (Name = "Nombre del Estudiante")]
+        [Display(Name = "Nombre del Estudiante")]
         public string NombreEstudiante { get; set; }
 
 
@@ -40,9 +40,16 @@ namespace Web.Models.Becas
 
         public IFormFile CartaNotas { get; set; }
 
+        public byte[] CartaConsentimientoBytes { get; set; }
+        public string CartaConsentimientoContentType { get; set; }
+
+        public byte[] CartaNotasBytes { get; set; }
+        public string CartaNotasContentType { get; set; }
+
         [Display(Name = "Comentario")]
         public string ComentarioAdministrador { get; set; }
 
         public string Estado { get; set; } = "Pendiente";
+
     }
 }
