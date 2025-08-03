@@ -139,8 +139,9 @@ namespace Api.Database.Repositories
             var hours = await GetVolunteerHoursAsync(hoursId);
             if (hours != null)
             {
-               
-                await UpdateVolunteerHoursAsync(hours);
+
+                _context.VolunteerHours.Remove(hours);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -259,5 +260,6 @@ namespace Api.Database.Repositories
                             vh.State == VolunteerState.Approved)
                 .MaxAsync(vh => (DateTime?)vh.Date);
         }
+
     }
 }

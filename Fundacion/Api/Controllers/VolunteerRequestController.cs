@@ -19,7 +19,6 @@ namespace Api.Controllers
         }
 
         // ===== VOLUNTARIO =====
-
         // Obtener todas las solicitudes de un voluntario
         [HttpGet("Volunteer/{volunteerId}")]
         public async Task<IActionResult> GetVolunteerRequests(int volunteerId)
@@ -54,7 +53,6 @@ namespace Api.Controllers
         }
 
         // ===== ADMINISTRACIÓN =====
-
         // Todas las solicitudes
         [HttpGet]
         [Authorize(Roles = "AdminSistema")]
@@ -76,7 +74,7 @@ namespace Api.Controllers
         // Aprobar solicitud
         [HttpPost("{requestId}/approve")]
         [Authorize(Roles = "AdminSistema")]
-        public async Task<IActionResult> ApproveRequest(int requestId, [FromBody] ApproveRejectRequestDto dto)
+        public async Task<IActionResult> ApproveRequest(int requestId, [FromBody] ApproveRequestDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -103,13 +101,5 @@ namespace Api.Controllers
             return Ok();
         }
     }
-
-    // DTO auxiliar para aprobar (porque antes usabas int en body)
-    public class ApproveRejectRequestDto
-    {
-        public int ApproverId { get; set; }
-    }
 }
-
-
 

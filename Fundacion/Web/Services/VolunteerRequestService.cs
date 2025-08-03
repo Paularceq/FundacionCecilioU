@@ -1,5 +1,4 @@
-﻿
-using Shared.Dtos.Volunteer;
+﻿using Shared.Dtos.Volunteer;
 using Shared.Enums;
 using Shared.Models;
 using Web.Http;
@@ -76,7 +75,14 @@ namespace Web.Services
         {
             try
             {
-                return await _apiClient.PostAsync($"VolunteerRequest/{requestId}/approve", approverId);
+                // ✅ CORRECCIÓN: Crear el DTO correcto
+                var approveDto = new ApproveRequestDto
+                {
+                    ApproverId = approverId,
+                    ApproverName = "Administrador" // O puedes pasar el nombre real como parámetro
+                };
+
+                return await _apiClient.PostAsync($"VolunteerRequest/{requestId}/approve", approveDto);
             }
             catch (Exception ex)
             {
@@ -88,9 +94,11 @@ namespace Web.Services
         {
             try
             {
+                // ✅ CORRECCIÓN: Agregado ApproverName
                 var rejectDto = new RejectRequestDto
                 {
                     ApproverId = approverId,
+                    ApproverName = "Administrador", // Agregado campo faltante
                     Reason = reason
                 };
 
@@ -274,7 +282,7 @@ namespace Web.Services
                 {
                     searchTerm = searchTerm.ToLower();
                     filteredRequests = filteredRequests.Where(r =>
-                        r.VolunteerName.ToLower().Contains(searchTerm) ||
+                        r.VolunteerName != null && r.VolunteerName.ToLower().Contains(searchTerm) ||
                         r.Institution.ToLower().Contains(searchTerm) ||
                         r.Profession.ToLower().Contains(searchTerm) ||
                         r.Description.ToLower().Contains(searchTerm));
@@ -324,7 +332,49 @@ namespace Web.Services
             }
         }
 
-        
-        
+        // ===== MÉTODOS MEJORADOS CON NOMBRES DE APROBADORES =====
+
+        /// <summary>
+        /// Método mejorado que acepta el nombre del aprobador
+        /// </summary>
+        public async Task<Result> ApproveRequestAsync(int requestId, int approverId, string approverName)
+        {
+            try
+            {
+                var approveDto = new ApproveRequestDto
+                {
+                    ApproverId = approverId,
+                    ApproverName = approverName
+                };
+
+                return await _apiClient.PostAsync($"VolunteerRequest/{requestId}/approve", approveDto);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al aprobar la solicitud: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Método mejorado que acepta el nombre del aprobador
+        /// </summary>
+        public async Task<Result> RejectRequestAsync(int requestId, int approverId, string approverName, string reason)
+        {
+            try
+            {
+                var rejectDto = new RejectRequestDto
+                {
+                    ApproverId = approverId,
+                    ApproverName = approverName,
+                    Reason = reason
+                };
+
+                return await _apiClient.PostAsync($"VolunteerRequest/{requestId}/reject", rejectDto);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al rechazar la solicitud: {ex.Message}");
+            }
+        }
     }
 }

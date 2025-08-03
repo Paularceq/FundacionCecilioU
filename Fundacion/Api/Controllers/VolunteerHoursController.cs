@@ -29,7 +29,7 @@ namespace Api.Controllers
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Horas registradas correctamente" });
         }
 
         [HttpGet("request/{requestId}")]
@@ -45,6 +45,9 @@ namespace Api.Controllers
         [HttpGet("request/{requestId}/date-range")]
         public async Task<IActionResult> GetHoursByDateRange(int requestId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
+            if (startDate > endDate)
+                return BadRequest(new { errors = new[] { "La fecha de inicio no puede ser mayor a la fecha de fin" } });
+
             var result = await _volunteerRequestService.GetHoursByDateRangeAsync(requestId, startDate, endDate);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
@@ -62,7 +65,7 @@ namespace Api.Controllers
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Horas actualizadas correctamente" });
         }
 
         [HttpDelete("{hoursId}")]
@@ -72,7 +75,7 @@ namespace Api.Controllers
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Horas eliminadas correctamente" });
         }
 
         // ===== APROBACIÓN DE HORAS =====
@@ -83,19 +86,21 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // ✅ Crear el DTO que espera el servicio
             var approveDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
                 IsApproved = true,
                 ApproverId = dto.ApproverId,
-                ApproverName = dto.ApproverName
+                ApproverName = dto.ApproverName,
+                RejectionReason = null // No aplica para aprobación
             };
 
             var result = await _volunteerRequestService.ApproveHoursAsync(approveDto);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Horas aprobadas correctamente" });
         }
 
         [HttpPost("{hoursId}/reject")]
@@ -105,28 +110,39 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (string.IsNullOrWhiteSpace(dto.RejectionReason))
+                return BadRequest(new { errors = new[] { "Debe proporcionar una razón para el rechazo" } });
+
+            // ✅ Crear el DTO que espera el servicio
             var rejectDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
                 IsApproved = false,
-                RejectionReason = dto.RejectionReason,
                 ApproverId = dto.ApproverId,
-                ApproverName = dto.ApproverName
+                ApproverName = dto.ApproverName,
+                RejectionReason = dto.RejectionReason
             };
 
             var result = await _volunteerRequestService.RejectHoursAsync(rejectDto);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Horas rechazadas correctamente" });
         }
 
         [HttpGet("pending")]
         [Authorize(Roles = Roles.AdminSistema)]
         public async Task<IActionResult> GetPendingHours()
         {
-            var hours = await _volunteerRequestService.GetPendingHoursAsync();
-            return Ok(hours);
+            try
+            {
+                var hours = await _volunteerRequestService.GetPendingHoursAsync();
+                return Ok(hours);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { errors = new[] { $"Error al obtener horas pendientes: {ex.Message}" } });
+            }
         }
 
         // ===== VALIDACIONES =====
@@ -137,7 +153,11 @@ namespace Api.Controllers
                 return BadRequest(ModelState);
 
             var result = await _volunteerRequestService.ValidateHoursAsync(dto);
-            return Ok(new { isValid = result.IsSuccess, errors = result.Errors });
+            return Ok(new
+            {
+                isValid = result.IsSuccess,
+                errors = result.Errors
+            });
         }
     }
 }
