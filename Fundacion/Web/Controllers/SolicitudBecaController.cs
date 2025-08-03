@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shared.Dtos.Becas;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using Web.Http;
 using Web.Models.Becas;
 
 namespace Web.Controllers
@@ -99,6 +101,82 @@ namespace Web.Controllers
             }).ToList();
 
             return View(solicitudesViewModel);
+        }
+
+        // GET: /SolicitudesBeca/TomarDecision/12345678
+        public async Task<IActionResult> TomarDecision(string cedula)
+        {
+            var cliente = _httpClientFactory.CreateClient("API");
+
+            var httpRes = await cliente.GetAsync($"/api/SolicitudesBeca/cedula/{cedula}");
+            var body = await httpRes.Content.ReadAsStringAsync();
+            Console.WriteLine($"[API CALL] Status: {httpRes.StatusCode}, Body: {body}");
+
+            if (!httpRes.IsSuccessStatusCode)
+            {
+                TempData["Error"] = $"API error ({httpRes.StatusCode}): {body}";
+                return RedirectToAction("VerBecas");
+            }
+
+            var response = JsonSerializer.Deserialize<SolicitudBecaDto>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            //var response = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"api/SolicitudesBeca/cedula/{cedula}");
+            if (response == null)
+            {
+                TempData["Error"] = "No se encontró la solicitud.";
+                return RedirectToAction("Index");
+            }
+
+            var model = new SolicitudBecaViewModel
+            {
+                CedulaEstudiante = response.CedulaEstudiante,
+                NombreEstudiante = response.NombreEstudiante,
+                CorreoContacto = response.CorreoContacto,
+                TelefonoContacto = response.TelefonoContacto,
+                Direccion = response.Direccion,
+                Colegio = response.Colegio,
+                NivelEducativo = response.NivelEducativo,
+                Estado = response.Estado,
+                MontoAsignado = response.MontoAsignado,
+                CartaConsentimientoBytes = response.CartaConsentimiento,
+                CartaConsentimientoContentType = response.CartaConsentimientoContentType,
+                CartaNotasBytes = response.CartaNotas,
+                CartaNotasContentType = response.CartaNotasContentType
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarDecision(SolicitudBecaViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("TomarDecision", model);
+            }
+
+            var cliente = _httpClientFactory.CreateClient("API");
+
+            var dto = new SolicitudBecaDto
+            {
+                CedulaEstudiante = model.CedulaEstudiante,
+                Estado = model.Estado,
+                MontoAsignado = model.MontoAsignado
+            };
+
+            var response = await cliente.PutAsJsonAsync($"api/solicitudesbeca/decidir/{model.CedulaEstudiante}", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "La decisión se guardó correctamente.";
+                return RedirectToAction("VerBecas");
+            }
+
+            TempData["Error"] = "Hubo un error al guardar la decisión.";
+            return View("TomarDecision", model);
         }
         //[HttpGet]
         //public IActionResult VerBecas()

@@ -53,5 +53,6 @@ namespace Web.Models.Becas
 
         public string Estado { get; set; } = "Pendiente";
 
-    }
+       public decimal? MontoAsignado { get; set; }
+        }
 }

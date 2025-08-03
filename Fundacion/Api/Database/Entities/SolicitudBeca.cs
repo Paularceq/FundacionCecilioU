@@ -52,6 +52,9 @@ namespace Api.Database.Entities
 
         public EstadoSolicitud Estado { get; set; } = EstadoSolicitud.Pendiente;
 
+        [Range(0,double.MaxValue)]
+        public decimal? MontoAsignado { get; set; }
+
         [StringLength(500)]
         public string? ComentarioAdministrador { get; set; }
         public bool EsFormularioManual { get; set; }

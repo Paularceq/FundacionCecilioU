@@ -49,5 +49,7 @@ namespace Shared.Dtos.Becas
 
         public bool EsFormularioManual { get; set; } = false;
 
+        public decimal? MontoAsignado { get; set; }
+
     }
 }

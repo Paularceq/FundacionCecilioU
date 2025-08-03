@@ -56,9 +56,37 @@ namespace Api.Controllers
 
             return Ok(solicitud);
         }
+        [HttpGet("cedula/{cedula}")]
+        public async Task<ActionResult<SolicitudBecaDto>> GetByCedula(string cedula)
+        {
+            var s = await _context.SolicitudesBeca
+                .Where(x => x.CedulaEstudiante == cedula)
+                .Select(x => new SolicitudBecaDto
+                {
+                    CedulaEstudiante = x.CedulaEstudiante,
+                    NombreEstudiante = x.NombreEstudiante,
+                    CorreoContacto = x.CorreoContacto,
+                    TelefonoContacto = x.TelefonoContacto,
+                    Direccion = x.Direccion,
+                    Colegio = x.Colegio,
+                    NivelEducativo = x.NivelEducativo,
+                    CartaConsentimiento = x.CartaConsentimiento,
+                    CartaConsentimientoContentType = x.CartaConsentimientoContentType,
+                    CartaNotas = x.CartaNotas,
+                    CartaNotasContentType = x.CartaNotasContentType,
+                    FechaSolicitud = x.FechaSolicitud,
+                    Estado = x.Estado.ToString(),
+                    EsFormularioManual = x.EsFormularioManual
+                })
+                .FirstOrDefaultAsync();
+
+            if (s == null) return NotFound();
+            return Ok(s);
+        }
+
 
         // POST: api/SolicitudesBeca
-     
+
         [HttpPost]
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
@@ -101,6 +129,37 @@ namespace Api.Controllers
             _context.Entry(solicitud).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
+            return NoContent();
+        }
+
+        [HttpPut("decidir/{cedula}")]
+        public async Task<IActionResult> TomarDecision(
+     string cedula,
+     [FromBody] SolicitudBecaDto dto)
+        {
+            var solicitud = await _context.SolicitudesBeca
+                .FirstOrDefaultAsync(s => s.CedulaEstudiante == cedula);
+
+            if (solicitud == null)
+                return NotFound();
+
+            
+            if (!Enum.TryParse<EstadoSolicitud>(
+                    dto.Estado,
+                    ignoreCase: true,
+                    out var nuevoEstado))
+            {
+                ModelState.AddModelError(
+                    nameof(dto.Estado),
+                    $"Valor inválido para Estado: {dto.Estado}"
+                );
+                return BadRequest(ModelState);
+            }
+
+            solicitud.Estado = nuevoEstado;
+            solicitud.MontoAsignado = dto.MontoAsignado;
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 

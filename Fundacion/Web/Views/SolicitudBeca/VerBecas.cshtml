@@ -108,14 +108,18 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#"
-                                           class="dropdown-item decision-btn"
-                                           data-cedula="@item.CedulaEstudiante">
-                                            <i class="fas fa-gavel fa-fw me-2 text-secondary"></i>
-                                            Tomar una decisión
-                                        </a>
+                                          <a href="#"
+                                               class="dropdown-item decision-btn"
+                                                data-cedula="@item.CedulaEstudiante">
+                                              <a asp-action="TomarDecision"
+                                                    asp-route-cedula="@item.CedulaEstudiante"
+                                                    class="dropdown-item">
+                                                <i class="fas fa-gavel fa-fw me-2 text-secondary"></i>
+                                                Tomar una decisión
+                                            </a>
                                     </li>
                                 </ul>
+
                             </div>
                         </td>
                     </tr>
@@ -135,49 +139,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Botón de ver detalles
-            document.querySelectorAll(".view-details-btn").forEach(btn => {
-                btn.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    const id = this.getAttribute("data-id");
-                    fetch(`@Url.Action("DetailsPartial", "Becas")?id=${id}`)
-                        .then(res => res.text())
-                        .then(html => {
-                            document.getElementById("modalContent").innerHTML = html;
-                            new bootstrap.Modal(document.getElementById("detailsModal")).show();
-                        });
-                });
-            });
-
-            // Botón de eliminar
-            document.querySelectorAll(".delete-btn").forEach(btn => {
-                btn.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    const id = this.getAttribute("data-id");
-
-                    if (confirm("¿Estás seguro de que deseas eliminar esta solicitud?")) {
-                        fetch(`/api/SolicitudesBeca/${id}`, {
-                            method: "DELETE"
-                        })
-                        .then(res => {
-                            if (res.status === 204) {
-                                const row = this.closest("tr");
-                                if (row) row.remove();
-                            } else if (res.status === 404) {
-                                alert("La solicitud no fue encontrada.");
-                            } else {
-                                alert("Ocurrió un error al eliminar.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            alert("Error de conexión con el servidor.");
-                        });
-                    }
-                });
-            });
-        });
-    </script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }
