@@ -5,6 +5,7 @@ namespace Shared.Dtos.Becas
 {
     public class SolicitudBecaDto
     {
+        public int Id { get; set; }
         [Required]
         [StringLength(20)]
         public string CedulaEstudiante { get; set; }

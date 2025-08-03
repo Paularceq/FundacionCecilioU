@@ -105,17 +105,18 @@ namespace Api.Controllers
         }
 
         // DELETE: api/SolicitudesBeca/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var solicitud = await _context.SolicitudesBeca.FindAsync(id);
-            if (solicitud == null)
-                return NotFound();
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Eliminar(int id)
+        //{
+        //    var solicitud = await _context.SolicitudesBeca.FindAsync(id);
+        //    if (solicitud == null)
+        //        return NotFound();
 
-            _context.SolicitudesBeca.Remove(solicitud);
-            await _context.SaveChangesAsync();
+        //    _context.SolicitudesBeca.Remove(solicitud);
+        //    await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
+
     }
 }

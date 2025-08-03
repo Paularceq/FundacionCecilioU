@@ -5,6 +5,8 @@ namespace Web.Models.Becas
 {
     public class SolicitudBecaViewModel
     {
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "Se requiere la Cedula del estudiante")]
         [StringLength(20)]
         [Display(Name = "Cedula del estudiante")]

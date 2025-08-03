@@ -83,6 +83,7 @@ namespace Web.Controllers
 
             var solicitudesViewModel = solicitudesDto.Select(dto => new SolicitudBecaViewModel
             {
+               Id = dto.Id,
                 CedulaEstudiante = dto.CedulaEstudiante,
                 NombreEstudiante = dto.NombreEstudiante,
                 CorreoContacto = dto.CorreoContacto,
