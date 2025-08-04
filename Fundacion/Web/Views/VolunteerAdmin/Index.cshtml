@@ -102,6 +102,7 @@
         .action-buttons {
             display: flex;
             gap: 0.5rem;
+            justify-content: center;
         }
 
         .quick-approve {
@@ -142,24 +143,21 @@
                 <i class="fas fa-users-cog me-2"></i> Administración de Solicitudes de Voluntariado
             </h1>
             <div>
-                <a asp-action="Reports" class="btn btn-info me-2">
-                    <i class="fas fa-chart-bar me-2"></i> Ver Reportes
-                </a>
                 <a asp-action="PendingHours" class="btn btn-warning">
-                    <i class="fas fa-clock me-2"></i> Horas Pendientes (@Model.PendingHoursApprovals)
+                    <i class="fas fa-clock me-2"></i> Horas Pendientes (@Model.PendingHoursCount)
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Estadísticas -->
+    <!-- Estadísticas básicas según requerimientos -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="stats-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-primary mb-1">@Model.TotalVolunteers</h3>
-                        <p class="text-muted mb-0">Total Voluntarios</p>
+                        <h3 class="text-primary mb-1">@Model.TotalActiveVolunteers</h3>
+                        <p class="text-muted mb-0">Voluntarios Activos</p>
                     </div>
                     <div class="text-primary">
                         <i class="fas fa-users fa-2x"></i>
@@ -171,8 +169,8 @@
             <div class="stats-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-warning mb-1">@Model.PendingApprovals</h3>
-                        <p class="text-muted mb-0">Pendientes</p>
+                        <h3 class="text-warning mb-1">@Model.PendingRequestsCount</h3>
+                        <p class="text-muted mb-0">Solicitudes Pendientes</p>
                     </div>
                     <div class="text-warning">
                         <i class="fas fa-hourglass-half fa-2x"></i>
@@ -184,8 +182,8 @@
             <div class="stats-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-info mb-1">@Model.TotalHoursThisMonth.ToString("N0")</h3>
-                        <p class="text-muted mb-0">Horas Este Mes</p>
+                        <h3 class="text-info mb-1">@Model.PendingHoursCount</h3>
+                        <p class="text-muted mb-0">Horas Pendientes</p>
                     </div>
                     <div class="text-info">
                         <i class="fas fa-clock fa-2x"></i>
@@ -198,7 +196,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h3 class="text-success mb-1">@Model.ApprovedRequests.Count</h3>
-                        <p class="text-muted mb-0">Aprobadas</p>
+                        <p class="text-muted mb-0">Solicitudes Aprobadas</p>
                     </div>
                     <div class="text-success">
                         <i class="fas fa-check-circle fa-2x"></i>
@@ -208,13 +206,13 @@
         </div>
     </div>
 
-    <!-- Filtros -->
+    <!-- Filtros según requerimientos: Ver todas, pendientes, aprobadas y rechazadas -->
     <div class="filter-tabs">
         <ul class="nav nav-pills">
             <li class="nav-item">
                 <a class="nav-link @(currentFilter == "all" ? "active" : "")"
                    asp-action="Index" asp-route-filter="all">
-                    <i class="fas fa-list me-1"></i> Todas (@(Model.PendingRequests.Count + Model.ApprovedRequests.Count))
+                    <i class="fas fa-list me-1"></i> Todas (@(Model.PendingRequests.Count + Model.ApprovedRequests.Count + Model.RejectedRequests.Count))
                 </a>
             </li>
             <li class="nav-item">
@@ -232,7 +230,7 @@
             <li class="nav-item">
                 <a class="nav-link @(currentFilter == "rejected" ? "active" : "")"
                    asp-action="Index" asp-route-filter="rejected">
-                    <i class="fas fa-times me-1"></i> Rechazadas
+                    <i class="fas fa-times me-1"></i> Rechazadas (@Model.RejectedRequests.Count)
                 </a>
             </li>
         </ul>
@@ -242,6 +240,15 @@
     <div class="table-wrapper">
         @if (filteredRequests.Any())
         {
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>Solicitudes (@filteredRequests.Count)
+                </h5>
+                <div class="text-muted small">
+                    Filtro: <strong>@GetFilterText(currentFilter)</strong>
+                </div>
+            </div>
+
             <table class="table table-bordered table-hover align-middle">
                 <thead>
                     <tr>
@@ -265,7 +272,7 @@
                             </td>
                             <td>
                                 <div>
-                                    <strong>@request.VolunteerName</strong>
+                                    <strong>@(request.VolunteerName ?? "N/A")</strong>
                                     <br><small class="text-muted">ID: @request.VolunteerId</small>
                                 </div>
                             </td>
@@ -276,7 +283,15 @@
                                 <span class="badge bg-secondary">@request.Profession</span>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-info">@request.Hours h</span>
+                                <div>
+                                    <span class="badge bg-info">@request.Hours h</span>
+                                    @if (request.State == Shared.Enums.VolunteerState.Approved)
+                                    {
+                                        <br>
+                            
+                                        <small class="text-muted">@request.HoursWorked.ToString("N1")h trabajadas</small>
+                                    }
+                                </div>
                             </td>
                             <td>
                                 <div>
@@ -285,7 +300,7 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                @Html.Raw(GetStateBadge(request.State))
+                                @Html.Raw(GetStateBadge(request.State, request.RejectionReason))
                             </td>
                             <td class="text-center">
                                 @if (request.State == Shared.Enums.VolunteerState.Pending)
@@ -293,38 +308,37 @@
                                     <div class="action-buttons">
                                         <button class="btn quick-approve"
                                                 onclick="quickApprove(@request.Id)"
-                                                title="Aprobar rápido">
+                                                title="Aprobar solicitud">
                                             <i class="fas fa-check"></i>
                                         </button>
                                         <button class="btn quick-reject"
                                                 onclick="showRejectModal(@request.Id, '@request.VolunteerName')"
-                                                title="Rechazar">
+                                                title="Rechazar solicitud">
                                             <i class="fas fa-times"></i>
                                         </button>
+                                        <a class="btn btn-info btn-sm"
+                                           asp-action="Details" asp-route-id="@request.Id"
+                                           title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                     </div>
                                 }
                                 else
                                 {
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-vertical fa-fw"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@request.Id">
-                                                    <i class="fas fa-eye me-2 text-secondary"></i>Ver Detalles
-                                                </a>
-                                            </li>
-                                            @if (request.State == Shared.Enums.VolunteerState.Approved)
-                                            {
-                                                <li>
-                                                    <a class="dropdown-item"
-                                                       asp-controller="Volunteer" asp-action="Dashboard" asp-route-requestId="@request.Id">
-                                                        <i class="fas fa-chart-pie me-2 text-info"></i>Ver Dashboard
-                                                    </a>
-                                                </li>
-                                            }
-                                        </ul>
+                                    <div class="action-buttons">
+                                        <a class="btn btn-info btn-sm"
+                                           asp-action="Details" asp-route-id="@request.Id"
+                                           title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (request.State == Shared.Enums.VolunteerState.Approved)
+                                        {
+                                            <a class="btn btn-outline-primary btn-sm"
+                                               asp-controller="VolunteerRequest" asp-action="ManageHours" asp-route-requestId="@request.Id"
+                                               title="Gestionar horas">
+                                                <i class="fas fa-clock"></i>
+                                            </a>
+                                        }
                                     </div>
                                 }
                             </td>
@@ -337,7 +351,7 @@
         {
             <div class="text-center py-5">
                 <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
-                <h5>No hay solicitudes @(currentFilter == "all" ? "" : GetFilterText(currentFilter))</h5>
+                <h5>No hay solicitudes @GetFilterText(currentFilter)</h5>
                 <p class="text-muted">
                     @if (currentFilter == "pending")
                     {
@@ -361,7 +375,7 @@
     </div>
 </div>
 
-<!-- Modal para Rechazo -->
+<!-- Modal para Rechazo según requerimientos -->
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -376,8 +390,9 @@
                 <div class="mb-3">
                     <label for="rejectionReason" class="form-label">Razón del rechazo <span class="text-danger">*</span></label>
                     <textarea id="rejectionReason" class="form-control" rows="3"
-                              placeholder="Explique claramente por qué se rechaza la solicitud..." required></textarea>
-                    <div class="form-text">Esta razón será visible para el voluntario.</div>
+                              placeholder="Explique claramente por qué se rechaza la solicitud..."
+                              required minlength="10" maxlength="500"></textarea>
+                    <div class="form-text">Esta razón será visible para el voluntario. Mínimo 10 caracteres.</div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -391,12 +406,12 @@
 </div>
 
 @functions {
-    string GetStateBadge(Shared.Enums.VolunteerState state)
+    string GetStateBadge(Shared.Enums.VolunteerState state, string rejectionReason = null)
     {
         return state switch
         {
             Shared.Enums.VolunteerState.Approved => "<span class=\"badge bg-success\"><i class=\"fas fa-check\"></i> Aprobada</span>",
-            Shared.Enums.VolunteerState.Rejected => "<span class=\"badge bg-danger\"><i class=\"fas fa-times\"></i> Rechazada</span>",
+            Shared.Enums.VolunteerState.Rejected => $"<span class=\"badge bg-danger\" title=\"{rejectionReason}\"><i class=\"fas fa-times\"></i> Rechazada</span>",
             Shared.Enums.VolunteerState.Pending => "<span class=\"badge bg-warning\"><i class=\"fas fa-clock\"></i> Pendiente</span>",
             _ => "<span class=\"badge bg-secondary\">Desconocido</span>"
         };
@@ -420,6 +435,7 @@
             "pending" => "pendientes",
             "approved" => "aprobadas",
             "rejected" => "rechazadas",
+            "all" => "disponibles",
             _ => ""
         };
     }
@@ -439,14 +455,13 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             }
 
-            const approverId = parseInt('@currentApproverId');
             fetch(`@Url.Action("QuickApprove")`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
-                body: `id=${requestId}&approverId=${approverId}`
+                body: `id=${requestId}`
             })
             .then(async response => {
                 const data = await response.json();
@@ -471,7 +486,7 @@
 
         function showRejectModal(requestId, volunteerName) {
             currentRequestId = requestId;
-            document.getElementById('volunteerName').textContent = volunteerName;
+            document.getElementById('volunteerName').textContent = volunteerName || 'N/A';
             document.getElementById('rejectionReason').value = '';
             new bootstrap.Modal(document.getElementById('rejectModal')).show();
         }
@@ -482,11 +497,13 @@
 
             if (!reason) {
                 showAlert('Debe proporcionar una razón para el rechazo', 'warning');
+                reasonEl?.focus();
                 return;
             }
 
             if (reason.length < 10) {
                 showAlert('La razón debe tener al menos 10 caracteres', 'warning');
+                reasonEl?.focus();
                 return;
             }
 
@@ -501,7 +518,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
-                body: `id=${currentRequestId}&reason=${encodeURIComponent(reason)}&approverId=${parseInt('@currentApproverId')}`
+                body: `id=${currentRequestId}&reason=${encodeURIComponent(reason)}`
             })
             .then(async response => {
                 const data = await response.json();
@@ -515,7 +532,7 @@
             })
             .catch(error => {
                 console.error(error);
-                showAlert('Error al procesar la solicitud: ' + error.message, 'danger');
+                showAlert('Error al procesar el rechazo', 'danger');
             })
             .finally(() => {
                 btn.disabled = false;
@@ -525,27 +542,33 @@
 
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
             alertDiv.innerHTML = `
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            const container = document.querySelector('.container');
-            container?.insertBefore(alertDiv, container.firstChild);
+            document.body.appendChild(alertDiv);
             setTimeout(() => alertDiv.remove(), 5000);
         }
 
-        @if (Model.PendingApprovals > 0)
+        // Auto-refresh si hay solicitudes pendientes según requerimientos
+        @if (Model.PendingRequestsCount > 0)
         {
                 <text>
                 setInterval(() => {
-                    location.reload();
-                }, 30000);
+                    const currentTime = new Date().getTime();
+                    const lastReload = localStorage.getItem('lastAdminReload');
+                    if (!lastReload || currentTime - parseInt(lastReload) > 60000) { // 1 minuto
+                        localStorage.setItem('lastAdminReload', currentTime.toString());
+                        location.reload();
+                    }
+                }, 120000); // 2 minutos
                 </text>
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('AdminVolunteerView loaded');
+            console.log('AdminVolunteerView loaded - Pending:', @Model.PendingRequestsCount);
         });
     </script>
 }

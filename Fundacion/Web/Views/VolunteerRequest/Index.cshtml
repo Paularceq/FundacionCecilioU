@@ -1,8 +1,9 @@
-﻿@model List<Shared.Dtos.Volunteer.VolunteerRequestDto>
+﻿@model Web.Models.Volunteer.VolunteerRequestListViewModel
 @{
     ViewData["Title"] = "Mis Solicitudes de Voluntariado";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-    var canCreateNew = !Model.Any(r => r.State == Shared.Enums.VolunteerState.Pending || r.State == Shared.Enums.VolunteerState.Approved);
+    // CORREGIDO: Usar el ViewModel
+    var canCreateNew = Model.CanCreateNew;
 }
 
 @section Styles {
@@ -129,7 +130,7 @@
         </div>
     </div>
 
-    @if (Model.Any())
+    @if (Model.Requests.Any())
     {
         <!-- Estadísticas Rápidas -->
         <div class="row mb-4">
@@ -137,7 +138,7 @@
                 <div class="stats-card border-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-primary mb-1">@Model.Count</h3>
+                            <h3 class="text-primary mb-1">@Model.Requests.Count</h3>
                             <p class="text-muted mb-0">Total Solicitudes</p>
                         </div>
                         <div class="text-primary">
@@ -151,7 +152,7 @@
                 <div class="stats-card border-success">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-success mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Approved)</h3>
+                            <h3 class="text-success mb-1">@Model.Requests.Count(r => r.State == Shared.Enums.VolunteerState.Approved)</h3>
                             <p class="text-muted mb-0">Aprobadas</p>
                         </div>
                         <div class="text-success">
@@ -165,7 +166,7 @@
                 <div class="stats-card border-warning">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-warning mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Pending)</h3>
+                            <h3 class="text-warning mb-1">@Model.Requests.Count(r => r.State == Shared.Enums.VolunteerState.Pending)</h3>
                             <p class="text-muted mb-0">Pendientes</p>
                         </div>
                         <div class="text-warning">
@@ -181,7 +182,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="text-info mb-1">
-                                @Model.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.HoursWorked).ToString("N1")
+                                @Model.Requests.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.HoursWorked).ToString("N1")
                             </h4>
                             <p class="text-muted mb-0">Horas Trabajadas</p>
                         </div>
@@ -196,7 +197,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="text-secondary mb-1">
-                                @Model.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.RemainingHours).ToString("N1")
+                                @Model.Requests.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.RemainingHours).ToString("N1")
                             </h4>
                             <p class="text-muted mb-0">Horas Restantes</p>
                         </div>
@@ -225,7 +226,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var request in Model.OrderByDescending(r => r.CreatedAt))
+                    @foreach (var request in Model.Requests.OrderByDescending(r => r.CreatedAt))
                     {
                         <tr>
                             <td>
@@ -273,20 +274,18 @@
                                         @if (request.State == Shared.Enums.VolunteerState.Approved)
                                         {
                                             <li>
-                                                <a href="@Url.Action("Dashboard", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
-                                                    <i class="fas fa-chart-pie me-2 text-info"></i>Dashboard
-                                                </a>
-                                            </li>
-                                            <li>
                                                 <a href="@Url.Action("ManageHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
                                                     <i class="fas fa-clock me-2 text-success"></i>Gestionar Horas
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a href="@Url.Action("AddHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
-                                                    <i class="fas fa-plus me-2 text-primary"></i>Registrar Horas
-                                                </a>
-                                            </li>
+                                            @if (request.RemainingHours > 0)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("AddHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
+                                                        <i class="fas fa-plus me-2 text-primary"></i>Registrar Horas
+                                                    </a>
+                                                </li>
+                                            }
                                         }
                                         else if (request.State == Shared.Enums.VolunteerState.Rejected)
                                         {
@@ -314,7 +313,7 @@
         </div>
 
         <!-- Información adicional -->
-        @if (Model.Any(r => r.State == Shared.Enums.VolunteerState.Approved))
+        @if (Model.Requests.Any(r => r.State == Shared.Enums.VolunteerState.Approved))
         {
             <div class="mt-4">
                 <div class="alert alert-success">

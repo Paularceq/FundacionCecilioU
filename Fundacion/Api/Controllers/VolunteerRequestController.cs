@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dtos.Volunteer;
 using Shared.Enums;
+using System.Security.Claims;
 
 namespace Api.Controllers
 {
@@ -19,6 +20,7 @@ namespace Api.Controllers
         }
 
         // ===== VOLUNTARIO =====
+        
         // Obtener todas las solicitudes de un voluntario
         [HttpGet("Volunteer/{volunteerId}")]
         public async Task<IActionResult> GetVolunteerRequests(int volunteerId)
@@ -29,16 +31,31 @@ namespace Api.Controllers
 
         // Crear nueva solicitud (voluntario)
         [HttpPost]
-        public async Task<IActionResult> CreateVolunteerRequest([FromBody] VolunteerRequestDto volunteerRequestDto)
+        public async Task<IActionResult> CreateVolunteerRequest([FromBody] CreateVolunteerRequestDto createDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            // Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out int volunteerId))
+                return Unauthorized("No se pudo identificar al usuario");
+
+            // Crear DTO completo para el servicio
+            var volunteerRequestDto = new VolunteerRequestDto
+            {
+                VolunteerId = volunteerId,
+                Institution = createDto.Institution,
+                Profession = createDto.Profession,
+                Description = createDto.Description,
+                Hours = createDto.Hours
+            };
 
             var result = await _volunteerRequestService.CreateAsync(volunteerRequestDto);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Solicitud creada exitosamente" });
         }
 
         // Obtener solicitud por id (puede usarla voluntario o admin)
@@ -53,6 +70,7 @@ namespace Api.Controllers
         }
 
         // ===== ADMINISTRACIÓN =====
+        
         // Todas las solicitudes
         [HttpGet]
         [Authorize(Roles = "AdminSistema")]
@@ -83,7 +101,7 @@ namespace Api.Controllers
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Solicitud aprobada exitosamente" });
         }
 
         // Rechazar solicitud
@@ -98,8 +116,7 @@ namespace Api.Controllers
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
-            return Ok();
+            return Ok(new { message = "Solicitud rechazada exitosamente" });
         }
     }
 }
-

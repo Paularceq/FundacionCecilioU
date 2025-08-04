@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Constants;
 using Shared.Dtos.Volunteer;
+using System.Security.Claims;
 
 namespace Api.Controllers
 {
@@ -86,14 +87,21 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // ✅ Crear el DTO que espera el servicio
+            // Obtener approverId del usuario autenticado (más seguro)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(userIdClaim, out int authenticatedUserId))
+            {
+                dto.ApproverId = authenticatedUserId; // Sobrescribir por seguridad
+            }
+
+            // Crear el DTO que espera el servicio
             var approveDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
                 IsApproved = true,
                 ApproverId = dto.ApproverId,
                 ApproverName = dto.ApproverName,
-                RejectionReason = null // No aplica para aprobación
+                RejectionReason = null
             };
 
             var result = await _volunteerRequestService.ApproveHoursAsync(approveDto);
@@ -113,7 +121,14 @@ namespace Api.Controllers
             if (string.IsNullOrWhiteSpace(dto.RejectionReason))
                 return BadRequest(new { errors = new[] { "Debe proporcionar una razón para el rechazo" } });
 
-            // ✅ Crear el DTO que espera el servicio
+            // Obtener approverId del usuario autenticado (más seguro)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(userIdClaim, out int authenticatedUserId))
+            {
+                dto.ApproverId = authenticatedUserId; // Sobrescribir por seguridad
+            }
+
+            // Crear el DTO que espera el servicio
             var rejectDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,

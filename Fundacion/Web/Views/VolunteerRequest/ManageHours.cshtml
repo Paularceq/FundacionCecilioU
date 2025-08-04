@@ -52,6 +52,19 @@
                 background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
                 color: white;
             }
+
+        .progress-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hours-remaining {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
     </style>
 }
 
@@ -59,16 +72,62 @@
     <!-- Header -->
     <div class="mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-            <h1 class="h3 fw-bold text-primary">
-                <i class="fas fa-clock me-2"></i>Gestión de Horas - @Model.VolunteerName
-            </h1>
+            <div>
+                <h1 class="h3 fw-bold text-primary">
+                    <i class="fas fa-clock me-2"></i>Gestión de Horas - @Model.VolunteerName
+                </h1>
+                <p class="text-muted mb-0">@Model.Institution</p>
+            </div>
             <div>
                 <a asp-action="Index" class="btn btn-outline-secondary me-2">
                     <i class="fas fa-arrow-left me-2"></i>Volver a Solicitudes
                 </a>
-                <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
-                    <i class="fas fa-plus me-2"></i>Registrar Horas
-                </a>
+                @if (Model.CanAddMore)
+                {
+                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
+                        <i class="fas fa-plus me-2"></i>Registrar Horas
+                    </a>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" disabled title="No puedes agregar más horas">
+                        <i class="fas fa-plus me-2"></i>Registrar Horas
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Progreso y Horas Restantes -->
+    <div class="progress-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5><i class="fas fa-chart-line me-2 text-primary"></i>Progreso de Horas</h5>
+                <div class="progress mb-3" style="height: 20px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: @(Model.ProgressPercentage)%;"
+                         aria-valuenow="@Model.ProgressPercentage"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                        @Model.ProgressPercentage.ToString("N1")%
+                    </div>
+                </div>
+                <p class="mb-0">
+                    <strong>@Model.TotalHoursApproved.ToString("N1")</strong> de <strong>@Model.TotalHoursRequested</strong> horas completadas
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="@Model.StatusCssClass hours-remaining">
+                    <i class="fas fa-hourglass-half me-2"></i>@Model.StatusText
+                </div>
+                @if (Model.IsCompleted)
+                {
+                    <div class="mt-2">
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>¡Solicitud Completada!
+                        </span>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -77,8 +136,8 @@
     <div class="hours-summary">
         <div class="row text-center">
             <div class="col-md-3">
-                <h3 class="mb-1">@Model.TotalHoursWorked.ToString("N1")</h3>
-                <p class="mb-0">Horas Trabajadas</p>
+                <h3 class="mb-1">@Model.TotalHoursRequested</h3>
+                <p class="mb-0">Horas Solicitadas</p>
             </div>
             <div class="col-md-3">
                 <h3 class="mb-1">@Model.TotalHoursApproved.ToString("N1")</h3>
@@ -99,6 +158,15 @@
     <div class="table-wrapper">
         @if (Model.HoursList.Any())
         {
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>Registros de Horas (@Model.HoursList.Count)
+                </h5>
+                <div class="text-muted small">
+                    Total trabajado: <strong>@Model.TotalHoursWorked.ToString("N1")h</strong>
+                </div>
+            </div>
+
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
@@ -132,7 +200,6 @@
                                 @if (!string.IsNullOrEmpty(hours.Notes))
                                 {
                                     <br>
-                        
                                     <small class="text-muted">
                                         <i class="fas fa-sticky-note fa-xs"></i> Con notas
                                     </small>
@@ -150,6 +217,12 @@
                                     <span class="badge bg-success">
                                         <i class="fas fa-check"></i> Aprobada
                                     </span>
+                                    @if (hours.ApprovedAt.HasValue)
+                                    {
+                                        <br>
+                        
+                                        <small class="text-muted">@hours.ApprovedAt.Value.ToString("dd/MM/yyyy")</small>
+                                    }
                                 }
                                 else if (hours.State == Shared.Enums.VolunteerState.Rejected)
                                 {
@@ -161,7 +234,7 @@
                             <td class="text-center">
                                 <div class="btn-group" role="group">
                                     <button class="btn btn-info btn-sm"
-                                            onclick="showHoursDetails(@hours.Id, '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(Json.Serialize(hours.ActivitiesDescription))', '@Html.Raw(Json.Serialize(hours.Notes))', '@hours.RejectionReason')"
+                                            onclick="showHoursDetails(@hours.Id, '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(Json.Serialize(hours.ActivitiesDescription))', '@Html.Raw(Json.Serialize(hours.Notes))', '@hours.RejectionReason', '@hours.StateDescription')"
                                             title="Ver detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -192,9 +265,19 @@
                 <i class="fas fa-clock fa-5x text-muted mb-3"></i>
                 <h5>No hay registros de horas</h5>
                 <p class="text-muted">Comienza registrando tus primeras horas de voluntariado</p>
-                <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
-                    <i class="fas fa-plus me-2"></i>Registrar Primera Hora
-                </a>
+                @if (Model.CanAddMore)
+                {
+                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
+                        <i class="fas fa-plus me-2"></i>Registrar Primera Hora
+                    </a>
+                }
+                else
+                {
+                    <p class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No puedes agregar más horas en esta solicitud
+                    </p>
+                }
             </div>
         }
     </div>
@@ -222,13 +305,23 @@
 
 @section Scripts {
     <script>
-        function showHoursDetails(id, date, startTime, endTime, activities, notes, rejectionReason) {
+        function showHoursDetails(id, date, startTime, endTime, activities, notes, rejectionReason, state) {
             const modal = new bootstrap.Modal(document.getElementById('hoursDetailsModal'));
             const content = document.getElementById('hoursDetailsContent');
 
             const totalHours = calculateHours(startTime, endTime);
             const parsedActivities = JSON.parse(activities);
             const parsedNotes = notes ? JSON.parse(notes) : '';
+
+            // Determinar el estado y su estilo
+            let statusBadge = '';
+            if (state === 'Pendiente') {
+                statusBadge = '<span class="badge bg-warning"><i class="fas fa-hourglass-half"></i> Pendiente</span>';
+            } else if (state === 'Aprobado') {
+                statusBadge = '<span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>';
+            } else if (state === 'Rechazado') {
+                statusBadge = '<span class="badge bg-danger"><i class="fas fa-times"></i> Rechazado</span>';
+            }
 
             content.innerHTML = `
                 <div class="row">
@@ -241,7 +334,7 @@
                     </div>
                     <div class="col-md-6">
                         <h6><i class="fas fa-info-circle me-2 text-info"></i>Estado</h6>
-                        <div id="statusInfo"></div>
+                        <p>${statusBadge}</p>
                     </div>
                 </div>
                 <hr>
@@ -281,7 +374,7 @@
         }
 
         function deleteHours(hoursId, requestId) {
-            if (confirm('¿Está seguro que desea eliminar este registro de horas?')) {
+            if (confirm('¿Está seguro que desea eliminar este registro de horas?\n\nEsta acción no se puede deshacer.')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '@Url.Action("DeleteHours", "VolunteerRequest")';

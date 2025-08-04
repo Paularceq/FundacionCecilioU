@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Constants;
+using Shared.Dtos.Volunteer;
 using Shared.Enums;
 using Web.Extensions;
 using Web.Models.Volunteer;
@@ -23,22 +24,66 @@ namespace Web.Controllers
         }
 
         // ===== GESTIÓN DE SOLICITUDES =====
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
             int userId = GetCurrentUserId();
             var requests = await _volunteerRequestService.GetAllByVolunteerIDAsync(userId);
-            return View(requests);
+
+            // MEJORADO: Usar VolunteerRequestListViewModel
+            var canCreateNew = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
+
+            var viewModel = new VolunteerRequestListViewModel
+            {
+                Requests = requests,
+                CanCreateNew = canCreateNew
+            };
+
+            return View(viewModel);
         }
 
         [HttpGet]
-        public IActionResult Create() => View();
+        public async Task<IActionResult> Create()
+        {
+            int userId = GetCurrentUserId();
+
+            // REQUERIMIENTO: No puede haber más de una solicitud activa por voluntario
+            // PERO puede crear nueva si ya cumplió las horas de la anterior
+            var canCreate = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
+            if (!canCreate)
+            {
+                var activeRequest = await _volunteerRequestService.GetActiveRequestAsync(userId);
+                var message = activeRequest.IsSuccess && activeRequest.Value.State == VolunteerState.Pending
+                    ? "Ya tienes una solicitud pendiente de aprobación. Espera a que sea aprobada antes de crear una nueva."
+                    : "Ya tienes una solicitud aprobada con horas pendientes de completar. Completa las horas restantes antes de crear una nueva solicitud.";
+
+                this.SetErrorMessage(message);
+                return RedirectToAction("Index");
+            }
+
+            return View(new CreateRequestViewModel());
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateRequestViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             int userId = GetCurrentUserId();
+
+            // Verificar nuevamente antes de crear
+            var canCreate = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
+            if (!canCreate)
+            {
+                var activeRequest = await _volunteerRequestService.GetActiveRequestAsync(userId);
+                var message = activeRequest.IsSuccess && activeRequest.Value.State == VolunteerState.Pending
+                    ? "Ya tienes una solicitud pendiente de aprobación."
+                    : "Ya tienes una solicitud aprobada con horas pendientes de completar.";
+
+                this.SetErrorMessage(message);
+                return RedirectToAction("Index");
+            }
+
             var result = await _volunteerRequestService.CreateAsync(model, userId);
             if (result.IsFailure)
             {
@@ -78,23 +123,8 @@ namespace Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Obtener las horas registradas
-            var hours = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
-            if (hours.IsFailure)
-            {
-                this.SetErrorMessage(hours.Errors);
-                return RedirectToAction("Index");
-            }
-
-            var viewModel = new ManageHoursViewModel
-            {
-                RequestId = requestId,
-                VolunteerName = requestDto.VolunteerName ?? string.Empty,
-                Institution = requestDto.Institution,
-                TotalHoursRequested = requestDto.Hours,
-                HoursList = hours.Value ?? new(),
-                CanAddMore = requestDto.RemainingHours > 0 && !await _volunteerHoursService.HasHoursForDateAsync(requestId, DateTime.Today)
-            };
+            // MEJORADO: Usar método del servicio para construir ViewModel
+            var viewModel = await _volunteerHoursService.BuildManageHoursViewModelAsync(requestId, requestDto);
 
             return View(viewModel);
         }
@@ -102,41 +132,17 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> AddHours(int requestId)
         {
-            // Verificar que la solicitud existe y pertenece al usuario actual
-            var request = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-            if (request.IsFailure)
-            {
-                this.SetErrorMessage("Solicitud no encontrada");
-                return RedirectToAction("Index");
-            }
+            // Verificar permisos y validaciones
+            var validationResult = await ValidateRequestAccessAsync(requestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
 
-            var requestDto = request.Value;
+            var requestDto = validationResult.request;
 
-            // Verificar que la solicitud pertenece al usuario actual
-            if (requestDto.VolunteerId != GetCurrentUserId())
-            {
-                this.SetErrorMessage("No tienes permisos para registrar horas en esta solicitud");
-                return RedirectToAction("Index");
-            }
-
-            // Verificar que la solicitud está aprobada
-            if (requestDto.State != VolunteerState.Approved)
-            {
-                this.SetErrorMessage("Solo se pueden registrar horas para solicitudes aprobadas");
-                return RedirectToAction("ManageHours", new { requestId });
-            }
-
-            // Verificar que quedan horas disponibles
+            // REQUERIMIENTO: No puede registrar horas si ya cumplió las horas comprometidas
             if (requestDto.RemainingHours <= 0)
             {
-                this.SetErrorMessage("Ya no tienes horas disponibles en esta solicitud");
-                return RedirectToAction("ManageHours", new { requestId });
-            }
-
-            // Verificar que no hay registro para hoy
-            if (await _volunteerHoursService.HasHoursForDateAsync(requestId, DateTime.Today))
-            {
-                this.SetErrorMessage("Ya existe un registro de horas para hoy");
+                this.SetErrorMessage("Ya has cumplido con todas las horas comprometidas para esta solicitud");
                 return RedirectToAction("ManageHours", new { requestId });
             }
 
@@ -162,39 +168,20 @@ namespace Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Recargar información de la solicitud para la vista
-                var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(model.RequestId);
-                if (requestInfo.IsSuccess)
-                {
-                    ViewBag.RequestInfo = new
-                    {
-                        Institution = requestInfo.Value.Institution,
-                        RemainingHours = requestInfo.Value.RemainingHours
-                    };
-                }
+                await LoadRequestInfoForView(model.RequestId);
                 return View(model);
             }
 
-            // Validaciones adicionales antes de enviar
-            var request = await _volunteerRequestService.GetRequestByIdAsync(model.RequestId);
-            if (request.IsFailure || request.Value.VolunteerId != GetCurrentUserId())
-            {
-                this.SetErrorMessage("No tienes permisos para registrar horas en esta solicitud");
-                return RedirectToAction("Index");
-            }
+            // Validaciones de permisos
+            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
 
             var result = await _volunteerHoursService.CreateVolunteerHoursAsync(model);
             if (result.IsFailure)
             {
                 this.SetErrorMessage(result.Errors);
-
-                // Recargar información de la solicitud para la vista
-                ViewBag.RequestInfo = new
-                {
-                    Institution = request.Value.Institution,
-                    RemainingHours = request.Value.RemainingHours
-                };
-
+                await LoadRequestInfoForView(model.RequestId);
                 return View(model);
             }
 
@@ -205,24 +192,21 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> EditHours(int hoursId)
         {
-            var result = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
-            if (result.IsFailure)
+            var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
+            if (hoursResult.IsFailure)
             {
                 this.SetErrorMessage("Registro de horas no encontrado");
                 return RedirectToAction("Index");
             }
 
-            var hours = result.Value;
+            var hours = hoursResult.Value;
 
-            // Verificar que la solicitud pertenece al usuario actual
-            var request = await _volunteerRequestService.GetRequestByIdAsync(hours.VolunteerRequestId);
-            if (request.IsFailure || request.Value.VolunteerId != GetCurrentUserId())
-            {
-                this.SetErrorMessage("No tienes permisos para editar este registro de horas");
-                return RedirectToAction("Index");
-            }
+            // Verificar permisos
+            var validationResult = await ValidateRequestAccessAsync(hours.VolunteerRequestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
 
-            // Verificar que las horas no están aprobadas
+            // REQUERIMIENTO: No se pueden editar horas ya aprobadas
             if (hours.State == VolunteerState.Approved)
             {
                 this.SetErrorMessage("No se pueden editar horas ya aprobadas");
@@ -242,8 +226,8 @@ namespace Web.Controllers
 
             ViewBag.RequestInfo = new
             {
-                Institution = request.Value.Institution,
-                RemainingHours = request.Value.RemainingHours,
+                Institution = validationResult.request.Institution,
+                RemainingHours = validationResult.request.RemainingHours,
                 IsEditing = true
             };
 
@@ -260,19 +244,9 @@ namespace Web.Controllers
             }
 
             // Verificar permisos
-            var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(model.Id!.Value);
-            if (hoursResult.IsFailure)
-            {
-                this.SetErrorMessage("Registro de horas no encontrado");
-                return RedirectToAction("Index");
-            }
-
-            var request = await _volunteerRequestService.GetRequestByIdAsync(model.RequestId);
-            if (request.IsFailure || request.Value.VolunteerId != GetCurrentUserId())
-            {
-                this.SetErrorMessage("No tienes permisos para editar este registro de horas");
-                return RedirectToAction("Index");
-            }
+            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
 
             var result = await _volunteerHoursService.UpdateVolunteerHoursAsync(model.Id!.Value, model);
             if (result.IsFailure)
@@ -290,6 +264,10 @@ namespace Web.Controllers
         public async Task<IActionResult> DeleteHours(int hoursId, int requestId)
         {
             // Verificar permisos
+            var validationResult = await ValidateRequestAccessAsync(requestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
+
             var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
             if (hoursResult.IsFailure)
             {
@@ -297,11 +275,11 @@ namespace Web.Controllers
                 return RedirectToAction("ManageHours", new { requestId });
             }
 
-            var request = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-            if (request.IsFailure || request.Value.VolunteerId != GetCurrentUserId())
+            // REQUERIMIENTO: No se pueden eliminar horas ya aprobadas
+            if (hoursResult.Value.State == VolunteerState.Approved)
             {
-                this.SetErrorMessage("No tienes permisos para eliminar este registro de horas");
-                return RedirectToAction("Index");
+                this.SetErrorMessage("No se pueden eliminar horas ya aprobadas");
+                return RedirectToAction("ManageHours", new { requestId });
             }
 
             var result = await _volunteerHoursService.DeleteVolunteerHoursAsync(hoursId);
@@ -326,7 +304,7 @@ namespace Web.Controllers
                     errors = result.Errors
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new
                 {
@@ -350,25 +328,52 @@ namespace Web.Controllers
             }
         }
 
-        // ===== DASHBOARD/ESTADÍSTICAS (PLACEHOLDER) =====
-        public async Task<IActionResult> Dashboard(int requestId)
+        // ===== MÉTODOS AUXILIARES =====
+        private async Task<(IActionResult? redirectResult, VolunteerRequestDto request)> ValidateRequestAccessAsync(int requestId, bool requireApproved = false)
         {
-            var request = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-            if (request.IsFailure || request.Value.VolunteerId != GetCurrentUserId())
+            var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+            if (requestResult.IsFailure)
             {
-                this.SetErrorMessage("No tienes permisos para ver este dashboard");
-                return RedirectToAction("Index");
+                this.SetErrorMessage("Solicitud no encontrada");
+                return (RedirectToAction("Index"), null!);
             }
 
-            // Por ahora redirige a ManageHours, pero aquí podrías implementar un dashboard completo
-            this.SetInfoMessage("Dashboard en desarrollo. Mostrando gestión de horas.");
-            return RedirectToAction("ManageHours", new { requestId });
+            var request = requestResult.Value;
+
+            // Verificar que pertenece al usuario actual
+            if (request.VolunteerId != GetCurrentUserId())
+            {
+                this.SetErrorMessage("No tienes permisos para acceder a esta solicitud");
+                return (RedirectToAction("Index"), null!);
+            }
+
+            // Verificar que está aprobada si se requiere
+            if (requireApproved && request.State != VolunteerState.Approved)
+            {
+                this.SetErrorMessage("Solo se pueden gestionar horas para solicitudes aprobadas");
+                return (RedirectToAction("Index"), null!);
+            }
+
+            return (null, request);
         }
 
-        // ===== MÉTODOS AUXILIARES =====
+        private async Task LoadRequestInfoForView(int requestId)
+        {
+            var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+            if (requestInfo.IsSuccess)
+            {
+                ViewBag.RequestInfo = new
+                {
+                    Institution = requestInfo.Value.Institution,
+                    RemainingHours = requestInfo.Value.RemainingHours
+                };
+            }
+        }
+
         private int GetCurrentUserId()
         {
-            return int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(userIdClaim, out int userId) ? userId : 0;
         }
 
         private string GetCurrentUserName()

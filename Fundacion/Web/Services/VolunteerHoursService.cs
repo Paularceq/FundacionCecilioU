@@ -27,31 +27,6 @@ namespace Web.Services
                     return validationResult;
                 }
 
-                // Obtener la solicitud para validar remaining hours
-                var requestResult = await _apiClient.GetAsync<VolunteerRequestDto>($"VolunteerRequest/{model.RequestId}");
-                if (!requestResult.IsSuccess || requestResult.Value == null)
-                {
-                    return Result.Failure("No se pudo obtener la solicitud de voluntariado para validar horas.");
-                }
-
-                var requestDto = requestResult.Value;
-
-                if (requestDto.State != VolunteerState.Approved)
-                {
-                    return Result.Failure("Solo se pueden registrar horas para solicitudes aprobadas.");
-                }
-
-                if (requestDto.RemainingHours <= 0)
-                {
-                    return Result.Failure("No quedan horas disponibles en esta solicitud.");
-                }
-
-                var toAdd = (decimal)(model.EndTime - model.StartTime).TotalHours;
-                if (toAdd > requestDto.RemainingHours)
-                {
-                    return Result.Failure($"No puedes registrar más de {requestDto.RemainingHours:F1} horas restantes.");
-                }
-
                 var dto = new CreateVolunteerHoursDto
                 {
                     VolunteerRequestId = model.RequestId,
@@ -62,7 +37,7 @@ namespace Web.Services
                     Notes = model.Notes
                 };
 
-                return await _apiClient.PostAsync("VolunteerHours", dto);
+                return await _apiClient.PostAsync("volunteerhours", dto);
             }
             catch (Exception ex)
             {
@@ -74,7 +49,7 @@ namespace Web.Services
         {
             try
             {
-                var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>($"VolunteerHours/request/{requestId}");
+                var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>($"volunteerhours/request/{requestId}");
 
                 if (result.IsSuccess && result.Value == null)
                 {
@@ -98,7 +73,7 @@ namespace Web.Services
                     return Result<List<VolunteerHoursDto>>.Failure("La fecha de inicio no puede ser mayor a la fecha de fin");
                 }
 
-                var url = $"VolunteerHours/request/{requestId}/date-range?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
+                var url = $"volunteerhours/request/{requestId}/date-range?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
                 var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>(url);
 
                 if (result.IsSuccess && result.Value == null)
@@ -118,7 +93,7 @@ namespace Web.Services
         {
             try
             {
-                return await _apiClient.GetAsync<VolunteerHoursDto>($"VolunteerHours/{hoursId}");
+                return await _apiClient.GetAsync<VolunteerHoursDto>($"volunteerhours/{hoursId}");
             }
             catch (Exception ex)
             {
@@ -147,7 +122,7 @@ namespace Web.Services
                     Notes = model.Notes
                 };
 
-                return await _apiClient.PutAsync($"VolunteerHours/{hoursId}", dto);
+                return await _apiClient.PutAsync($"volunteerhours/{hoursId}", dto);
             }
             catch (Exception ex)
             {
@@ -159,7 +134,7 @@ namespace Web.Services
         {
             try
             {
-                return await _apiClient.DeleteAsync($"VolunteerHours/{hoursId}");
+                return await _apiClient.DeleteAsync($"volunteerhours/{hoursId}");
             }
             catch (Exception ex)
             {
@@ -178,7 +153,7 @@ namespace Web.Services
                     ApproverName = approverName
                 };
 
-                return await _apiClient.PostAsync($"VolunteerHours/{hoursId}/approve", dto);
+                return await _apiClient.PostAsync($"volunteerhours/{hoursId}/approve", dto);
             }
             catch (Exception ex)
             {
@@ -197,7 +172,7 @@ namespace Web.Services
                     RejectionReason = rejectionReason
                 };
 
-                return await _apiClient.PostAsync($"VolunteerHours/{hoursId}/reject", dto);
+                return await _apiClient.PostAsync($"volunteerhours/{hoursId}/reject", dto);
             }
             catch (Exception ex)
             {
@@ -209,20 +184,7 @@ namespace Web.Services
         {
             try
             {
-                var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>("VolunteerHours/pending");
-                return result.IsSuccess ? (result.Value ?? new List<VolunteerHoursDto>()) : new List<VolunteerHoursDto>();
-            }
-            catch (Exception)
-            {
-                return new List<VolunteerHoursDto>();
-            }
-        }
-
-        public async Task<List<VolunteerHoursDto>> GetHoursByStateAsync(VolunteerState state)
-        {
-            try
-            {
-                var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>($"VolunteerHours/state/{state}");
+                var result = await _apiClient.GetAsync<List<VolunteerHoursDto>>("volunteerhours/pending");
                 return result.IsSuccess ? (result.Value ?? new List<VolunteerHoursDto>()) : new List<VolunteerHoursDto>();
             }
             catch (Exception)
@@ -246,7 +208,7 @@ namespace Web.Services
                     Notes = model.Notes
                 };
 
-                return await _apiClient.PostAsync("VolunteerHours/validate", dto);
+                return await _apiClient.PostAsync("volunteerhours/validate", dto);
             }
             catch (Exception ex)
             {
@@ -292,11 +254,8 @@ namespace Web.Services
                     errors.Add("Debe registrar al menos 1 hora de trabajo");
                 }
 
-                // Validar horarios laborales
-                if (model.StartTime < TimeSpan.FromHours(6) || model.EndTime > TimeSpan.FromHours(22))
-                {
-                    errors.Add("Los horarios deben estar entre 6:00 AM y 10:00 PM");
-                }
+                // REMOVIDO: Validación de horarios laborales según requerimientos
+                // El requerimiento dice: "no tiene restriccion de horario de trabajo"
 
                 // Validar descripción de actividades
                 if (string.IsNullOrWhiteSpace(model.ActivitiesDescription))
@@ -323,25 +282,6 @@ namespace Web.Services
             }
         }
 
-        public async Task<bool> CanRegisterHoursAsync(int requestId, DateTime date)
-        {
-            try
-            {
-                var result = await _apiClient.GetAsync<Dictionary<string, object>>($"VolunteerHours/can-register/{requestId}?date={date:yyyy-MM-dd}");
-
-                if (result.IsSuccess && result.Value != null && result.Value.ContainsKey("canRegister"))
-                {
-                    return Convert.ToBoolean(result.Value["canRegister"]);
-                }
-
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
         public async Task<bool> HasHoursForDateAsync(int requestId, DateTime date)
         {
             try
@@ -355,10 +295,8 @@ namespace Web.Services
             }
         }
 
-        // ===== ESTADÍSTICAS Y REPORTES =====
-
-        // ===== BÚSQUEDA Y FILTRADO =====
-        public async Task<List<VolunteerHoursDto>> SearchHoursAsync(int requestId, string searchTerm = null, VolunteerState? state = null, DateTime? startDate = null, DateTime? endDate = null)
+        // ===== BÚSQUEDA Y FILTRADO BÁSICO =====
+        public async Task<List<VolunteerHoursDto>> SearchHoursAsync(int requestId, string? searchTerm = null, VolunteerState? state = null)
         {
             try
             {
@@ -386,17 +324,6 @@ namespace Web.Services
                     filteredHours = filteredHours.Where(h => h.State == state.Value);
                 }
 
-                // Filtro por fechas
-                if (startDate.HasValue)
-                {
-                    filteredHours = filteredHours.Where(h => h.Date >= startDate.Value);
-                }
-
-                if (endDate.HasValue)
-                {
-                    filteredHours = filteredHours.Where(h => h.Date <= endDate.Value);
-                }
-
                 return filteredHours.OrderByDescending(h => h.Date).ToList();
             }
             catch (Exception)
@@ -405,66 +332,35 @@ namespace Web.Services
             }
         }
 
-        // ===== EXPORTACIÓN =====
-        public async Task<Result<byte[]>> ExportHoursAsync(int requestId, string format = "excel", DateTime? startDate = null, DateTime? endDate = null)
-        {
-            try
-            {
-                var url = $"VolunteerHours/request/{requestId}/export?format={format}";
-
-                if (startDate.HasValue)
-                    url += $"&startDate={startDate.Value:yyyy-MM-dd}";
-
-                if (endDate.HasValue)
-                    url += $"&endDate={endDate.Value:yyyy-MM-dd}";
-
-                return await _apiClient.GetAsync<byte[]>(url);
-            }
-            catch (Exception ex)
-            {
-                return Result<byte[]>.Failure($"Error al exportar: {ex.Message}");
-            }
-        }
-
-        // ===== MÉTODOS AUXILIARES =====
-        private static int GetWeekOfYear(DateTime date)
-        {
-            var culture = System.Globalization.CultureInfo.CurrentCulture;
-            return culture.Calendar.GetWeekOfYear(date, culture.DateTimeFormat.CalendarWeekRule, culture.DateTimeFormat.FirstDayOfWeek);
-        }
-
-        private static DateTime GetWeekStartDate(int year, int weekNumber)
-        {
-            var jan1 = new DateTime(year, 1, 1);
-            var daysOffset = (int)System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek - (int)jan1.DayOfWeek;
-            var firstWeek = jan1.AddDays(daysOffset);
-            return firstWeek.AddDays((weekNumber - 1) * 7);
-        }
-
-        public async Task<TimeSpan> GetAverageWorkTimeAsync(int requestId)
+        // ===== MÉTODOS DE UTILIDAD =====
+        public async Task<ManageHoursViewModel> BuildManageHoursViewModelAsync(int requestId, VolunteerRequestDto request)
         {
             try
             {
                 var hoursResult = await GetHoursByRequestIdAsync(requestId);
+                var hoursList = hoursResult.IsSuccess ? (hoursResult.Value ?? new List<VolunteerHoursDto>()) : new List<VolunteerHoursDto>();
 
-                if (hoursResult.IsFailure || hoursResult.Value == null || !hoursResult.Value.Any())
+                return new ManageHoursViewModel
                 {
-                    return TimeSpan.Zero;
-                }
-
-                var approvedHours = hoursResult.Value.Where(h => h.State == VolunteerState.Approved);
-
-                if (!approvedHours.Any())
-                    return TimeSpan.Zero;
-
-                var averageStart = TimeSpan.FromTicks((long)approvedHours.Average(h => h.StartTime.Ticks));
-                var averageEnd = TimeSpan.FromTicks((long)approvedHours.Average(h => h.EndTime.Ticks));
-
-                return averageEnd - averageStart;
+                    RequestId = requestId,
+                    VolunteerName = request.VolunteerName ?? "N/A",
+                    Institution = request.Institution,
+                    HoursList = hoursList,
+                    TotalHoursRequested = request.Hours,
+                    CanAddMore = request.RemainingHours > 0
+                };
             }
             catch (Exception)
             {
-                return TimeSpan.Zero;
+                return new ManageHoursViewModel
+                {
+                    RequestId = requestId,
+                    VolunteerName = "Error",
+                    Institution = "Error",
+                    HoursList = new List<VolunteerHoursDto>(),
+                    TotalHoursRequested = 0,
+                    CanAddMore = false
+                };
             }
         }
     }

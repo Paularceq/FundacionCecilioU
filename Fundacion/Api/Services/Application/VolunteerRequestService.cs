@@ -111,6 +111,11 @@ namespace Api.Services.Application
             if (request.State != VolunteerState.Approved)
                 return Result.Failure("Solo se pueden registrar horas para solicitudes aprobadas");
 
+            // AGREGADO: Verificar que no haya cumplido las horas comprometidas
+            var totalWorkedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(dto.VolunteerRequestId);
+            if (totalWorkedHours >= request.Hours)
+                return Result.Failure("Ya ha cumplido con las horas comprometidas para esta solicitud");
+
             var validationResult = await ValidateHoursAsync(dto);
             if (validationResult.IsFailure)
                 return validationResult;
@@ -253,8 +258,9 @@ namespace Api.Services.Application
             if (totalHours < 1)
                 errors.Add("Debe registrar al menos 1 hora de trabajo");
 
-            if (dto.StartTime < TimeSpan.FromHours(6) || dto.EndTime > TimeSpan.FromHours(22))
-                errors.Add("Los horarios deben estar entre 6:00 AM y 10:00 PM");
+            // REMOVIDO: Restricción de horario según requerimientos ("no tiene restriccion de horario de trabajo")
+            // if (dto.StartTime < TimeSpan.FromHours(6) || dto.EndTime > TimeSpan.FromHours(22))
+            //     errors.Add("Los horarios deben estar entre 6:00 AM y 10:00 PM");
 
             if (errors.Any())
                 return Result.Failure(errors);
