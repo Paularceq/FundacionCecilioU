@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Shared.Dtos.Volunteer
 {
-    public class RejectRequestDto
+    public class ApproveRequestDto
     {
         public int ApproverId { get; set; }
         public string ApproverName { get; set; } = string.Empty;
-        public string Reason { get; set; } = string.Empty;
     }
 }

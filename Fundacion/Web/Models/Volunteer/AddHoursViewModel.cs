@@ -50,9 +50,7 @@ namespace Web.Models.Volunteer
         }
 
         public string TotalHoursFormatted => $"{TotalHours:N1} horas";
-
         public bool IsValid => StartTime < EndTime && TotalHours <= 8 && TotalHours >= 1;
-
         public bool IsEditing => Id.HasValue;
     }
 }

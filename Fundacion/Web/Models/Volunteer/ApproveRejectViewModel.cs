@@ -13,9 +13,8 @@ namespace Web.Models.Volunteer
         [Required]
         public bool IsApproved { get; set; }
 
-        [RequiredIf("IsApproved", false, ErrorMessage = "La razón del rechazo es obligatoria")]
         [Display(Name = "Razón del rechazo")]
-        [StringLength(500, ErrorMessage = "La razón no puede exceder 500 caracteres")]
+        [StringLength(500, MinimumLength = 10, ErrorMessage = "La razón debe tener entre 10 y 500 caracteres")]
         public string? RejectionReason { get; set; }
 
         public int ApproverId { get; set; }
@@ -25,34 +24,15 @@ namespace Web.Models.Volunteer
         public string ItemDescription { get; set; } = string.Empty;
         public string VolunteerName { get; set; } = string.Empty;
         public DateTime ItemDate { get; set; }
-    }
 
-    // Atributo de validación personalizado
-    public class RequiredIfAttribute : ValidationAttribute
-    {
-        private readonly string _propertyName;
-        private readonly object _value;
-
-        public RequiredIfAttribute(string propertyName, object value)
+        // Validación simple en el controlador en lugar de atributo personalizado
+        public bool IsValid()
         {
-            _propertyName = propertyName;
-            _value = value;
-        }
-
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
-        {
-            var property = validationContext.ObjectType.GetProperty(_propertyName);
-            if (property == null)
-                return new ValidationResult($"Property {_propertyName} not found");
-
-            var propertyValue = property.GetValue(validationContext.ObjectInstance);
-
-            if (Equals(propertyValue, _value) && (value == null || string.IsNullOrWhiteSpace(value.ToString())))
-            {
-                return new ValidationResult(ErrorMessage);
-            }
-
-            return ValidationResult.Success;
+            if (!IsApproved && string.IsNullOrWhiteSpace(RejectionReason))
+                return false;
+            if (!IsApproved && RejectionReason?.Length < 10)
+                return false;
+            return true;
         }
     }
 }

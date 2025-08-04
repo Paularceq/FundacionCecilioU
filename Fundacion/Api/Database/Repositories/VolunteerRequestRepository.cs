@@ -21,9 +21,9 @@ namespace Api.Database.Repositories
                 .Include(v=>v.Approver)
                 .Where(v => v.VolunteerId == volunteerID).ToListAsync();
         }
-        public async Task CreateRequest(VolunteerRequest voluteerRequest)
+        public async Task CreateRequest(VolunteerRequest volunteerRequest)
         {
-            _context.VolunteerRequests.Add(voluteerRequest);
+            _context.VolunteerRequests.Add(volunteerRequest);
             await _context.SaveChangesAsync();
         }
         public async Task <VolunteerRequest> GetActiveRequest(int VolunteerId)
@@ -74,7 +74,7 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Approved;
                 request.ApproverId = approverId;
-                request.ApprovedAt = DateTime.UtcNow; // ← Hora del rechazo
+                request.ApprovedAt = DateTime.UtcNow; // ← Hora de aprobación
                 await UpdateRequestAsync(request);
             }
         }
@@ -86,8 +86,8 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Rejected;
                 request.ApproverId = approverId;
-                request.ApprovedAt = DateTime.UtcNow; 
-                request.RejectionReason = reason; // ← Razon del rechazo
+                request.ApprovedAt = DateTime.UtcNow; // ← Hora de rechazo
+                request.RejectionReason = reason; // ← Razón del rechazo 
                 await UpdateRequestAsync(request);
             }
         }
@@ -139,8 +139,9 @@ namespace Api.Database.Repositories
             var hours = await GetVolunteerHoursAsync(hoursId);
             if (hours != null)
             {
-               
-                await UpdateVolunteerHoursAsync(hours);
+
+                _context.VolunteerHours.Remove(hours);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -259,5 +260,6 @@ namespace Api.Database.Repositories
                             vh.State == VolunteerState.Approved)
                 .MaxAsync(vh => (DateTime?)vh.Date);
         }
+
     }
 }
