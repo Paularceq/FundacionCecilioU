@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace Api.Database.Entities
@@ -51,6 +52,8 @@ namespace Api.Database.Entities
         public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
 
         public EstadoSolicitud Estado { get; set; } = EstadoSolicitud.Pendiente;
+
+        
 
         [StringLength(500)]
         public string? ComentarioAdministrador { get; set; }
