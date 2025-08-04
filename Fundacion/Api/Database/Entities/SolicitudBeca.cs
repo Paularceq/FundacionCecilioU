@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace Api.Database.Entities
@@ -52,8 +53,7 @@ namespace Api.Database.Entities
 
         public EstadoSolicitud Estado { get; set; } = EstadoSolicitud.Pendiente;
 
-        [Range(0,double.MaxValue)]
-        public decimal? MontoAsignado { get; set; }
+        
 
         [StringLength(500)]
         public string? ComentarioAdministrador { get; set; }

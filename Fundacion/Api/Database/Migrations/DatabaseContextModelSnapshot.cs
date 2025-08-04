@@ -43,7 +43,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("ActivityDonations");
+                    b.ToTable("ActivityDonations", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Donation", b =>
@@ -65,7 +65,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Donations");
+                    b.ToTable("Donations", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
@@ -83,9 +83,6 @@ namespace Api.Database.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OutgoingDonationId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -95,21 +92,16 @@ namespace Api.Database.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OutgoingDonationId");
-
                     b.HasIndex("ProductId");
 
                     b.HasIndex("ProductsDonationId");
 
-                    b.ToTable("InventoryMovements");
+                    b.ToTable("InventoryMovements", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
@@ -133,53 +125,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("MonetaryDonations");
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("Ammount")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("ApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ApproverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Currency")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RecipientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RequesterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApproverId");
-
-                    b.HasIndex("RecipientId");
-
-                    b.HasIndex("RequesterId");
-
-                    b.ToTable("OutgoingDonations");
+                    b.ToTable("MonetaryDonations", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>
@@ -204,7 +150,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
@@ -222,7 +168,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("ProductsDonations");
+                    b.ToTable("ProductsDonations", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Role", b =>
@@ -244,7 +190,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.SolicitudBeca", b =>
@@ -315,7 +261,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SolicitudesBeca");
+                    b.ToTable("SolicitudesBeca", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.User", b =>
@@ -367,7 +313,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.VolunteerHours", b =>
@@ -429,7 +375,7 @@ namespace Api.Database.Migrations
                         .IsUnique()
                         .HasDatabaseName("UX_VolunteerHours_OnePerDay");
 
-                    b.ToTable("VolunteerHours");
+                    b.ToTable("VolunteerHours", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.VolunteerRequest", b =>
@@ -477,7 +423,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("VolunteerId");
 
-                    b.ToTable("VolunteerRequests");
+                    b.ToTable("VolunteerRequests", (string)null);
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -492,7 +438,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("RoleUser");
+                    b.ToTable("RoleUser", (string)null);
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ActivityDonation", b =>
@@ -508,10 +454,6 @@ namespace Api.Database.Migrations
 
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
                 {
-                    b.HasOne("Api.Database.Entities.OutgoingDonation", null)
-                        .WithMany("InventoryMovements")
-                        .HasForeignKey("OutgoingDonationId");
-
                     b.HasOne("Api.Database.Entities.Product", "Product")
                         .WithMany("Movements")
                         .HasForeignKey("ProductId")
@@ -534,32 +476,6 @@ namespace Api.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Donation");
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.HasOne("Api.Database.Entities.User", "Approver")
-                        .WithMany()
-                        .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Api.Database.Entities.User", "Recipient")
-                        .WithMany()
-                        .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Api.Database.Entities.User", "Requester")
-                        .WithMany()
-                        .HasForeignKey("RequesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Approver");
-
-                    b.Navigation("Recipient");
-
-                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
@@ -622,11 +538,6 @@ namespace Api.Database.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
-                {
-                    b.Navigation("InventoryMovements");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>

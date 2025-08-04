@@ -57,32 +57,32 @@ namespace Api.Controllers
             return Ok(solicitud);
         }
         [HttpGet("cedula/{cedula}")]
-        public async Task<ActionResult<SolicitudBecaDto>> GetByCedula(string cedula)
-        {
-            var s = await _context.SolicitudesBeca
-                .Where(x => x.CedulaEstudiante == cedula)
-                .Select(x => new SolicitudBecaDto
-                {
-                    CedulaEstudiante = x.CedulaEstudiante,
-                    NombreEstudiante = x.NombreEstudiante,
-                    CorreoContacto = x.CorreoContacto,
-                    TelefonoContacto = x.TelefonoContacto,
-                    Direccion = x.Direccion,
-                    Colegio = x.Colegio,
-                    NivelEducativo = x.NivelEducativo,
-                    CartaConsentimiento = x.CartaConsentimiento,
-                    CartaConsentimientoContentType = x.CartaConsentimientoContentType,
-                    CartaNotas = x.CartaNotas,
-                    CartaNotasContentType = x.CartaNotasContentType,
-                    FechaSolicitud = x.FechaSolicitud,
-                    Estado = x.Estado.ToString(),
-                    EsFormularioManual = x.EsFormularioManual
-                })
-                .FirstOrDefaultAsync();
+        //public async Task<ActionResult<SolicitudBecaDto>> GetByCedula(string cedula)
+        //{
+        //    var s = await _context.SolicitudesBeca
+        //        .Where(x => x.CedulaEstudiante == cedula)
+        //        .Select(x => new SolicitudBecaDto
+        //        {
+        //            CedulaEstudiante = x.CedulaEstudiante,
+        //            NombreEstudiante = x.NombreEstudiante,
+        //            CorreoContacto = x.CorreoContacto,
+        //            TelefonoContacto = x.TelefonoContacto,
+        //            Direccion = x.Direccion,
+        //            Colegio = x.Colegio,
+        //            NivelEducativo = x.NivelEducativo,
+        //            CartaConsentimiento = x.CartaConsentimiento,
+        //            CartaConsentimientoContentType = x.CartaConsentimientoContentType,
+        //            CartaNotas = x.CartaNotas,
+        //            CartaNotasContentType = x.CartaNotasContentType,
+        //            FechaSolicitud = x.FechaSolicitud,
+        //            Estado = x.Estado.ToString(),
+        //            EsFormularioManual = x.EsFormularioManual
+        //        })
+        //        .FirstOrDefaultAsync();
 
-            if (s == null) return NotFound();
-            return Ok(s);
-        }
+        //    if (s == null) return NotFound();
+        //    return Ok(s);
+        //}
 
 
         // POST: api/SolicitudesBeca
@@ -90,8 +90,21 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
+
            if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+            var solicitudExistente = await _context.SolicitudesBeca
+        .AnyAsync(s => s.CedulaEstudiante == dto.CedulaEstudiante);
+
+            if (solicitudExistente)
+            {
+                return Conflict(new
+                {
+                    mensaje = "Ya existe una solicitud de beca con esta cédula."
+                });
+            }
+
 
             var solicitud = new SolicitudBeca
             {
@@ -110,10 +123,30 @@ namespace Api.Controllers
                 Estado = EstadoSolicitud.Pendiente,
                 EsFormularioManual = dto.EsFormularioManual
            };
-           _context.SolicitudesBeca.Add(solicitud);
-           await _context.SaveChangesAsync();
+            try
+            {
+                _context.SolicitudesBeca.Add(solicitud);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetById), new { id = solicitud.Id }, solicitud);
+                // Si todo va bien, devolvemos 201 con la entidad creada
+                return CreatedAtAction(nameof(GetById), new { id = solicitud.Id }, solicitud);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Captura errores de actualización de EF Core (e.g. violaciones de FK, tamaño de columna, not null)
+                var errorMsg = dbEx.InnerException?.Message ?? dbEx.Message;
+                return StatusCode(500, new { error = errorMsg });
+            }
+            catch (Exception ex)
+            {
+                // Para cualquier otro tipo de excepción
+                return StatusCode(500, new { error = ex.Message });
+            }
+
+            //_context.SolicitudesBeca.Add(solicitud);
+            //await _context.SaveChangesAsync();
+
+            // return CreatedAtAction(nameof(GetById), new { id = solicitud.Id }, solicitud);
         }
 
         // PUT: api/SolicitudesBeca/5
@@ -132,36 +165,36 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        [HttpPut("decidir/{cedula}")]
-        public async Task<IActionResult> TomarDecision(
-     string cedula,
-     [FromBody] SolicitudBecaDto dto)
-        {
-            var solicitud = await _context.SolicitudesBeca
-                .FirstOrDefaultAsync(s => s.CedulaEstudiante == cedula);
+     //   [HttpPut("decidir/{cedula}")]
+     //   public async Task<IActionResult> TomarDecision(
+     //string cedula,
+     //[FromBody] SolicitudBecaDto dto)
+     //   {
+     //       var solicitud = await _context.SolicitudesBeca
+     //           .FirstOrDefaultAsync(s => s.CedulaEstudiante == cedula);
 
-            if (solicitud == null)
-                return NotFound();
+     //       if (solicitud == null)
+     //           return NotFound();
 
             
-            if (!Enum.TryParse<EstadoSolicitud>(
-                    dto.Estado,
-                    ignoreCase: true,
-                    out var nuevoEstado))
-            {
-                ModelState.AddModelError(
-                    nameof(dto.Estado),
-                    $"Valor inválido para Estado: {dto.Estado}"
-                );
-                return BadRequest(ModelState);
-            }
+     //       if (!Enum.TryParse<EstadoSolicitud>(
+     //               dto.Estado,
+     //               ignoreCase: true,
+     //               out var nuevoEstado))
+     //       {
+     //           ModelState.AddModelError(
+     //               nameof(dto.Estado),
+     //               $"Valor inválido para Estado: {dto.Estado}"
+     //           );
+     //           return BadRequest(ModelState);
+     //       }
 
-            solicitud.Estado = nuevoEstado;
-            solicitud.MontoAsignado = dto.MontoAsignado;
+     //       solicitud.Estado = nuevoEstado;
+     //       solicitud.MontoAsignado = dto.MontoAsignado;
 
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+     //       await _context.SaveChangesAsync();
+     //       return NoContent();
+     //   }
 
         // DELETE: api/SolicitudesBeca/5
         //[HttpDelete("{id}")]
