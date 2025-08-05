@@ -36,26 +36,31 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Obtener el ID del usuario autenticado
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdClaim, out int volunteerId))
-                return Unauthorized("No se pudo identificar al usuario");
-
-            // Crear DTO completo para el servicio
-            var volunteerRequestDto = new VolunteerRequestDto
+            try
             {
-                VolunteerId = volunteerId,
-                Institution = createDto.Institution,
-                Profession = createDto.Profession,
-                Description = createDto.Description,
-                Hours = createDto.Hours
-            };
+                // Obtener el ID del usuario autenticado
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(userIdClaim, out int volunteerId))
+                    return Unauthorized("No se pudo identificar al usuario");
 
-            var result = await _volunteerRequestService.CreateAsync(volunteerRequestDto);
-            if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                // AGREGADO: Validar si puede crear nueva solicitud ANTES de intentar crear
+                var canCreateResult = await _volunteerRequestService.CanCreateNewRequestAsync(volunteerId);
+                if (canCreateResult.IsFailure)
+                {
+                    return BadRequest(new { errors = canCreateResult.Errors });
+                }
 
-            return Ok(new { message = "Solicitud creada exitosamente" });
+                // ACTUALIZADO: Usar la nueva sobrecarga del método CreateAsync
+                var result = await _volunteerRequestService.CreateAsync(createDto, volunteerId);
+                if (result.IsFailure)
+                    return BadRequest(new { errors = result.Errors });
+
+                return Ok(new { message = "Solicitud creada exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { errors = new[] { $"Error interno: {ex.Message}" } });
+            }
         }
 
         // Obtener solicitud por id (puede usarla voluntario o admin)

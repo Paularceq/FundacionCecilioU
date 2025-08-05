@@ -29,11 +29,89 @@ namespace Api.Services.Application
             return dtos;
         }
 
+        // ===== VALIDACIÓN PARA NUEVA SOLICITUD =====
+        public async Task<Result> CanCreateNewRequestAsync(int volunteerId)
+        {
+            try
+            {
+                var existingRequests = await _volunteerRequestRepository.GetRequestsByVolunteerID(volunteerId);
+
+                // Si no hay solicitudes, puede crear nueva
+                if (existingRequests == null || !existingRequests.Any())
+                    return Result.Success();
+
+                // REQUERIMIENTO: No puede haber más de una solicitud activa por voluntario
+                // PERO puede crear nueva si ya cumplió las horas de la anterior
+                var activeRequest = existingRequests.FirstOrDefault(r =>
+                    r.State == VolunteerState.Pending ||
+                    (r.State == VolunteerState.Approved));
+
+                if (activeRequest != null)
+                {
+                    // Si tiene solicitud aprobada, verificar si ya cumplió las horas
+                    if (activeRequest.State == VolunteerState.Approved)
+                    {
+                        var totalWorkedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(activeRequest.Id);
+                        if (totalWorkedHours < activeRequest.Hours)
+                        {
+                            return Result.Failure("Ya tienes una solicitud aprobada con horas pendientes de completar. Completa las horas restantes antes de crear una nueva solicitud.");
+                        }
+
+                        // OPCIONAL: Cerrar automáticamente la solicitud completada
+                        if (totalWorkedHours >= activeRequest.Hours && activeRequest.State != VolunteerState.Closed)
+                        {
+                            activeRequest.State = VolunteerState.Closed;
+                            await _volunteerRequestRepository.UpdateRequestAsync(activeRequest);
+                        }
+
+                        // Si ya cumplió las horas, puede crear nueva solicitud
+                        return Result.Success();
+                    }
+                    else if (activeRequest.State == VolunteerState.Pending)
+                    {
+                        return Result.Failure("Ya tienes una solicitud pendiente de aprobación. Espera a que sea aprobada antes de crear una nueva.");
+                    }
+                }
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al validar solicitud: {ex.Message}");
+            }
+        }
+
+        // ===== MÉTODOS CREATE ACTUALIZADOS =====
+
+        // Nuevo método principal que usa CreateVolunteerRequestDto
+        public async Task<Result> CreateAsync(CreateVolunteerRequestDto requestDto, int volunteerId)
+        {
+            // Validación de negocio (doble verificación por seguridad)
+            var canCreateResult = await CanCreateNewRequestAsync(volunteerId);
+            if (canCreateResult.IsFailure)
+                return canCreateResult;
+
+            var request = new VolunteerRequest
+            {
+                VolunteerId = volunteerId,
+                Institution = requestDto.Institution,
+                Profession = requestDto.Profession,
+                Description = requestDto.Description,
+                Hours = requestDto.Hours,
+                State = VolunteerState.Pending
+            };
+
+            await _volunteerRequestRepository.CreateRequest(request);
+            return Result.Success();
+        }
+
+        // Método legacy - mantenido por compatibilidad si se usa en otras partes
         public async Task<Result> CreateAsync(VolunteerRequestDto requestDto)
         {
-            var activeRequest = await _volunteerRequestRepository.GetActiveRequest(requestDto.VolunteerId);
-            if (activeRequest != null)
-                return Result.Failure("Usted ya tiene una solicitud en proceso");
+            // Usar el nuevo método de validación
+            var canCreateResult = await CanCreateNewRequestAsync(requestDto.VolunteerId);
+            if (canCreateResult.IsFailure)
+                return canCreateResult;
 
             var request = new VolunteerRequest
             {
@@ -48,6 +126,8 @@ namespace Api.Services.Application
             await _volunteerRequestRepository.CreateRequest(request);
             return Result.Success();
         }
+
+        // ===== MÉTODOS DE ADMINISTRACIÓN =====
 
         public async Task<List<VolunteerRequestDto>> GetAllRequestsAsync()
         {
@@ -103,6 +183,7 @@ namespace Api.Services.Application
         }
 
         // ===== GESTIÓN DE HORAS =====
+
         public async Task<Result> CreateVolunteerHoursAsync(CreateVolunteerHoursDto dto)
         {
             var request = await _volunteerRequestRepository.GetRequestByIdAsync(dto.VolunteerRequestId);
@@ -111,10 +192,10 @@ namespace Api.Services.Application
             if (request.State != VolunteerState.Approved)
                 return Result.Failure("Solo se pueden registrar horas para solicitudes aprobadas");
 
-            // AGREGADO: Verificar que no haya cumplido las horas comprometidas
+            // Verificar que no haya cumplido las horas comprometidas
             var totalWorkedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(dto.VolunteerRequestId);
             if (totalWorkedHours >= request.Hours)
-                return Result.Failure("Ya ha cumplido con las horas comprometidas para esta solicitud");
+                return Result.Failure("Ya has cumplido con las horas comprometidas para esta solicitud");
 
             var validationResult = await ValidateHoursAsync(dto);
             if (validationResult.IsFailure)
@@ -204,6 +285,7 @@ namespace Api.Services.Application
         }
 
         // ===== APROBACIÓN DE HORAS =====
+
         public async Task<Result> ApproveHoursAsync(ApproveRejectHoursDto dto)
         {
             var hours = await _volunteerRequestRepository.GetVolunteerHoursAsync(dto.HoursId);
@@ -213,6 +295,10 @@ namespace Api.Services.Application
                 return Result.Failure("Solo se pueden aprobar horas pendientes");
 
             await _volunteerRequestRepository.ApproveHoursAsync(dto.HoursId, dto.ApproverId);
+
+            // OPCIONAL: Verificar si se debe cerrar la solicitud automáticamente
+            await CheckAndCloseRequestIfComplete(hours.VolunteerRequestId);
+
             return Result.Success();
         }
 
@@ -237,6 +323,7 @@ namespace Api.Services.Application
         }
 
         // ===== VALIDACIONES =====
+
         public async Task<Result> ValidateHoursAsync(CreateVolunteerHoursDto dto)
         {
             var errors = new List<string>();
@@ -259,8 +346,6 @@ namespace Api.Services.Application
                 errors.Add("Debe registrar al menos 1 hora de trabajo");
 
             // REMOVIDO: Restricción de horario según requerimientos ("no tiene restriccion de horario de trabajo")
-            // if (dto.StartTime < TimeSpan.FromHours(6) || dto.EndTime > TimeSpan.FromHours(22))
-            //     errors.Add("Los horarios deben estar entre 6:00 AM y 10:00 PM");
 
             if (errors.Any())
                 return Result.Failure(errors);
@@ -277,7 +362,31 @@ namespace Api.Services.Application
             return !hasHoursForDate;
         }
 
-        // ===== AUXILIARES =====
+        // ===== MÉTODOS AUXILIARES =====
+
+        private async Task CheckAndCloseRequestIfComplete(int requestId)
+        {
+            try
+            {
+                var request = await _volunteerRequestRepository.GetRequestByIdAsync(requestId);
+                if (request?.State == VolunteerState.Approved)
+                {
+                    var totalWorkedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(requestId);
+                    if (totalWorkedHours >= request.Hours)
+                    {
+                        // Cerrar la solicitud automáticamente
+                        request.State = VolunteerState.Closed;
+                        await _volunteerRequestRepository.UpdateRequestAsync(request);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log del error pero no fallar la operación principal
+                Console.WriteLine($"Error al verificar cierre automático de solicitud {requestId}: {ex.Message}");
+            }
+        }
+
         private async Task<VolunteerRequestDto> MapToDtoAsync(VolunteerRequest request)
         {
             var workedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(request.Id);
