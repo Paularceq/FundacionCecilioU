@@ -93,7 +93,7 @@
 
             <form asp-action="GuardarDecision" method="post" novalidate>
                 @Html.AntiForgeryToken()
-                <input type="hidden" asp-for="CedulaEstudiante" />
+                <input type="hidden" asp-for="Id" />
 
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
