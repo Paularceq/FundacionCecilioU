@@ -15,7 +15,9 @@ namespace Shared.Dtos.Volunteer
         public string Institution { get; set; } = string.Empty;
         public string Profession { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Hours { get; set; }
-        public string? RejectionReason { get; set; } // Nueva propiedad
+        public string? RejectionReason { get; set; }
+        public int Hours { get; set; } // solicitadas
+        public decimal HoursWorked { get; set; } // aprobadas
+        public decimal RemainingHours => Hours - HoursWorked; // calculada
     }
 }

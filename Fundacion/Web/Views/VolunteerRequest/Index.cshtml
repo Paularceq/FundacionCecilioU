@@ -1,8 +1,9 @@
-﻿@model List<Shared.Dtos.Volunteer.VolunteerRequestDto>
+﻿@model Web.Models.Volunteer.VolunteerRequestListViewModel
 @{
     ViewData["Title"] = "Mis Solicitudes de Voluntariado";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-    var canCreateNew = !Model.Any(r => r.State == Shared.Enums.VolunteerState.Pending || r.State == Shared.Enums.VolunteerState.Approved);
+    // CORREGIDO: Usar el ViewModel
+    var canCreateNew = Model.CanCreateNew;
 }
 
 @section Styles {
@@ -129,15 +130,15 @@
         </div>
     </div>
 
-    @if (Model.Any())
+    @if (Model.Requests.Any())
     {
         <!-- Estadísticas Rápidas -->
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="stats-card border-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-primary mb-1">@Model.Count</h3>
+                            <h3 class="text-primary mb-1">@Model.Requests.Count</h3>
                             <p class="text-muted mb-0">Total Solicitudes</p>
                         </div>
                         <div class="text-primary">
@@ -146,11 +147,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+
+            <div class="col-md-2">
                 <div class="stats-card border-success">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-success mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Approved)</h3>
+                            <h3 class="text-success mb-1">@Model.Requests.Count(r => r.State == Shared.Enums.VolunteerState.Approved)</h3>
                             <p class="text-muted mb-0">Aprobadas</p>
                         </div>
                         <div class="text-success">
@@ -159,11 +161,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+
+            <div class="col-md-2">
                 <div class="stats-card border-warning">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-warning mb-1">@Model.Count(r => r.State == Shared.Enums.VolunteerState.Pending)</h3>
+                            <h3 class="text-warning mb-1">@Model.Requests.Count(r => r.State == Shared.Enums.VolunteerState.Pending)</h3>
                             <p class="text-muted mb-0">Pendientes</p>
                         </div>
                         <div class="text-warning">
@@ -172,15 +175,34 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Nuevas métricas: horas trabajadas y restantes (solo de aprobadas) -->
             <div class="col-md-3">
                 <div class="stats-card border-info">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="text-info mb-1">@Model.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.Hours)</h3>
-                            <p class="text-muted mb-0">Horas Disponibles</p>
+                            <h4 class="text-info mb-1">
+                                @Model.Requests.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.HoursWorked).ToString("N1")
+                            </h4>
+                            <p class="text-muted mb-0">Horas Trabajadas</p>
                         </div>
                         <div class="text-info">
                             <i class="fas fa-hourglass-half fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card border-secondary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="text-secondary mb-1">
+                                @Model.Requests.Where(r => r.State == Shared.Enums.VolunteerState.Approved).Sum(r => r.RemainingHours).ToString("N1")
+                            </h4>
+                            <p class="text-muted mb-0">Horas Restantes</p>
+                        </div>
+                        <div class="text-secondary">
+                            <i class="fas fa-clock fa-2x"></i>
                         </div>
                     </div>
                 </div>
@@ -195,31 +217,32 @@
                         <th>ID</th>
                         <th>Institución</th>
                         <th>Profesión</th>
-                        <th>Horas</th>
+                        <th>Solicitadas</th>
+                        <th>Trabajadas</th>
+                        <th>Restantes</th>
                         <th>Fecha Creación</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var request in Model.OrderByDescending(r => r.CreatedAt))
+                    @foreach (var request in Model.Requests.OrderByDescending(r => r.CreatedAt))
                     {
                         <tr>
                             <td>
                                 <strong class="text-primary">#@request.Id</strong>
                             </td>
                             <td>
-                               @*  <div>
+                                <div>
                                     <strong>@request.Institution</strong>
                                     @if (!string.IsNullOrEmpty(request.ApproverName))
                                     {
-                                        <br>
-                            
+                                        <br />
                                         <small class="text-muted">
                                             <i class="fas fa-user-check"></i> @request.ApproverName
                                         </small>
                                     }
-                                </div> *@
+                                </div>
                             </td>
                             <td>
                                 <span class="badge bg-secondary">@request.Profession</span>
@@ -227,10 +250,16 @@
                             <td class="text-center">
                                 <span class="badge bg-info">@request.Hours h</span>
                             </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">@request.HoursWorked.ToString("N1") h</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-warning">@request.RemainingHours.ToString("N1") h</span>
+                            </td>
                             <td>
                                 <div>
                                     <strong>@request.CreatedAt.ToString("dd/MM/yyyy")</strong>
-                                    <br><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
+                                    <br /><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
                                 </div>
                             </td>
                             <td class="text-center">
@@ -245,35 +274,29 @@
                                         @if (request.State == Shared.Enums.VolunteerState.Approved)
                                         {
                                             <li>
-                                                <a href="@Url.Action("Dashboard", "Volunteer", new { requestId = request.Id })"
-                                                   class="dropdown-item">
-                                                    <i class="fas fa-chart-pie me-2 text-info"></i>Dashboard
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="@Url.Action("ManageHours", "Volunteer", new { requestId = request.Id })"
-                                                   class="dropdown-item">
+                                                <a href="@Url.Action("ManageHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
                                                     <i class="fas fa-clock me-2 text-success"></i>Gestionar Horas
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a href="@Url.Action("AddHours", "Volunteer", new { requestId = request.Id })"
-                                                   class="dropdown-item">
-                                                    <i class="fas fa-plus me-2 text-primary"></i>Registrar Horas
-                                                </a>
-                                            </li>
+                                            @if (request.RemainingHours > 0)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("AddHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
+                                                        <i class="fas fa-plus me-2 text-primary"></i>Registrar Horas
+                                                    </a>
+                                                </li>
+                                            }
                                         }
                                         else if (request.State == Shared.Enums.VolunteerState.Rejected)
                                         {
                                             <li>
-                                                <a href="#" class="dropdown-item"
-                                                   onclick="showRejectReason(@request.Id, '@(request.ApproverName ?? "Sin especificar")')">
+                                                <a href="#" class="dropdown-item" onclick="showRejectReason(@request.Id, '@(request.ApproverName ?? "Sin especificar")')">
                                                     <i class="fas fa-info-circle me-2 text-warning"></i>Ver Razón
                                                 </a>
                                             </li>
                                         }
 
-                                        <li><hr class="dropdown-divider"></li>
+                                        <li><hr class="dropdown-divider" /></li>
                                         <li>
                                             <a href="#" class="dropdown-item"
                                                onclick="showRequestDetails(@request.Id, '@request.Institution', '@request.Profession', '@request.Description', @request.Hours)">
@@ -290,7 +313,7 @@
         </div>
 
         <!-- Información adicional -->
-        @if (Model.Any(r => r.State == Shared.Enums.VolunteerState.Approved))
+        @if (Model.Requests.Any(r => r.State == Shared.Enums.VolunteerState.Approved))
         {
             <div class="mt-4">
                 <div class="alert alert-success">
@@ -317,7 +340,7 @@
             <i class="fas fa-heart fa-5x text-muted mb-4"></i>
             <h3>¡Bienvenido al Voluntariado!</h3>
             <p class="text-muted mb-4">
-                Aún no has creado ninguna solicitud de voluntariado.<br>
+                Aún no has creado ninguna solicitud de voluntariado.<br />
                 ¡Es el momento perfecto para comenzar a hacer la diferencia!
             </p>
             <a href="@Url.Action("Create")" class="btn btn-success btn-lg">
@@ -424,7 +447,7 @@
                 </div>
                 <p><strong>Razón:</strong></p>
                 <p id="rejectReason">No se proporcionó una razón específica.</p>
-                <hr>
+                <hr />
                 <p class="text-muted">
                     <i class="fas fa-info-circle"></i>
                     Puedes crear una nueva solicitud considerando los comentarios del administrador.
@@ -475,7 +498,7 @@
         }
 
         // Auto-refresh cada 30 segundos para ver cambios de estado
-        setInterval(function() {
+        setInterval(function () {
             const hasPending = document.querySelector('.bg-warning') !== null;
             if (hasPending) {
                 // Opcional: refrescar la página o hacer llamada AJAX

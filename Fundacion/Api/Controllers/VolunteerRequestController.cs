@@ -1,9 +1,9 @@
 ﻿using Api.Abstractions.Application;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dtos.Volunteer;
 using Shared.Enums;
+using System.Security.Claims;
 
 namespace Api.Controllers
 {
@@ -19,7 +19,9 @@ namespace Api.Controllers
             _volunteerRequestService = volunteerRequestService;
         }
 
-        // ===== MÉTODOS EXISTENTES =====
+        // ===== VOLUNTARIO =====
+        
+        // Obtener todas las solicitudes de un voluntario
         [HttpGet("Volunteer/{volunteerId}")]
         public async Task<IActionResult> GetVolunteerRequests(int volunteerId)
         {
@@ -27,67 +29,94 @@ namespace Api.Controllers
             return Ok(requests);
         }
 
+        // Crear nueva solicitud (voluntario)
         [HttpPost]
-        public async Task<IActionResult> CreateVolunteerRequest(VolunteerRequestDto volunteerRequestDto)
+        public async Task<IActionResult> CreateVolunteerRequest([FromBody] CreateVolunteerRequestDto createDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out int volunteerId))
+                return Unauthorized("No se pudo identificar al usuario");
+
+            // Crear DTO completo para el servicio
+            var volunteerRequestDto = new VolunteerRequestDto
+            {
+                VolunteerId = volunteerId,
+                Institution = createDto.Institution,
+                Profession = createDto.Profession,
+                Description = createDto.Description,
+                Hours = createDto.Hours
+            };
+
             var result = await _volunteerRequestService.CreateAsync(volunteerRequestDto);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
-            return Ok();
+                return BadRequest(new { errors = result.Errors });
+
+            return Ok(new { message = "Solicitud creada exitosamente" });
         }
 
-        // ===== NUEVOS ENDPOINTS PARA ADMINISTRACIÓN =====
+        // Obtener solicitud por id (puede usarla voluntario o admin)
+        [HttpGet("{requestId}")]
+        public async Task<IActionResult> GetRequestById(int requestId)
+        {
+            var result = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+            if (result.IsFailure)
+                return NotFound(new { errors = result.Errors });
+
+            return Ok(result.Value);
+        }
+
+        // ===== ADMINISTRACIÓN =====
+        
+        // Todas las solicitudes
         [HttpGet]
+        [Authorize(Roles = "AdminSistema")]
         public async Task<IActionResult> GetAllRequests()
         {
             var requests = await _volunteerRequestService.GetAllRequestsAsync();
             return Ok(requests);
         }
 
+        // Filtrar por estado
         [HttpGet("state/{state}")]
+        [Authorize(Roles = "AdminSistema")]
         public async Task<IActionResult> GetRequestsByState(VolunteerState state)
         {
             var requests = await _volunteerRequestService.GetRequestsByStateAsync(state);
             return Ok(requests);
         }
 
-        [HttpGet("{requestId}")]
-        public async Task<IActionResult> GetRequestById(int requestId)
-        {
-            var result = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-            if (result.IsFailure)
-            {
-                return NotFound(result.Errors);
-            }
-            return Ok(result.Value);
-        }
-
+        // Aprobar solicitud
         [HttpPost("{requestId}/approve")]
-        public async Task<IActionResult> ApproveRequest(int requestId, [FromBody] int approverId)
+        [Authorize(Roles = "AdminSistema")]
+        public async Task<IActionResult> ApproveRequest(int requestId, [FromBody] ApproveRequestDto dto)
         {
-            var result = await _volunteerRequestService.ApproveRequestAsync(requestId, approverId);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _volunteerRequestService.ApproveRequestAsync(requestId, dto.ApproverId);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
-            return Ok();
+                return BadRequest(new { errors = result.Errors });
+
+            return Ok(new { message = "Solicitud aprobada exitosamente" });
         }
 
+        // Rechazar solicitud
         [HttpPost("{requestId}/reject")]
+        [Authorize(Roles = "AdminSistema")]
         public async Task<IActionResult> RejectRequest(int requestId, [FromBody] RejectRequestDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _volunteerRequestService.RejectRequestAsync(requestId, dto.ApproverId, dto.Reason);
             if (result.IsFailure)
-            {
-                return BadRequest(result.Errors);
-            }
-            return Ok();
+                return BadRequest(new { errors = result.Errors });
+
+            return Ok(new { message = "Solicitud rechazada exitosamente" });
         }
-
-
     }
 }
-  
-

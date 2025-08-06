@@ -11,6 +11,5 @@ namespace Shared.Dtos.Volunteer
         public int ApproverId { get; set; }
         public string ApproverName { get; set; } = string.Empty;
         public string RejectionReason { get; set; } = string.Empty;
-
     }
 }
