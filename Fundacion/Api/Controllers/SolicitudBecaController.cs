@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shared.Dtos.Becas;
-using Microsoft.EntityFrameworkCore;
-using Api.Database;
+﻿using Api.Database;
 using Api.Database.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Shared.Dtos.Becas;
 
 namespace Api.Controllers
 {
@@ -26,6 +26,7 @@ namespace Api.Controllers
             var solicitudes = await _context.SolicitudesBeca
     .Select(s => new SolicitudBecaDto
     {
+        Id = s.Id,
         CedulaEstudiante = s.CedulaEstudiante,
         NombreEstudiante = s.NombreEstudiante,
         CorreoContacto = s.CorreoContacto,
@@ -53,10 +54,27 @@ namespace Api.Controllers
             var solicitud = await _context.SolicitudesBeca.FindAsync(id);
             if (solicitud == null)
                 return NotFound();
-
-            return Ok(solicitud);
+            var dto = new SolicitudBecaDto
+            {
+                Id = solicitud.Id,
+                CedulaEstudiante = solicitud.CedulaEstudiante,
+                NombreEstudiante = solicitud.NombreEstudiante,
+                CorreoContacto = solicitud.CorreoContacto,
+                TelefonoContacto = solicitud.TelefonoContacto,
+                Direccion = solicitud.Direccion,
+                Colegio = solicitud.Colegio,
+                NivelEducativo = solicitud.NivelEducativo,
+                CartaConsentimiento = solicitud.CartaConsentimiento,
+                CartaConsentimientoContentType = solicitud.CartaConsentimientoContentType,
+                CartaNotas = solicitud.CartaNotas,
+                CartaNotasContentType = solicitud.CartaNotasContentType,
+                FechaSolicitud = solicitud.FechaSolicitud,
+                Estado = solicitud.Estado.ToString(),
+                EsFormularioManual = solicitud.EsFormularioManual
+            };
+            return Ok(dto);
         }
-        [HttpGet("cedula/{cedula}")]
+        //[HttpGet("cedula/{cedula}")]
         //public async Task<ActionResult<SolicitudBecaDto>> GetByCedula(string cedula)
         //{
         //    var s = await _context.SolicitudesBeca
@@ -91,8 +109,8 @@ namespace Api.Controllers
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
 
-           if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var solicitudExistente = await _context.SolicitudesBeca
         .AnyAsync(s => s.CedulaEstudiante == dto.CedulaEstudiante);
@@ -110,19 +128,19 @@ namespace Api.Controllers
             {
                 CedulaEstudiante = dto.CedulaEstudiante,
                 NombreEstudiante = dto.NombreEstudiante,
-               CorreoContacto = dto.CorreoContacto,
+                CorreoContacto = dto.CorreoContacto,
                 TelefonoContacto = dto.TelefonoContacto,
                 Direccion = dto.Direccion,
                 Colegio = dto.Colegio,
                 NivelEducativo = dto.NivelEducativo,
                 CartaConsentimiento = dto.CartaConsentimiento,
                 CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
-               CartaNotas = dto.CartaNotas,
-               CartaNotasContentType = dto.CartaNotasContentType,
+                CartaNotas = dto.CartaNotas,
+                CartaNotasContentType = dto.CartaNotasContentType,
                 FechaSolicitud = DateTime.UtcNow,
                 Estado = EstadoSolicitud.Pendiente,
                 EsFormularioManual = dto.EsFormularioManual
-           };
+            };
             try
             {
                 _context.SolicitudesBeca.Add(solicitud);
@@ -165,36 +183,33 @@ namespace Api.Controllers
             return NoContent();
         }
 
-     //   [HttpPut("decidir/{cedula}")]
-     //   public async Task<IActionResult> TomarDecision(
-     //string cedula,
-     //[FromBody] SolicitudBecaDto dto)
-     //   {
-     //       var solicitud = await _context.SolicitudesBeca
-     //           .FirstOrDefaultAsync(s => s.CedulaEstudiante == cedula);
+        [HttpPut("decidir/{id}")]
+        public async Task<IActionResult> TomarDecision(int id,TomarDesicionDto dto)
+        {
+            var solicitud = await _context.SolicitudesBeca
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-     //       if (solicitud == null)
-     //           return NotFound();
+            if (solicitud == null)
+                return NotFound();
 
-            
-     //       if (!Enum.TryParse<EstadoSolicitud>(
-     //               dto.Estado,
-     //               ignoreCase: true,
-     //               out var nuevoEstado))
-     //       {
-     //           ModelState.AddModelError(
-     //               nameof(dto.Estado),
-     //               $"Valor inválido para Estado: {dto.Estado}"
-     //           );
-     //           return BadRequest(ModelState);
-     //       }
 
-     //       solicitud.Estado = nuevoEstado;
-     //       solicitud.MontoAsignado = dto.MontoAsignado;
+            if (!Enum.TryParse<EstadoSolicitud>(
+                    dto.Estado,
+                    ignoreCase: true,
+                    out var nuevoEstado))
+            {
+                ModelState.AddModelError(
+                    nameof(dto.Estado),
+                    $"Valor inválido para Estado: {dto.Estado}"
+                );
+                return BadRequest(ModelState);
+            }
 
-     //       await _context.SaveChangesAsync();
-     //       return NoContent();
-     //   }
+            solicitud.Estado = nuevoEstado;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
         // DELETE: api/SolicitudesBeca/5
         //[HttpDelete("{id}")]
