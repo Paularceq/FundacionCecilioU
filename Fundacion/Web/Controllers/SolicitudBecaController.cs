@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shared.Dtos.Becas;
 using System.Net;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using Web.Http;
+using Web.Extensions;
 using Web.Models.Becas;
 
 namespace Web.Controllers
@@ -55,19 +53,21 @@ namespace Web.Controllers
 
             var response = await cliente.PostAsJsonAsync("SolicitudesBeca", dto);
 
-            if (response.IsSuccessStatusCode)
-                return RedirectToAction("VerBecas");
-
-            if (response.StatusCode == HttpStatusCode.Conflict)
+            if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError("CedulaEstudiante", "Ya existe una solicitud con esta cédula.");
-            }
-            else
-            {
-                ModelState.AddModelError("", "Ocurrió un error al enviar la solicitud.");
-            }
+                if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    ModelState.AddModelError("CedulaEstudiante", "Ya existe una solicitud con esta cédula.");
+                }
+                else
+                {
+                    this.SetErrorMessage("Ocurrió un error al enviar la solicitud.");
+                }
 
-            return View(model);
+                return View(model);
+            }
+            this.SetSuccessMessage("Solicitud enviada correctamente.");
+            return RedirectToAction("VerBecas");
 
             //var errorMsg = await response.Content.ReadAsStringAsync();
 
@@ -101,7 +101,7 @@ namespace Web.Controllers
 
             var solicitudesViewModel = solicitudesDto.Select(dto => new SolicitudBecaViewModel
             {
-               Id = dto.Id,
+                Id = dto.Id,
                 CedulaEstudiante = dto.CedulaEstudiante,
                 NombreEstudiante = dto.NombreEstudiante,
                 CorreoContacto = dto.CorreoContacto,
@@ -120,12 +120,12 @@ namespace Web.Controllers
         }
 
         // GET: /SolicitudesBeca/TomarDecision/12345678
-        public async Task<IActionResult> TomarDecision(string cedula)
+        public async Task<IActionResult> TomarDecision(int Id)
         {
             var cliente = _httpClientFactory.CreateClient("API");
 
 
-            var response = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"api/SolicitudesBeca/cedula/{cedula}");
+            var response = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"SolicitudesBeca/{Id}");
             if (response == null)
             {
                 TempData["Error"] = "No se encontró la solicitud.";
@@ -152,34 +152,50 @@ namespace Web.Controllers
             return View(model);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> GuardarDecision(SolicitudBecaViewModel model)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return View("TomarDecision", model);
-        //    }
+        [HttpPost]
+        public async Task<IActionResult> GuardarDecision(SolicitudBecaViewModel model)
+        {
 
-        //    var cliente = _httpClientFactory.CreateClient("API");
+            var cliente = _httpClientFactory.CreateClient("API");
 
-        //    var dto = new SolicitudBecaDto
-        //    {
-        //        CedulaEstudiante = model.CedulaEstudiante,
-        //        Estado = model.Estado,
-        //        MontoAsignado = model.MontoAsignado
-        //    };
+            var dto = new TomarDesicionDto
+            {
 
-        //    var response = await cliente.PutAsJsonAsync($"api/solicitudesbeca/decidir/{model.CedulaEstudiante}", dto);
+                Estado = model.Estado
+            };
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        TempData["Success"] = "La decisión se guardó correctamente.";
-        //        return RedirectToAction("VerBecas");
-        //    }
+            var response = await cliente.PutAsJsonAsync($"solicitudesbeca/decidir/{model.Id}", dto);
 
-        //    TempData["Error"] = "Hubo un error al guardar la decisión.";
-        //    return View("TomarDecision", model);
-        //}
+            if (response.IsSuccessStatusCode)
+            {
+                this.SetSuccessMessage("La decisión se guardó correctamente.");
+                return RedirectToAction("VerBecas");
+            }
+            var consultaSolicitud = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"SolicitudesBeca/{model.Id}");
+            if (consultaSolicitud == null)
+            {
+                TempData["Error"] = "No se encontró la solicitud.";
+                return RedirectToAction("Index");
+            }
+
+            model.CedulaEstudiante = consultaSolicitud.CedulaEstudiante;
+            model.NombreEstudiante = consultaSolicitud.NombreEstudiante;
+            model.CorreoContacto = consultaSolicitud.CorreoContacto;
+            model.TelefonoContacto = consultaSolicitud.TelefonoContacto;
+            model.Direccion = consultaSolicitud.Direccion;
+            model.Colegio = consultaSolicitud.Colegio;
+            model.NivelEducativo = consultaSolicitud.NivelEducativo;
+            model.Estado = consultaSolicitud.Estado;
+            model.CartaConsentimientoBytes = consultaSolicitud.CartaConsentimiento;
+            model.CartaConsentimientoContentType = consultaSolicitud.CartaConsentimientoContentType;
+            model.CartaNotasBytes = consultaSolicitud.CartaNotas;
+            model.CartaNotasContentType = consultaSolicitud.CartaNotasContentType;
+
+
+            this.SetErrorMessage("Ocurrió un error al guardar la decisión.");
+            return View("TomarDecision", model);
+        }
+
         //[HttpGet]
         //public IActionResult VerBecas()
         //{
