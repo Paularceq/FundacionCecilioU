@@ -1,6 +1,5 @@
 ﻿using Shared.Dtos.Volunteer;
 using Shared.Enums;
-
 namespace Web.Models.Volunteer
 {
     public class AdminVolunteerViewModel
