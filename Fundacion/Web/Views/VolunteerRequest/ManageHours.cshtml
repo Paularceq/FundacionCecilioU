@@ -32,7 +32,7 @@
         }
 
         .hours-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #12263a;
             color: white;
             border-radius: 12px;
             padding: 2rem;
@@ -41,7 +41,7 @@
         }
 
         .btn-add-hours {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #12263a;
             border: none;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -49,7 +49,7 @@
         }
 
             .btn-add-hours:hover {
-                background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+                background-color: #12263a;
                 color: white;
             }
 
@@ -76,7 +76,7 @@
                 <h1 class="h3 fw-bold text-primary">
                     <i class="fas fa-clock me-2"></i>Gestión de Horas - @Model.VolunteerName
                 </h1>
-                <p class="text-muted mb-0">@Model.Institution</p>
+                @* <p class="text-muted mb-0">@Model.VolunteerName/p> *@
             </div>
             <div>
                 <a asp-action="Index" class="btn btn-outline-secondary me-2">
@@ -99,35 +99,42 @@
     </div>
 
     <!-- Progreso y Horas Restantes -->
-    <div class="progress-section">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h5><i class="fas fa-chart-line me-2 text-primary"></i>Progreso de Horas</h5>
-                <div class="progress mb-3" style="height: 20px;">
-                    <div class="progress-bar bg-success" role="progressbar"
-                         style="width: @(Model.ProgressPercentage)%;"
-                         aria-valuenow="@Model.ProgressPercentage"
-                         aria-valuemin="0"
-                         aria-valuemax="100">
-                        @Model.ProgressPercentage.ToString("N1")%
+    <div class="progress-section mb-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5><i class="fas fa-chart-line me-2 text-primary"></i>Progreso de Horas</h5>
+                            <span class="badge bg-primary">@Model.TotalHoursApproved / @Model.TotalHoursRequested hrs</span>
+                        </div>
+
+                        @{
+                            decimal percentage = Model.TotalHoursRequested > 0
+                            ? (Model.TotalHoursApproved / Model.TotalHoursRequested) * 100
+                            : 0;
+                        }
+
+                        <div class="progress" style="height: 10px; border-radius: 50px;">
+                            <div class="progress-bar bg-success"
+                                 style="width: @percentage.ToString("0")%; border-radius: 50px;"
+                                 role="progressbar">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">@percentage.ToString("0")% completado</small>
+                            @if (Model.RemainingHours > 0)
+                            {
+                                <small class="text-warning">@Model.RemainingHours hrs restantes</small>
+                            }
+                            else
+                            {
+                                <small class="text-success">✓ Completado</small>
+                            }
+                        </div>
                     </div>
                 </div>
-                <p class="mb-0">
-                    <strong>@Model.TotalHoursApproved.ToString("N1")</strong> de <strong>@Model.TotalHoursRequested</strong> horas completadas
-                </p>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="@Model.StatusCssClass hours-remaining">
-                    <i class="fas fa-hourglass-half me-2"></i>@Model.StatusText
-                </div>
-                @if (Model.IsCompleted)
-                {
-                    <div class="mt-2">
-                        <span class="badge bg-success fs-6">
-                            <i class="fas fa-check-circle me-1"></i>¡Solicitud Completada!
-                        </span>
-                    </div>
-                }
             </div>
         </div>
     </div>
