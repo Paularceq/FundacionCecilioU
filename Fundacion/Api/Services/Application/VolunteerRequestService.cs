@@ -192,20 +192,36 @@ namespace Api.Services.Application
             if (request.State != VolunteerState.Approved)
                 return Result.Failure("Solo se pueden registrar horas para solicitudes aprobadas");
 
-            // Verificar que no haya cumplido las horas comprometidas
-            var totalWorkedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(dto.VolunteerRequestId);
-            if (totalWorkedHours >= request.Hours)
-                return Result.Failure("Ya has cumplido con las horas comprometidas para esta solicitud");
+            // ✅ REQUERIMIENTO 1: VALIDAR HORAS PROPUESTAS VS RESTANTES
+            var totalApprovedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(dto.VolunteerRequestId);
+            var totalHours = CalculateHours(dto.StartTime, dto.EndTime);
+            var remainingHours = request.Hours - totalApprovedHours;
+
+            if (totalHours > remainingHours)
+            {
+                return Result.Failure($"No puedes registrar {totalHours} horas. Solo quedan {remainingHours} horas disponibles de las {request.Hours} horas propuestas.");
+            }
 
             var validationResult = await ValidateHoursAsync(dto);
             if (validationResult.IsFailure)
                 return validationResult;
 
+            // ✅ REQUERIMIENTO 3: PERMITIR RE-REGISTRO DESPUÉS DE RECHAZO
             var existingHours = await _volunteerRequestRepository.GetHoursForDateAsync(dto.VolunteerRequestId, dto.Date);
             if (existingHours != null)
-                return Result.Failure("Ya existe un registro de horas para esta fecha");
+            {
+                if (existingHours.State == VolunteerState.Approved)
+                    return Result.Failure("Ya existe un registro de horas aprobado para esta fecha");
 
-            var totalHours = CalculateHours(dto.StartTime, dto.EndTime);
+                if (existingHours.State == VolunteerState.Pending)
+                    return Result.Failure("Ya existe un registro de horas pendiente de aprobación para esta fecha");
+
+                // Si está rechazada, eliminar la anterior para permitir nueva
+                if (existingHours.State == VolunteerState.Rejected)
+                {
+                    await _volunteerRequestRepository.DeleteVolunteerHoursAsync(existingHours.Id);
+                }
+            }
 
             var volunteerHours = new VolunteerHours
             {
@@ -248,18 +264,41 @@ namespace Api.Services.Application
             if (existingHours.State == VolunteerState.Approved)
                 return Result.Failure("No se pueden modificar horas ya aprobadas");
 
+            // ✅ REQUERIMIENTO 1: VALIDAR HORAS PROPUESTAS VS RESTANTES AL ACTUALIZAR
+            var request = await _volunteerRequestRepository.GetRequestByIdAsync(dto.VolunteerRequestId);
+            if (request == null)
+                return Result.Failure("Solicitud de voluntariado no encontrada");
+
+            var totalApprovedHours = await _volunteerRequestRepository.GetTotalApprovedHoursAsync(dto.VolunteerRequestId);
+            var totalHours = CalculateHours(dto.StartTime, dto.EndTime);
+            var remainingHours = request.Hours - totalApprovedHours;
+
+            if (totalHours > remainingHours)
+            {
+                return Result.Failure($"No puedes registrar {totalHours} horas. Solo quedan {remainingHours} horas disponibles de las {request.Hours} horas propuestas.");
+            }
+
             var validationResult = await ValidateHoursAsync(dto);
             if (validationResult.IsFailure)
                 return validationResult;
 
+            // ✅ REQUERIMIENTO 3: MANEJAR CONFLICTOS DE FECHA CON RECHAZOS
             if (existingHours.Date.Date != dto.Date.Date)
             {
                 var conflicting = await _volunteerRequestRepository.GetHoursForDateAsync(dto.VolunteerRequestId, dto.Date);
                 if (conflicting != null && conflicting.Id != hoursId)
-                    return Result.Failure("Ya existe un registro de horas para esta fecha");
+                {
+                    if (conflicting.State == VolunteerState.Approved || conflicting.State == VolunteerState.Pending)
+                        return Result.Failure("Ya existe un registro de horas para esta fecha");
+
+                    // Si está rechazada, eliminar la conflictiva
+                    if (conflicting.State == VolunteerState.Rejected)
+                    {
+                        await _volunteerRequestRepository.DeleteVolunteerHoursAsync(conflicting.Id);
+                    }
+                }
             }
 
-            var totalHours = CalculateHours(dto.StartTime, dto.EndTime);
             existingHours.Date = dto.Date;
             existingHours.StartTime = dto.StartTime;
             existingHours.EndTime = dto.EndTime;
@@ -360,6 +399,19 @@ namespace Api.Services.Application
 
             var hasHoursForDate = await _volunteerRequestRepository.HasHoursForDateAsync(requestId, date);
             return !hasHoursForDate;
+        }
+
+        // ===== NUEVOS MÉTODOS REQUERIDOS =====
+
+        // ✅ MÉTODO AGREGADO PARA SOLUCIONAR "Registro de horas no encontrado"
+        public async Task<Result<VolunteerHoursDto>> GetVolunteerHoursByIdAsync(int hoursId)
+        {
+            var volunteerHours = await _volunteerRequestRepository.GetVolunteerHoursAsync(hoursId);
+            if (volunteerHours == null)
+                return Result<VolunteerHoursDto>.Failure("Registro de horas no encontrado");
+
+            var dto = MapHoursToDto(volunteerHours);
+            return Result<VolunteerHoursDto>.Success(dto);
         }
 
         // ===== MÉTODOS AUXILIARES =====

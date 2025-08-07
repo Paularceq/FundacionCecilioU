@@ -1,5 +1,4 @@
 ﻿using Shared.Dtos.Volunteer;
-
 namespace Web.Models.Volunteer
 {
     public class VolunteerRequestListViewModel
@@ -12,7 +11,6 @@ namespace Web.Models.Volunteer
         public int PendingRequests => Requests.Count(r => r.State == Shared.Enums.VolunteerState.Pending);
         public int ApprovedRequests => Requests.Count(r => r.State == Shared.Enums.VolunteerState.Approved);
         public int CompletedRequests => Requests.Count(r => r.RemainingHours <= 0);
-
         public bool HasActiveRequest => Requests.Any(r =>
             r.State == Shared.Enums.VolunteerState.Pending ||
             r.State == Shared.Enums.VolunteerState.Approved);
