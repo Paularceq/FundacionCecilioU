@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.Constants;
 using Shared.Dtos.Volunteer;
 using Shared.Enums;
+using Shared.Models;
 using Web.Extensions;
 using Web.Models.Volunteer;
 using Web.Services;
@@ -168,6 +169,17 @@ namespace Web.Controllers
                 return View(model);
             }
 
+            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes ANTES DE TODO
+            var hoursValidationResult = await ValidateRemainingHoursBeforeCreate(model.VolunteerRequestId, model.StartTime, model.EndTime);
+            if (hoursValidationResult.IsFailure)
+            {
+                this.SetErrorMessage(hoursValidationResult.Errors);
+                var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(model.VolunteerRequestId);
+                if (requestInfo.IsSuccess)
+                    SetViewBagRequestInfo(requestInfo.Value, false, "", "");
+                return View(model);
+            }
+
             // ✅ REQUERIMIENTO 1: Validar horas restantes ANTES de enviar
             if (!model.IsValidHours)
             {
@@ -232,6 +244,15 @@ namespace Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                await LoadRequestInfoForView(model.RequestId);
+                return View(model);
+            }
+
+            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes ANTES DE TODO
+            var hoursValidationResult = await ValidateRemainingHoursBeforeCreate(model.RequestId, model.StartTime, model.EndTime);
+            if (hoursValidationResult.IsFailure)
+            {
+                this.SetErrorMessage(hoursValidationResult.Errors);
                 await LoadRequestInfoForView(model.RequestId);
                 return View(model);
             }
@@ -322,6 +343,15 @@ namespace Web.Controllers
             {
                 this.SetErrorMessage("Registro de horas no encontrado");
                 return RedirectToAction("Index");
+            }
+
+            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes excluyendo las horas actuales
+            var hoursValidationResult = await ValidateRemainingHoursBeforeUpdate(model.RequestId, model.Id.Value, model.StartTime, model.EndTime);
+            if (hoursValidationResult.IsFailure)
+            {
+                this.SetErrorMessage(hoursValidationResult.Errors);
+                await LoadRequestInfoForEditView(model.Id.Value);
+                return View("AddHours", model);
             }
 
             // Verificar permisos
@@ -521,6 +551,131 @@ namespace Web.Controllers
                 {
                     SetViewBagRequestInfo(requestInfo.Value, true, hoursResult.Value.State.ToString(), hoursResult.Value.RejectionReason);
                 }
+            }
+        }
+
+        // ✅ NUEVA VALIDACIÓN PRINCIPAL: Verificar horas restantes antes de crear
+        private async Task<Result> ValidateRemainingHoursBeforeCreate(int requestId, TimeSpan startTime, TimeSpan endTime)
+        {
+            try
+            {
+                Console.WriteLine($"DEBUG CONTROLLER: Validando horas restantes para crear - RequestId: {requestId}");
+
+                // 1. Obtener información de la solicitud principal
+                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+                if (requestResult.IsFailure)
+                {
+                    Console.WriteLine("DEBUG CONTROLLER: Solicitud no encontrada");
+                    return Result.Failure("Solicitud no encontrada");
+                }
+
+                var request = requestResult.Value;
+                Console.WriteLine($"DEBUG CONTROLLER: Solicitud encontrada - Horas propuestas: {request.Hours}");
+
+                // 2. Obtener TODAS las horas registradas para esta solicitud (todos los estados)
+                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
+                if (allHoursResult.IsFailure)
+                {
+                    Console.WriteLine("DEBUG CONTROLLER: Error al obtener horas existentes");
+                    return Result.Failure("Error al verificar horas existentes");
+                }
+
+                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
+                Console.WriteLine($"DEBUG CONTROLLER: Total de registros de horas encontrados: {allRegisteredHours.Count}");
+
+                // 3. Sumar TODAS las horas registradas (Pending + Approved - rejected)
+                var totalRegisteredHours = allRegisteredHours
+                    .Where(h => h.State != VolunteerState.Rejected)
+                    .Sum(h => h.TotalHours);
+
+                // 4. Calcular horas de la nueva solicitud
+                var newHours = (decimal)(endTime - startTime).TotalHours;
+                Console.WriteLine($"DEBUG CONTROLLER: Nuevas horas a registrar: {newHours}");
+
+                // 5. Calcular horas restantes disponibles
+                var remainingHours = request.Hours - totalRegisteredHours;
+                Console.WriteLine($"DEBUG CONTROLLER: Horas restantes disponibles: {remainingHours}");
+
+                // 6. VALIDACIÓN PRINCIPAL: tiempo_solicitado <= tiempo_restante
+                if (newHours > remainingHours)
+                {
+                    var errorMessage = $"No puedes registrar {newHours:F1} horas. Ya tienes {totalRegisteredHours:F1} horas registradas de las {request.Hours} horas propuestas. Solo quedan {remainingHours:F1} horas disponibles.";
+                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA - {errorMessage}");
+                    return Result.Failure(errorMessage);
+                }
+
+                // 7. Validación adicional: no permitir si ya completó las horas
+                if (remainingHours <= 0)
+                {
+                    var errorMessage = "Ya has registrado todas las horas comprometidas para esta solicitud.";
+                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA - {errorMessage}");
+                    return Result.Failure(errorMessage);
+                }
+
+                Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN EXITOSA - Puede registrar {newHours:F1} horas");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DEBUG CONTROLLER: Error en validación de horas restantes: {ex.Message}");
+                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
+            }
+        }
+
+        // ✅ NUEVA VALIDACIÓN PARA EDICIÓN: Verificar horas restantes excluyendo las horas actuales
+        private async Task<Result> ValidateRemainingHoursBeforeUpdate(int requestId, int currentHoursId, TimeSpan startTime, TimeSpan endTime)
+        {
+            try
+            {
+                Console.WriteLine($"DEBUG CONTROLLER: Validando horas restantes para actualizar - RequestId: {requestId}, HoursId: {currentHoursId}");
+
+                // 1. Obtener información de la solicitud principal
+                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+                if (requestResult.IsFailure)
+                {
+                    return Result.Failure("Solicitud no encontrada");
+                }
+
+                var request = requestResult.Value;
+
+                // 2. Obtener TODAS las horas registradas para esta solicitud
+                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
+                if (allHoursResult.IsFailure)
+                {
+                    return Result.Failure("Error al verificar horas existentes");
+                }
+
+                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
+
+                // 3. Sumar TODAS las horas EXCEPTO las del registro que se está editando
+                var totalRegisteredHours = allRegisteredHours 
+                    .Where(h => h.Id != currentHoursId && h.State != VolunteerState.Rejected)
+                    .Sum(h => h.TotalHours);
+                Console.WriteLine($"DEBUG CONTROLLER: Total horas registradas (excluyendo actual): {totalRegisteredHours}");
+
+                // 4. Calcular nuevas horas a registrar
+                var newHours = (decimal)(endTime - startTime).TotalHours;
+                Console.WriteLine($"DEBUG CONTROLLER: Nuevas horas a registrar: {newHours}");
+
+                // 5. Calcular horas restantes disponibles
+                var remainingHours = request.Hours - totalRegisteredHours;
+                Console.WriteLine($"DEBUG CONTROLLER: Horas restantes disponibles para edición: {remainingHours}");
+
+                // 6. VALIDACIÓN PRINCIPAL: tiempo_solicitado <= tiempo_restante
+                if (newHours > remainingHours)
+                {
+                    var errorMessage = $"No puedes registrar {newHours:F1} horas. Ya tienes {totalRegisteredHours:F1} horas registradas en otros días de las {request.Hours} horas propuestas. Solo quedan {remainingHours:F1} horas disponibles.";
+                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA EN EDICIÓN - {errorMessage}");
+                    return Result.Failure(errorMessage);
+                }
+
+                Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN DE EDICIÓN EXITOSA - Puede actualizar a {newHours:F1} horas");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DEBUG CONTROLLER: Error en validación de horas para edición: {ex.Message}");
+                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
             }
         }
 
