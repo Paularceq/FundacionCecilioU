@@ -45,6 +45,7 @@ namespace Shared.Dtos.Volunteer
             VolunteerState.Pending => "Pendiente",
             VolunteerState.Approved => "Aprobado",
             VolunteerState.Rejected => "Rechazado",
+            VolunteerState.Closed => "Finalizado",
             _ => "Desconocido"
         };
     }

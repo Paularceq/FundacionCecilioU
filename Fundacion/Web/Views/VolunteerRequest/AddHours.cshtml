@@ -3,6 +3,16 @@
 @{
     ViewData["Title"] = Model.IsEditing ? "Editar Registro de Horas" : "Registrar Horas de Voluntariado";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    
+    // ✅ Obtener información del ViewBag de forma segura
+    var requestInfo = ViewBag.RequestInfo;
+    decimal remainingHours = requestInfo?.RemainingHours ?? 999;
+    decimal totalHours = requestInfo?.TotalHours ?? 0;
+    decimal approvedHours = requestInfo?.ApprovedHours ?? 0;
+    bool isEditing = requestInfo?.IsEditing ?? false;
+    string currentState = requestInfo?.CurrentState ?? "";
+    string rejectionReason = requestInfo?.RejectionReason ?? "";
+    string institution = requestInfo?.Institution ?? "";
 }
 
 @section Styles {
@@ -82,22 +92,201 @@
         .hours-warning {
             background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
         }
+
+        /* ✅ ESTILOS PARA LOS NUEVOS REQUERIMIENTOS */
+        .hours-remaining-card {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .hours-exceeded {
+            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%) !important;
+        }
+
+        .rejected-hours-info {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid #fd7e14;
+        }
+
+        .validation-live {
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .institution-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .date-validation-message {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .tooltip-icon {
+            cursor: help;
+            color: #6c757d;
+        }
+
+        .form-floating-custom {
+            position: relative;
+        }
+
+        .floating-counter {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 0.8rem;
+            color: #6c757d;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
     </style>
 }
 
 <div class="container">
-    <!-- Header -->
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1 class="h3 fw-bold text-primary">
-                <i class="fas fa-clock me-2"></i>
-                @(Model.IsEditing ? "Editar Registro de Horas" : "Registrar Horas de Voluntariado")
-            </h1>
-            <a asp-action="ManageHours" asp-route-requestId="@Model.RequestId" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Volver
-            </a>
+    <!-- Header con información de la institución -->
+    <div class="institution-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-clock me-2"></i>
+                    @(Model.IsEditing ? "Editar Registro de Horas" : "Registrar Horas de Voluntariado")
+                </h1>
+                <p class="mb-0">
+                    <i class="fas fa-building me-2"></i>@institution
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a asp-action="ManageHours" asp-route-requestId="@Model.RequestId" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i> Volver a Gestión
+                </a>
+            </div>
         </div>
     </div>
+
+    <!-- ✅ REQUERIMIENTO 1: Información de Horas Restantes -->
+    @if (remainingHours < 999 && totalHours > 0)
+    {
+        <div class="hours-remaining-card">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="mb-2">
+                        <i class="fas fa-target fa-2x mb-2"></i>
+                        <h6 class="mb-1">Horas Propuestas</h6>
+                        <h4 class="mb-0 fw-bold">@totalHours</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <h6 class="mb-1">Horas Aprobadas</h6>
+                        <h4 class="mb-0 fw-bold">@approvedHours</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-2">
+                        <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                        <h6 class="mb-1">Horas Restantes</h6>
+                        <h4 class="mb-0 fw-bold" id="remainingHoursDisplay">@remainingHours</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-2">
+                        <i class="fas fa-chart-line fa-2x mb-2"></i>
+                        <h6 class="mb-1">Progreso</h6>
+                        <h4 class="mb-0 fw-bold">@((totalHours > 0 ? (approvedHours / totalHours * 100) : 0).ToString("F1"))%</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar-custom mt-3">
+                <div class="progress-fill" style="width: @((totalHours > 0 ? (approvedHours / totalHours * 100) : 0).ToString("F1"))%"></div>
+            </div>
+        </div>
+    }
+
+    @if (remainingHours <= 0 && totalHours > 0)
+    {
+        <div class="alert alert-success border-0 shadow-sm">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="fas fa-trophy fa-2x text-warning"></i>
+                </div>
+                <div>
+                    <h5 class="alert-heading mb-1">¡Felicitaciones! 🎉</h5>
+                    <p class="mb-0">Has completado todas las horas comprometidas para esta solicitud. ¡Excelente trabajo!</p>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ✅ REQUERIMIENTO 3: Información sobre Horas Rechazadas -->
+    @if (isEditing && currentState == "Rejected")
+    {
+        <div class="rejected-hours-info">
+            <div class="d-flex align-items-start">
+                <div class="me-3">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="fas fa-edit me-2"></i>Editando Horas Rechazadas
+                    </h6>
+                    <div class="mb-2">
+                        <strong class="text-dark">Razón del rechazo:</strong>
+                        <p class="mb-1 text-dark">@rejectionReason</p>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Puedes corregir la información y volver a enviar para aprobación. Una vez corregidas, el estado volverá a "Pendiente".
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- Validation Summary -->
     @if (!ViewData.ModelState.IsValid)
@@ -113,7 +302,10 @@
         </div>
     }
 
-    <!-- Formulario -->
+    <!-- ✅ Validación en Tiempo Real de Horas Restantes -->
+    <div id="hoursValidationAlert" class="validation-live" style="display: none;"></div>
+
+    <!-- Formulario Principal -->
     <div class="form-card">
         @using (Html.BeginForm(Model.IsEditing ? "EditHours" : "AddHours", "VolunteerRequest", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
         {
@@ -125,95 +317,125 @@
             }
 
             <div class="row">
-                <!-- Fecha -->
-                <div class="col-md-6 mb-3">
+                <!-- Fecha de Trabajo -->
+                <div class="col-md-6 mb-4">
                     <label asp-for="Date" class="form-label fw-semibold">
                         <i class="fas fa-calendar me-2 text-primary"></i>Fecha de trabajo
+                        <span class="tooltip-icon" data-bs-toggle="tooltip" title="Selecciona la fecha en que realizaste el voluntariado">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
                     </label>
-                    @Html.EditorFor(m => m.Date, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                    @Html.EditorFor(m => m.Date, new { htmlAttributes = new { @class = "form-control form-control-lg", @required = "required" } })
                     @Html.ValidationMessageFor(m => m.Date, "", new { @class = "text-danger small" })
-                    <div class="form-text">Solo puedes registrar fechas hasta hoy</div>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Solo puedes registrar fechas hasta hoy y máximo 30 días hacia atrás
+                    </div>
+                    <!-- ✅ REQUERIMIENTO 3: Mensaje de validación para fechas existentes -->
+                    <div id="dateValidationMessage" class="date-validation-message" style="display: none;"></div>
                 </div>
 
-                <!-- Horas totales (calculado) -->
-                <div class="col-md-6 mb-3">
+                <!-- Horas Calculadas (Visual) -->
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-stopwatch me-2 text-success"></i>Total de horas
+                    </label>
                     <div class="hours-display" id="hoursDisplay">
-                        <h5 class="mb-0">
-                            <i class="fas fa-stopwatch me-2"></i>
+                        <h4 class="mb-1 fw-bold">
                             <span id="totalHours">@Model.TotalHoursFormatted</span>
-                        </h5>
-                        <small>Total de horas</small>
+                        </h4>
+                        <small>Horas a registrar</small>
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <!-- Hora de inicio -->
-                <div class="col-md-6 mb-3">
+                <!-- Hora de Inicio -->
+                <div class="col-md-6 mb-4">
                     <label asp-for="StartTime" class="form-label fw-semibold">
                         <i class="fas fa-play me-2 text-success"></i>Hora de inicio
+                        <span class="tooltip-icon" data-bs-toggle="tooltip" title="Sin restricción de horario - puedes trabajar en cualquier momento">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
                     </label>
-                    @Html.EditorFor(m => m.StartTime, new { htmlAttributes = new { @class = "form-control time-input", @type = "time", @required = "required" } })
+                    @Html.EditorFor(m => m.StartTime, new { htmlAttributes = new { @class = "form-control form-control-lg time-input", @type = "time", @required = "required" } })
                     @Html.ValidationMessageFor(m => m.StartTime, "", new { @class = "text-danger small" })
-                    <div class="form-text">Entre 6:00 AM y 10:00 PM</div>
+                    <div class="form-text">
+                        <i class="fas fa-clock me-1"></i>
+                        Sin restricción de horario - 24 horas disponibles
+                    </div>
                 </div>
 
-                <!-- Hora de fin -->
-                <div class="col-md-6 mb-3">
+                <!-- Hora de Fin -->
+                <div class="col-md-6 mb-4">
                     <label asp-for="EndTime" class="form-label fw-semibold">
                         <i class="fas fa-stop me-2 text-danger"></i>Hora de fin
+                        <span class="tooltip-icon" data-bs-toggle="tooltip" title="Máximo 8 horas por día, mínimo 1 hora">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
                     </label>
-                    @Html.EditorFor(m => m.EndTime, new { htmlAttributes = new { @class = "form-control time-input", @type = "time", @required = "required" } })
+                    @Html.EditorFor(m => m.EndTime, new { htmlAttributes = new { @class = "form-control form-control-lg time-input", @type = "time", @required = "required" } })
                     @Html.ValidationMessageFor(m => m.EndTime, "", new { @class = "text-danger small" })
-                    <div class="form-text">Máximo 8 horas por día</div>
+                    <div class="form-text">
+                        <i class="fas fa-hourglass-half me-1"></i>
+                        Máximo 8 horas por día, mínimo 1 hora
+                    </div>
                 </div>
             </div>
 
-            <!-- Descripción de actividades -->
-            <div class="mb-3">
+            <!-- Descripción de Actividades -->
+            <div class="mb-4">
                 <label asp-for="ActivitiesDescription" class="form-label fw-semibold">
                     <i class="fas fa-tasks me-2 text-info"></i>Actividades realizadas
+                    <span class="text-danger">*</span>
                 </label>
-                @Html.TextAreaFor(m => m.ActivitiesDescription, new { @class = "form-control", @rows = "5", @placeholder = "Describe detalladamente las actividades que realizaste durante tu jornada de voluntariado...", @required = "required", @maxlength = "1000" })
-                @Html.ValidationMessageFor(m => m.ActivitiesDescription, "", new { @class = "text-danger small" })
-                <div class="d-flex justify-content-between">
-                    <div class="form-text">Describe qué hiciste, cómo ayudaste, qué lograste</div>
-                    <div class="form-text">
-                        <span id="activitiesCounter">0</span>/1000 caracteres
+                <div class="form-floating-custom">
+                    @Html.TextAreaFor(m => m.ActivitiesDescription, new { @class = "form-control", @rows = "6", @placeholder = "Describe detalladamente las actividades que realizaste durante tu jornada de voluntariado...\n\nEjemplos:\n- Organización de documentos administrativos\n- Atención a beneficiarios\n- Limpieza y mantenimiento de instalaciones\n- Apoyo en actividades educativas\n- Preparación de materiales", @required = "required", @maxlength = "1000" })
+                    <div class="floating-counter">
+                        <span id="activitiesCounter">0</span>/1000
                     </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.ActivitiesDescription, "", new { @class = "text-danger small" })
+                <div class="form-text">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    Describe qué hiciste, cómo ayudaste, qué lograste y el impacto de tu trabajo
                 </div>
             </div>
 
-            <!-- Notas adicionales -->
+            <!-- Notas Adicionales -->
             <div class="mb-4">
                 <label asp-for="Notes" class="form-label fw-semibold">
-                    <i class="fas fa-sticky-note me-2 text-warning"></i>Notas adicionales (opcional)
+                    <i class="fas fa-sticky-note me-2 text-warning"></i>Notas adicionales
+                    <small class="text-muted">(opcional)</small>
                 </label>
-                @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", @rows = "3", @placeholder = "Observaciones, comentarios, reflexiones sobre tu experiencia...", @maxlength = "500" })
-                @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "text-danger small" })
-                <div class="d-flex justify-content-between">
-                    <div class="form-text">Información adicional que consideres relevante</div>
-                    <div class="form-text">
-                        <span id="notesCounter">0</span>/500 caracteres
+                <div class="form-floating-custom">
+                    @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", @rows = "4", @placeholder = "Observaciones, comentarios, reflexiones sobre tu experiencia, dificultades encontradas, sugerencias de mejora...", @maxlength = "500" })
+                    <div class="floating-counter">
+                        <span id="notesCounter">0</span>/500
                     </div>
+                </div>
+                @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "text-danger small" })
+                <div class="form-text">
+                    <i class="fas fa-comment me-1"></i>
+                    Información adicional que consideres relevante para el seguimiento
                 </div>
             </div>
 
-            <!-- Preview Card -->
+            <!-- Vista Previa -->
             <div class="preview-card" id="previewCard" style="display: none;">
-                <h6><i class="fas fa-eye me-2"></i>Vista previa</h6>
+                <h6><i class="fas fa-eye me-2"></i>Vista previa del registro</h6>
                 <div id="previewContent"></div>
             </div>
 
-            <!-- Botones -->
-            <div class="d-flex gap-3 justify-content-end">
-                <a asp-action="ManageHours" asp-route-requestId="@Model.RequestId" class="btn btn-secondary">
+            <!-- Botones de Acción -->
+            <div class="d-flex gap-3 justify-content-end align-items-center flex-wrap">
+                <a asp-action="ManageHours" asp-route-requestId="@Model.RequestId" class="btn btn-secondary btn-lg">
                     <i class="fas fa-times me-2"></i>Cancelar
                 </a>
-                <button type="button" class="btn btn-info" onclick="showPreview()">
+                <button type="button" class="btn btn-info btn-lg" onclick="showPreview()">
                     <i class="fas fa-eye me-2"></i>Vista previa
                 </button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
                     <i class="fas fa-save me-2"></i>
                     @(Model.IsEditing ? "Actualizar Registro" : "Registrar Horas")
                 </button>
@@ -221,25 +443,53 @@
         }
     </div>
 
-    <!-- Información de ayuda -->
+    <!-- Información de Ayuda y Reglas -->
     <div class="form-card">
-        <h6><i class="fas fa-info-circle me-2 text-info"></i>Reglas importantes</h6>
+        <h6><i class="fas fa-info-circle me-2 text-info"></i>Reglas importantes para el registro de horas</h6>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-lg-6">
+                <h6 class="text-success mb-3"><i class="fas fa-check-circle me-2"></i>Lo que SÍ puedes hacer:</h6>
                 <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i>Máximo 8 horas por día</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Mínimo 1 hora por registro</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Horarios entre 6:00 AM y 10:00 PM</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Solo un registro por día</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Registrar entre 1 y 8 horas por día</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Trabajar en cualquier horario (24 horas)</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Editar horas pendientes o rechazadas</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Re-registrar después de un rechazo</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Registrar hasta las horas comprometidas</li>
                 </ul>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-6">
+                <h6 class="text-warning mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Restricciones importantes:</h6>
                 <ul class="list-unstyled">
-                    <li><i class="fas fa-clock text-warning me-2"></i>No registrar fechas futuras</li>
-                    <li><i class="fas fa-clock text-warning me-2"></i>Máximo 30 días hacia atrás</li>
-                    <li><i class="fas fa-hourglass-half text-info me-2"></i>Horas quedan pendientes de aprobación</li>
-                    <li><i class="fas fa-lock text-secondary me-2"></i>No se pueden editar una vez aprobadas</li>
+                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>No registrar fechas futuras</li>
+                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>No más de 30 días hacia atrás</li>
+                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Solo un registro por día</li>
+                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>No editar horas ya aprobadas</li>
+                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>No exceder horas restantes disponibles</li>
                 </ul>
+            </div>
+        </div>
+        
+        <div class="mt-3 p-3 bg-light rounded">
+            <h6 class="text-primary mb-2"><i class="fas fa-route me-2"></i>Proceso de aprobación:</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-center">
+                    <i class="fas fa-plus-circle fa-2x text-primary mb-1"></i>
+                    <small class="d-block">1. Registras</small>
+                </div>
+                <div class="flex-grow-1 mx-3">
+                    <div class="border-top border-2 border-primary" style="border-style: dashed !important;"></div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-1"></i>
+                    <small class="d-block">2. Pendiente</small>
+                </div>
+                <div class="flex-grow-1 mx-3">
+                    <div class="border-top border-2 border-warning" style="border-style: dashed !important;"></div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-1"></i>
+                    <small class="d-block">3. Aprobado</small>
+                </div>
             </div>
         </div>
     </div>
@@ -248,33 +498,47 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ✅ ELEMENTOS DEL DOM
             const startTimeInput = document.getElementById('StartTime');
             const endTimeInput = document.getElementById('EndTime');
             const activitiesTextarea = document.getElementById('ActivitiesDescription');
             const notesTextarea = document.getElementById('Notes');
             const submitBtn = document.getElementById('submitBtn');
             const dateInput = document.getElementById('Date');
+            
+            // ✅ VARIABLES DE CONFIGURACIÓN
+            const remainingHours = @remainingHours;
+            const requestId = @Model.RequestId;
+            const isEditing = @(Model.IsEditing ? "true" : "false");
 
-            // Actualizar contador de caracteres
+            // ✅ INICIALIZAR TOOLTIPS
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // ✅ FUNCIÓN: Actualizar contador de caracteres
             function updateCharCounter(textarea, counterId) {
                 const counter = document.getElementById(counterId);
                 if (counter && textarea) {
                     const currentLength = textarea.value.length;
                     counter.textContent = currentLength;
 
-                    // Cambiar color según proximidad al límite
-                    const maxLength = textarea.getAttribute('maxlength') || 1000;
-                    if (currentLength > maxLength * 0.9) {
-                        counter.className = 'text-danger';
-                    } else if (currentLength > maxLength * 0.8) {
-                        counter.className = 'text-warning';
+                    const maxLength = parseInt(textarea.getAttribute('maxlength')) || 1000;
+                    const percentage = (currentLength / maxLength) * 100;
+                    
+                    // Actualizar color del contador
+                    if (percentage > 90) {
+                        counter.className = 'text-danger fw-bold';
+                    } else if (percentage > 80) {
+                        counter.className = 'text-warning fw-bold';
                     } else {
                         counter.className = 'text-muted';
                     }
                 }
             }
 
-            // Calcular y mostrar total de horas
+            // ✅ FUNCIÓN: Calcular y validar total de horas
             function updateTotalHours() {
                 const startTime = startTimeInput.value;
                 const endTime = endTimeInput.value;
@@ -287,37 +551,89 @@
                         const diffMs = end - start;
                         const diffHours = diffMs / (1000 * 60 * 60);
 
+                        // Actualizar display de horas
                         document.getElementById('totalHours').textContent = diffHours.toFixed(1) + ' horas';
 
-                        // Validación visual
+                        // Resetear clases CSS
                         const hoursDisplay = document.getElementById('hoursDisplay');
-                        hoursDisplay.classList.remove('hours-invalid', 'hours-warning');
+                        hoursDisplay.classList.remove('hours-invalid', 'hours-warning', 'hours-exceeded');
 
+                        // Aplicar validaciones visuales
                         if (diffHours > 8) {
                             hoursDisplay.classList.add('hours-invalid');
+                            showValidationMessage('Máximo 8 horas por día', 'danger');
                         } else if (diffHours < 1) {
                             hoursDisplay.classList.add('hours-warning');
+                            showValidationMessage('Mínimo 1 hora por registro', 'warning');
+                        } else if (diffHours > remainingHours && remainingHours < 999) {
+                            hoursDisplay.classList.add('hours-exceeded');
+                            showHoursValidation(diffHours, false);
+                        } else {
+                            clearValidationMessages();
+                            if (remainingHours < 999) {
+                                showHoursValidation(diffHours, true);
+                            }
                         }
-
-                        // Validar horarios laborales
-                        const startHour = start.getHours();
-                        const endHour = end.getHours();
-
-                        if (startHour < 6 || endHour > 22) {
-                            hoursDisplay.classList.add('hours-warning');
-                        }
-
                     } else {
                         document.getElementById('totalHours').textContent = '0.0 horas';
                         document.getElementById('hoursDisplay').classList.add('hours-invalid');
+                        showValidationMessage('La hora de fin debe ser mayor a la hora de inicio', 'danger');
                     }
+                } else {
+                    clearValidationMessages();
                 }
             }
 
-            // Validar fecha
+            // ✅ FUNCIÓN: Mostrar validación de horas restantes
+            function showHoursValidation(calculatedHours, isValid) {
+                const alertDiv = document.getElementById('hoursValidationAlert');
+                
+                if (calculatedHours > remainingHours) {
+                    alertDiv.className = 'validation-live alert alert-danger border-0 shadow-sm';
+                    alertDiv.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+                            <div>
+                                <strong>¡Atención!</strong> No puedes registrar ${calculatedHours.toFixed(1)} horas.<br>
+                                <small>Solo quedan ${remainingHours} horas disponibles de las ${@totalHours} horas propuestas.</small>
+                            </div>
+                        </div>
+                    `;
+                    alertDiv.style.display = 'block';
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-ban me-2"></i>No se puede registrar';
+                } else if (calculatedHours > 0 && remainingHours < 999) {
+                    alertDiv.className = 'validation-live alert alert-success border-0 shadow-sm';
+                    alertDiv.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-lg me-3"></i>
+                            <div>
+                                <strong>¡Perfecto!</strong> Puedes registrar ${calculatedHours.toFixed(1)} horas.<br>
+                                <small>Quedarán ${(remainingHours - calculatedHours).toFixed(1)} horas restantes por completar.</small>
+                            </div>
+                        </div>
+                    `;
+                    alertDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>' + (isEditing ? 'Actualizar Registro' : 'Registrar Horas');
+                } else {
+                    clearHoursValidation();
+                }
+            }
+
+            // ✅ FUNCIÓN: Limpiar validación de horas
+            function clearHoursValidation() {
+                const alertDiv = document.getElementById('hoursValidationAlert');
+                alertDiv.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>' + (isEditing ? 'Actualizar Registro' : 'Registrar Horas');
+            }
+
+            // ✅ FUNCIÓN: Validar fecha
             function validateDate() {
                 const selectedDate = new Date(dateInput.value);
                 const today = new Date();
+                today.setHours(23, 59, 59, 999); // Permitir hasta el final del día
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(today.getDate() - 30);
 
@@ -331,10 +647,56 @@
                     return false;
                 }
 
+                // ✅ REQUERIMIENTO 3: Verificar registros existentes para la fecha
+                checkExistingHoursForDate(selectedDate);
+                
                 return true;
             }
 
-            // Mostrar mensaje de validación
+            // ✅ FUNCIÓN: Verificar registros existentes para la fecha
+            function checkExistingHoursForDate(selectedDate) {
+                const dateStr = selectedDate.toISOString().split('T')[0];
+                
+                fetch(`/VolunteerRequest/CheckHoursForDate?requestId=${requestId}&date=${dateStr}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const messageDiv = document.getElementById('dateValidationMessage');
+                        
+                        if (data.hasHours) {
+                            if (data.canReregister) {
+                                messageDiv.className = 'date-validation-message alert alert-warning py-2';
+                                messageDiv.innerHTML = `
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-info-circle me-2 mt-1"></i>
+                                        <div>
+                                            <strong>Información:</strong> ${data.message}
+                                            <br><small>Puedes registrar nuevas horas para esta fecha.</small>
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                messageDiv.className = 'date-validation-message alert alert-danger py-2';
+                                messageDiv.innerHTML = `
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                                        <div>
+                                            <strong>Atención:</strong> ${data.message}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            messageDiv.style.display = 'block';
+                        } else {
+                            messageDiv.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Error checking existing hours:', error);
+                        document.getElementById('dateValidationMessage').style.display = 'none';
+                    });
+            }
+
+            // ✅ FUNCIÓN: Mostrar mensajes de validación generales
             function showValidationMessage(message, type) {
                 // Remover mensajes previos
                 const existingAlert = document.querySelector('.validation-alert');
@@ -344,15 +706,19 @@
 
                 // Crear nuevo mensaje
                 const alertDiv = document.createElement('div');
-                alertDiv.className = `alert alert-${type} alert-dismissible fade show validation-alert`;
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show validation-alert border-0 shadow-sm`;
                 alertDiv.innerHTML = `
-                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+                        <div class="flex-grow-1">${message}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 `;
 
                 // Insertar antes del formulario
+                const container = document.querySelector('.container');
                 const formCard = document.querySelector('.form-card');
-                formCard.insertBefore(alertDiv, formCard.firstChild);
+                container.insertBefore(alertDiv, formCard);
 
                 // Auto-remover después de 5 segundos
                 setTimeout(() => {
@@ -362,10 +728,22 @@
                 }, 5000);
             }
 
-            // Event listeners
+            // ✅ FUNCIÓN: Limpiar mensajes de validación
+            function clearValidationMessages() {
+                const existingAlert = document.querySelector('.validation-alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+            }
+
+            // ✅ EVENT LISTENERS
             startTimeInput.addEventListener('change', updateTotalHours);
             endTimeInput.addEventListener('change', updateTotalHours);
+            startTimeInput.addEventListener('input', updateTotalHours);
+            endTimeInput.addEventListener('input', updateTotalHours);
+            
             dateInput.addEventListener('change', validateDate);
+            dateInput.addEventListener('blur', validateDate);
 
             activitiesTextarea.addEventListener('input', function() {
                 updateCharCounter(this, 'activitiesCounter');
@@ -375,31 +753,83 @@
                 updateCharCounter(this, 'notesCounter');
             });
 
-            // Inicializar contadores y cálculos
+            // ✅ INICIALIZACIÓN
             updateCharCounter(activitiesTextarea, 'activitiesCounter');
             updateCharCounter(notesTextarea, 'notesCounter');
             updateTotalHours();
 
-            // Validación del formulario antes de enviar
+            // ✅ VALIDACIÓN FINAL DEL FORMULARIO
             document.querySelector('form').addEventListener('submit', function(e) {
+                // Validar fecha
                 if (!validateDate()) {
                     e.preventDefault();
                     return false;
                 }
 
+                // Validar descripción de actividades
                 const activities = activitiesTextarea.value.trim();
                 if (!activities || activities.length < 20) {
-                    showValidationMessage('La descripción de actividades debe tener al menos 20 caracteres', 'danger');
+                    showValidationMessage('La descripción de actividades debe tener al menos 20 caracteres y ser descriptiva', 'danger');
+                    activitiesTextarea.focus();
                     e.preventDefault();
                     return false;
+                }
+
+                // ✅ REQUERIMIENTO 1: Validación final de horas restantes
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+                if (startTime && endTime) {
+                    const start = new Date('1970-01-01T' + startTime + ':00');
+                    const end = new Date('1970-01-01T' + endTime + ':00');
+                    const diffHours = (end - start) / (1000 * 60 * 60);
+                    
+                    if (diffHours > remainingHours && remainingHours < 999) {
+                        showValidationMessage(`No puedes registrar ${diffHours.toFixed(1)} horas. Solo quedan ${remainingHours} horas disponibles.`, 'danger');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    if (diffHours < 1) {
+                        showValidationMessage('Debe registrar al menos 1 hora de trabajo', 'danger');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    if (diffHours > 8) {
+                        showValidationMessage('No se pueden registrar más de 8 horas por día', 'danger');
+                        e.preventDefault();
+                        return false;
+                    }
                 }
 
                 // Deshabilitar botón para evitar doble envío
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+                
+                // Mostrar mensaje de progreso
+                const progressAlert = document.createElement('div');
+                progressAlert.className = 'alert alert-info border-0 shadow-sm';
+                progressAlert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+                        <div>Guardando registro de horas...</div>
+                    </div>
+                `;
+                
+                const container = document.querySelector('.container');
+                const formCard = document.querySelector('.form-card');
+                container.insertBefore(progressAlert, formCard);
+            });
+
+            // ✅ PREVENIR ENVÍO CON ENTER EN CAMPOS DE TEXTO
+            activitiesTextarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    document.querySelector('form').submit();
+                }
             });
         });
 
+        // ✅ FUNCIÓN: Mostrar vista previa
         function showPreview() {
             const previewCard = document.getElementById('previewCard');
             const previewContent = document.getElementById('previewContent');
@@ -409,27 +839,81 @@
             const endTime = document.getElementById('EndTime').value;
             const activities = document.getElementById('ActivitiesDescription').value;
             const notes = document.getElementById('Notes').value;
+            const totalHours = document.getElementById('totalHours').textContent;
+
+            // Formatear fecha
+            const formattedDate = date ? new Date(date + 'T00:00:00').toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) : 'No especificada';
 
             previewContent.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>Fecha:</strong> ${new Date(date).toLocaleDateString('es-ES')}<br>
-                        <strong>Horario:</strong> ${startTime} - ${endTime}<br>
+                        <h6 class="text-primary mb-3"><i class="fas fa-calendar-alt me-2"></i>Información del registro</h6>
+                        <p class="mb-2"><strong>Fecha:</strong> ${formattedDate}</p>
+                        <p class="mb-2"><strong>Horario:</strong> ${startTime || 'No especificado'} - ${endTime || 'No especificado'}</p>
+                        <p class="mb-2"><strong>Total de horas:</strong> <span class="badge bg-primary">${totalHours}</span></p>
                     </div>
                     <div class="col-md-6">
-                        <strong>Total horas:</strong> ${document.getElementById('totalHours').textContent}
+                        <h6 class="text-success mb-3"><i class="fas fa-chart-pie me-2"></i>Progreso</h6>
+                        <p class="mb-2"><strong>Horas restantes:</strong> ${@remainingHours < 999 ? remainingHours : 'N/A'}</p>
+                        <p class="mb-2"><strong>Estado:</strong> <span class="badge bg-warning">Pendiente de aprobación</span></p>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <strong>Actividades:</strong><br>
-                    <p class="mb-1">${activities || 'No especificadas'}</p>
+                
+                <hr class="my-3">
+                
+                <div class="mb-3">
+                    <h6 class="text-info mb-2"><i class="fas fa-tasks me-2"></i>Actividades realizadas</h6>
+                    <div class="p-3 bg-light rounded">
+                        <p class="mb-0">${activities || '<em class="text-muted">No especificadas</em>'}</p>
+                    </div>
                 </div>
-                ${notes ? `<div class="mt-2"><strong>Notas:</strong><br><p class="mb-0">${notes}</p></div>` : ''}
+                
+                ${notes ? `
+                <div class="mb-3">
+                    <h6 class="text-warning mb-2"><i class="fas fa-sticky-note me-2"></i>Notas adicionales</h6>
+                    <div class="p-3 bg-light rounded">
+                        <p class="mb-0">${notes}</p>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Esta es una vista previa. El registro será enviado para aprobación al guardar.
+                    </small>
+                </div>
             `;
 
             previewCard.style.display = 'block';
-            previewCard.scrollIntoView({ behavior: 'smooth' });
+            previewCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        // ✅ FUNCIÓN: Ocultar vista previa al cambiar campos
+        document.addEventListener('DOMContentLoaded', function() {
+            const formInputs = document.querySelectorAll('input, textarea, select');
+            formInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const previewCard = document.getElementById('previewCard');
+                    if (previewCard.style.display === 'block') {
+                        previewCard.style.opacity = '0.7';
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-warning position-absolute top-0 start-0 m-2';
+                        badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Desactualizada';
+                        badge.style.zIndex = '10';
+                        
+                        if (!previewCard.querySelector('.badge')) {
+                            previewCard.style.position = 'relative';
+                            previewCard.appendChild(badge);
+                        }
+                    }
+                });
+            });
+        });
     </script>
 }
-

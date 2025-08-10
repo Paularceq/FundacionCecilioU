@@ -26,6 +26,8 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // ✅ REQUERIMIENTO 1: Las validaciones de horas restantes ya están en el Service
+            // ✅ REQUERIMIENTO 3: El manejo de re-registro después de rechazo ya está en el Service
             var result = await _volunteerRequestService.CreateVolunteerHoursAsync(dto);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
@@ -62,6 +64,13 @@ namespace Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de actualizar
+            var existingHoursResult = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
+            if (existingHoursResult.IsFailure)
+                return BadRequest(new { errors = existingHoursResult.Errors });
+
+            // ✅ REQUERIMIENTO 1: Las validaciones de horas restantes ya están en el Service
+            // ✅ REQUERIMIENTO 3: El manejo de conflictos con rechazos ya está en el Service
             var result = await _volunteerRequestService.UpdateVolunteerHoursAsync(hoursId, dto);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
@@ -72,11 +81,27 @@ namespace Api.Controllers
         [HttpDelete("{hoursId}")]
         public async Task<IActionResult> DeleteVolunteerHours(int hoursId)
         {
+            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de eliminar
+            var existingHoursResult = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
+            if (existingHoursResult.IsFailure)
+                return BadRequest(new { errors = existingHoursResult.Errors });
+
             var result = await _volunteerRequestService.DeleteVolunteerHoursAsync(hoursId);
             if (result.IsFailure)
                 return BadRequest(new { errors = result.Errors });
 
             return Ok(new { message = "Horas eliminadas correctamente" });
+        }
+
+        // ===== NUEVO ENDPOINT AGREGADO =====
+        [HttpGet("{hoursId}")]
+        public async Task<IActionResult> GetVolunteerHoursById(int hoursId)
+        {
+            var result = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
+            if (result.IsFailure)
+                return BadRequest(new { errors = result.Errors });
+
+            return Ok(result.Value);
         }
 
         // ===== APROBACIÓN DE HORAS =====

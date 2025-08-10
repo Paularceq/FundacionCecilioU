@@ -6,11 +6,12 @@ namespace Api.Abstractions.Application
 {
     public interface IVolunteerRequestService
     {
-       
-        Task<Result> CreateAsync(VolunteerRequestDto requestDto);
+        // ===== GESTIÓN DE SOLICITUDES =====
+        Task<Result> CreateAsync(CreateVolunteerRequestDto requestDto, int volunteerId);
+        Task<Result> CanCreateNewRequestAsync(int volunteerId); // ← metodo para validar si el voluntario puede crear una nueva solicitud
         Task<List<VolunteerRequestDto>> GetAllByVolunteerIDAsync(int volunteerId);
 
-        // ===== NUEVOS MÉTODOS PARA ADMINISTRACIÓN =====
+        // ===== MÉTODOS PARA ADMINISTRACIÓN =====
         Task<List<VolunteerRequestDto>> GetAllRequestsAsync();
         Task<List<VolunteerRequestDto>> GetRequestsByStateAsync(VolunteerState state);
         Task<Result<VolunteerRequestDto>> GetRequestByIdAsync(int requestId);
@@ -21,6 +22,7 @@ namespace Api.Abstractions.Application
         Task<Result> CreateVolunteerHoursAsync(CreateVolunteerHoursDto dto);
         Task<Result<List<VolunteerHoursDto>>> GetHoursByRequestIdAsync(int requestId);
         Task<Result<List<VolunteerHoursDto>>> GetHoursByDateRangeAsync(int requestId, DateTime startDate, DateTime endDate);
+        Task<Result<VolunteerHoursDto>> GetVolunteerHoursByIdAsync(int hoursId); // ✅ MÉTODO AGREGADO
         Task<Result> UpdateVolunteerHoursAsync(int hoursId, CreateVolunteerHoursDto dto);
         Task<Result> DeleteVolunteerHoursAsync(int hoursId);
 

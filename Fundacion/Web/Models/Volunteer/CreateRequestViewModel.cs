@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Web.Models.Volunteer
 {
     public class CreateRequestViewModel
