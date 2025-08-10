@@ -1,0 +1,53 @@
+﻿@model Web.Models.Financial.AdministrativeExpenseViewModel
+
+@{
+    ViewData["Title"] = "Agregar gasto administrativo";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="h2 mb-4">Agregar gasto administrativo</h1>
+
+    <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm bg-light">
+        <div class="mb-3 row">
+            <div class="col-md-6">
+                <label asp-for="Amount" class="form-label"><i class="fas fa-dollar-sign me-2"></i>Monto</label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Currency" class="form-label"><i class="fas fa-coins me-2"></i>Moneda</label>
+                <select asp-for="Currency" class="form-control" asp-items="Html.GetEnumSelectList<Shared.Enums.Currency>()"></select>
+                <span asp-validation-for="Currency" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"><i class="fas fa-align-left me-2"></i>Descripción</label>
+            <input asp-for="Description" class="form-control" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Date" class="form-label"><i class="fas fa-calendar-alt me-2"></i>Fecha</label>
+            <input asp-for="Date" type="date" class="form-control" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ReceiptFile" class="form-label"><i class="fas fa-file-invoice me-2"></i>Recibo (archivo)</label>
+            <input asp-for="ReceiptFile" type="file" class="form-control" />
+            <span asp-validation-for="ReceiptFile" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check me-2"></i>Guardar gasto
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

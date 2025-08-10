@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 
 namespace Api.Database.Entities
@@ -53,7 +50,7 @@ namespace Api.Database.Entities
 
         public EstadoSolicitud Estado { get; set; } = EstadoSolicitud.Pendiente;
 
-        
+
 
         [StringLength(500)]
         public string? ComentarioAdministrador { get; set; }
@@ -62,8 +59,8 @@ namespace Api.Database.Entities
 
     public enum EstadoSolicitud
     {
-        Pendiente =0,
+        Pendiente = 0,
         Aprobada = 1,
         Rechazada = 2
     }
-   }
+}

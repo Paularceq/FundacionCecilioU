@@ -1,8 +1,10 @@
-﻿using Api.Database;
+﻿using Api.Abstractions.Application;
+using Api.Database;
 using Api.Database.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dtos.Becas;
+using Shared.Enums;
 
 namespace Api.Controllers
 {
@@ -12,11 +14,12 @@ namespace Api.Controllers
 
     {
         private readonly DatabaseContext _context;
+        private readonly IScholarshipPaymentService _scholarshipPaymentService;
 
-
-        public SolicitudesBecaController(DatabaseContext context)
+        public SolicitudesBecaController(DatabaseContext context, IScholarshipPaymentService scholarshipPaymentService)
         {
             _context = context;
+            _scholarshipPaymentService = scholarshipPaymentService;
         }
 
         // GET: api/SolicitudesBeca
@@ -24,25 +27,25 @@ namespace Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var solicitudes = await _context.SolicitudesBeca
-    .Select(s => new SolicitudBecaDto
-    {
-        Id = s.Id,
-        CedulaEstudiante = s.CedulaEstudiante,
-        NombreEstudiante = s.NombreEstudiante,
-        CorreoContacto = s.CorreoContacto,
-        TelefonoContacto = s.TelefonoContacto,
-        Direccion = s.Direccion,
-        Colegio = s.Colegio,
-        NivelEducativo = s.NivelEducativo,
-        CartaConsentimiento = s.CartaConsentimiento,
-        CartaConsentimientoContentType = s.CartaConsentimientoContentType,
-        CartaNotas = s.CartaNotas,
-        CartaNotasContentType = s.CartaNotasContentType,
-        FechaSolicitud = s.FechaSolicitud,
-        Estado = s.Estado.ToString(),
-        EsFormularioManual = s.EsFormularioManual
-    })
-    .ToListAsync();
+                .Select(s => new SolicitudBecaDto
+                {
+                    Id = s.Id,
+                    CedulaEstudiante = s.CedulaEstudiante,
+                    NombreEstudiante = s.NombreEstudiante,
+                    CorreoContacto = s.CorreoContacto,
+                    TelefonoContacto = s.TelefonoContacto,
+                    Direccion = s.Direccion,
+                    Colegio = s.Colegio,
+                    NivelEducativo = s.NivelEducativo,
+                    CartaConsentimiento = s.CartaConsentimiento,
+                    CartaConsentimientoContentType = s.CartaConsentimientoContentType,
+                    CartaNotas = s.CartaNotas,
+                    CartaNotasContentType = s.CartaNotasContentType,
+                    FechaSolicitud = s.FechaSolicitud,
+                    Estado = s.Estado.ToString(),
+                    EsFormularioManual = s.EsFormularioManual
+                })
+                .ToListAsync();
 
             return Ok(solicitudes);
         }
@@ -184,14 +187,13 @@ namespace Api.Controllers
         }
 
         [HttpPut("decidir/{id}")]
-        public async Task<IActionResult> TomarDecision(int id,TomarDesicionDto dto)
+        public async Task<IActionResult> TomarDecision(int id, TomarDesicionDto dto)
         {
             var solicitud = await _context.SolicitudesBeca
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (solicitud == null)
                 return NotFound();
-
 
             if (!Enum.TryParse<EstadoSolicitud>(
                     dto.Estado,
@@ -208,6 +210,23 @@ namespace Api.Controllers
             solicitud.Estado = nuevoEstado;
 
             await _context.SaveChangesAsync();
+
+            if (nuevoEstado == EstadoSolicitud.Aprobada)
+            {
+                var scholarship = new Scholarship
+                {
+                    RequestId = solicitud.Id,
+                    Amount = dto.Amount ?? 0,
+                    Currency = dto.Currency ?? Currency.CRC, 
+                    Frequency = dto.Frequency ?? ScholarshipFrequency.Monthly,
+                    StartDate = dto.StartDate ?? DateTime.Now,
+                    IsActive = true
+                };
+
+                _context.Set<Scholarship>().Add(scholarship);
+                await _context.SaveChangesAsync();
+            }
+
             return NoContent();
         }
 

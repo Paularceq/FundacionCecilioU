@@ -49,12 +49,15 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IDonationService, DonationService>();
 builder.Services.AddScoped<IOutgoingDonationService, OutgoingDonationService>();
 builder.Services.AddScoped<IVolunteerRequestService, VolunteerRequestService>();
+builder.Services.AddScoped<IFinancialService, FinancialService>();
+builder.Services.AddScoped<IScholarshipPaymentService, ScholarshipPaymentService>();
 
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+builder.Services.AddScoped<IExchangeRateService, ExchangeRateService>();
 
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -64,6 +67,7 @@ builder.Services.AddScoped<IInventoryMovementRepository, InventoryMovementReposi
 builder.Services.AddScoped<IOutgoingDonationRepository, OutgoingDonationRepository>();
 builder.Services.AddScoped<IVolunteerRequestRepository, VolunteerRequestRepository>();
 builder.Services.AddScoped<IDonationsRepository, DonationsRepository>();
+builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
 
 var app = builder.Build();
 

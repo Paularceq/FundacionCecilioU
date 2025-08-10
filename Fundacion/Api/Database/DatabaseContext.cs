@@ -98,5 +98,10 @@ namespace Api.Database
         public DbSet<OutgoingDonation> OutgoingDonations { get; set; }
         public DbSet<VolunteerRequest> VolunteerRequests { get; set; }
         public DbSet<VolunteerHours> VolunteerHours { get; set; }
+        public DbSet<FinancialMovement> FinancialMovements { get; set; }
+        public DbSet<Lease> Leases { get; set; }
+        public DbSet<Expense> Expenses { get; set; }
+        public DbSet<Budget> Budgets { get; set; }
+        public DbSet<Scholarship> Scholarships { get; set; }
     }
 }
