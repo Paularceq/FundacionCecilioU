@@ -1,0 +1,180 @@
+﻿@model Shared.Dtos.Financial.FinancialDashboardDto
+@{
+    ViewData["Title"] = "Dashboard Financiero";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #e3e6eb;
+        }
+
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+
+        .table thead th {
+            text-align: center !important;
+            vertical-align: middle !important;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-chart-line me-2"></i> Dashboard Financiero
+            </h1>
+        </div>
+        <div class="mb-3">
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Financial" asp-action="Budgets" class="btn btn-primary">
+                    <i class="fas fa-wallet me-1"></i> Presupuestos
+                </a>
+                <a asp-controller="Financial" asp-action="Movements" class="btn btn-primary">
+                    <i class="fas fa-list me-1"></i> Consultar Movimientos
+                </a>
+                <a asp-controller="Financial" asp-action="AddLeaseIncome" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Agregar Ingreso de Alquiler
+                </a>
+                <a asp-controller="Financial" asp-action="AddAdministrativeExpense" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Agregar Gasto Administrativo
+                </a>
+                <a asp-controller="Financial" asp-action="Scholarships" class="btn btn-primary">
+                    <i class="fas fa-graduation-cap me-1"></i> Pago de Becas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas básicas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-primary mb-1">@Model.TotalIncome.ToString("C")</h3>
+                        <p class="text-muted mb-0">Total Ingresos</p>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-danger mb-1">@Model.TotalExpense.ToString("C")</h3>
+                        <p class="text-muted mb-0">Total Egresos</p>
+                    </div>
+                    <div class="text-danger">
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-info mb-1">@Model.CurrentBudgetBalance.ToString("C")</h3>
+                        <p class="text-muted mb-0">Saldo Actual Presupuesto</p>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-wallet fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                @{
+                    string GetRatioColorClass(decimal ratio)
+                    {
+                        if (ratio >= 80m)
+                            return "text-danger";
+                        else if (ratio >= 60m)
+                            return "text-warning";
+                        return "text-success";
+                    }
+                }
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="@GetRatioColorClass(Model.BudgetExecutionPercentage) mb-1">@Model.BudgetExecutionPercentage.ToString("N2")</h3>
+                        <p class="text-muted mb-0">Ejecución Presupuestaria</p>
+                    </div>
+                    <div class="@GetRatioColorClass(Model.BudgetExecutionPercentage)">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparativa mensual -->
+    <div class="table-wrapper">
+        <h5 class="mb-3">
+            <i class="fas fa-calendar-alt me-2 text-primary"></i>Comparativa Mensual
+        </h5>
+        @if (Model.MonthlyComparison != null && Model.MonthlyComparison.Any())
+        {
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Mes</th>
+                        <th>Ingresos</th>
+                        <th>Egresos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.MonthlyComparison.OrderBy(x => x.Year).ThenBy(x => x.Month))
+                    {
+                        <tr>
+                            <td class="text-center">@item.Year</td>
+                            <td class="text-center">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(item.Month)</td>
+                            <td class="text-success">@item.Income.ToString("C")</td>
+                            <td class="text-danger">@item.Expense.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5>No hay datos mensuales disponibles.</h5>
+            </div>
+        }
+    </div>
+</div>

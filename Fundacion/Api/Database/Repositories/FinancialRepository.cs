@@ -36,6 +36,12 @@ namespace Api.Database.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task AddBudgetAsync(Budget budget)
+        {
+            _context.Budgets.Add(budget);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<BudgetDto> GetBudgetForDateAsync(DateTime date)
         {
             var budget = await _context.Budgets
@@ -72,5 +78,19 @@ namespace Api.Database.Repositories
             };
         }
 
+        public async Task<List<FinancialMovement>> GetFinancialMovementsAsync(DateTime from, DateTime to)
+        {
+            return await _context.FinancialMovements
+                .Include(m => m.CreatedBy)
+                .Where(m => m.Date >= from && m.Date <= to)
+                .ToListAsync();
+        }
+
+        public async Task<List<Budget>> GetAllBudgetsAsync()
+        {
+            return await _context.Budgets
+                .OrderByDescending(b => b.StartDate)
+                .ToListAsync();
+        }
     }
 }

@@ -66,7 +66,6 @@
                 </a>
                 <div class="collapse" id="collapseVoluntario" data-bs-parent="#sidenavAccordion">
                     <nav class="sb-sidenav-menu-nested nav">
-                        @* ✅ CAMBIO: Solo si es Voluntario Y NO es AdminUsuarios *@
                         @if (User.IsInRole(Roles.Voluntario) && !User.IsInRole(Roles.AdminUsuarios))
                         {
                             <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">Mis Solicitudes</a>
@@ -101,6 +100,27 @@
                     </nav>
                 </div>
             }
+
+            @* Menú desplegable de Finanzas *@
+            @if (User.IsInRole(Roles.AdminFinanzas) || User.IsInRole(Roles.AdminSistema))
+            {
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseFinanzas" aria-expanded="false" aria-controls="collapseFinanzas">
+                    <div class="sb-nav-link-icon"><i class="fa-solid fa-coins"></i></div>
+                    Finanzas
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseFinanzas" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a asp-controller="Financial" asp-action="Index" class="nav-link">Dashboard</a>
+                        <a asp-controller="Financial" asp-action="Budgets" class="nav-link">Presupuesto</a>
+                        <a asp-controller="Financial" asp-action="Movements" class="nav-link">Movimientos</a>
+                        <a asp-controller="Financial" asp-action="AddLeaseIncome" class="nav-link">Ingreso de alquiler</a>
+                        <a asp-controller="Financial" asp-action="AddAdministrativeExpense" class="nav-link">Gastos administrativos</a>
+                        <a asp-controller="Financial" asp-action="Scholarships" class="nav-link">Pago de becas</a>
+                    </nav>
+                </div>
+            }
+
 
 
             @* ========== COMENTADO: SECCIÓN DE INTERFAZ Y PÁGINAS ========= *@

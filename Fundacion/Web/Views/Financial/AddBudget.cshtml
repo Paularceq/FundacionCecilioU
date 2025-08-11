@@ -1,0 +1,55 @@
+@model Shared.Dtos.Financial.AddBudgetDto
+@{
+    ViewData["Title"] = "Agregar Presupuesto";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body { background-color: #e3e6eb; }
+        .form-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background-color: #fff;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="mb-4">
+        <h1 class="h3 fw-bold text-primary">
+            <i class="fas fa-plus me-2"></i> Agregar Presupuesto
+        </h1>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="AddBudget" method="post">
+            <div class="mb-3">
+                <label asp-for="Amount" class="form-label">Monto Original</label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Currency" class="form-label">Moneda</label>
+                <select asp-for="Currency" class="form-control" asp-items="Html.GetEnumSelectList<Shared.Enums.Currency>()"></select>
+                <span asp-validation-for="Currency" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="StartDate" class="form-label">Fecha de Inicio</label>
+                <input asp-for="StartDate" type="date" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="EndDate" class="form-label">Fecha de Fin</label>
+                <input asp-for="EndDate" type="date" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-1"></i> Guardar
+            </button>
+            <a asp-action="Budgets" class="btn btn-secondary ms-2">Cancelar</a>
+        </form>
+    </div>
+</div>

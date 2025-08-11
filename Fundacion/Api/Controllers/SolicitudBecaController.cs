@@ -14,12 +14,10 @@ namespace Api.Controllers
 
     {
         private readonly DatabaseContext _context;
-        private readonly IScholarshipPaymentService _scholarshipPaymentService;
 
-        public SolicitudesBecaController(DatabaseContext context, IScholarshipPaymentService scholarshipPaymentService)
+        public SolicitudesBecaController(DatabaseContext context)
         {
             _context = context;
-            _scholarshipPaymentService = scholarshipPaymentService;
         }
 
         // GET: api/SolicitudesBeca
@@ -220,6 +218,7 @@ namespace Api.Controllers
                     Currency = dto.Currency ?? Currency.CRC, 
                     Frequency = dto.Frequency ?? ScholarshipFrequency.Monthly,
                     StartDate = dto.StartDate ?? DateTime.Now,
+                    EndDate = dto.EndDate,
                     IsActive = true
                 };
 

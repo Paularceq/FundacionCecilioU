@@ -61,5 +61,49 @@ namespace Web.Services
             }
             return await _apiClient.PostAsync("financial/expense", expenseDto);
         }
+
+        public async Task<Result<FinancialDashboardDto>> GetDashboardAsync()
+        {
+            return await _apiClient.GetAsync<FinancialDashboardDto>("financial/dashboard");
+        }
+
+        public async Task<Result<List<FinancialMovementDto>>> GetMovementsByDateRangeAsync(DateTime from, DateTime to)
+        {
+            var url = $"financial/movements?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}";
+            return await _apiClient.GetAsync<List<FinancialMovementDto>>(url);
+        }
+
+        public async Task<Result<List<ScholarshipWithPaymentStatusDto>>> GetScholarshipsWithPaymentStatusAsync()
+        {
+            return await _apiClient.GetAsync<List<ScholarshipWithPaymentStatusDto>>("financial/scholarships");
+        }
+
+        public async Task<Result<string>> ProcessPendingScholarshipsAsync(int userId)
+        {
+            var url = $"financial/scholarships/process-pending?userId={userId}";
+            return await _apiClient.PostAsync<object, string>(url, null);
+        }
+
+        public async Task<Result> ProcessScholarshipPaymentAsync(int scholarshipId, int userId)
+        {
+            var url = $"financial/scholarships/process-payment?scholarshipId={scholarshipId}&userId={userId}";
+            return await _apiClient.PostAsync(url);
+        }
+
+        public async Task<Result> SetScholarshipActiveStatusAsync(int scholarshipId, bool isActive)
+        {
+            var url = $"financial/scholarships/set-active-status?scholarshipId={scholarshipId}&isActive={isActive.ToString().ToLower()}";
+            return await _apiClient.PostAsync(url);
+        }
+
+        public async Task<Result<List<BudgetDto>>> GetAllBudgetsAsync()
+        {
+            return await _apiClient.GetAsync<List<BudgetDto>>("financial/budgets");
+        }
+
+        public async Task<Result> AddBudgetAsync(AddBudgetDto dto)
+        {
+            return await _apiClient.PostAsync("financial/budgets", dto);
+        }
     }
 }
