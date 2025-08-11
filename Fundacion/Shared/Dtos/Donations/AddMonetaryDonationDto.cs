@@ -11,9 +11,9 @@ namespace Shared.Dtos.Donations
     {
         public string Name { get; set; }
         public string Identification { get; set; }
-
         public double Amount { get; set; }
-
         public Currency Currency { get; set; }
+        public int CreatedById { get; set; }
+
     }
 }

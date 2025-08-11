@@ -43,7 +43,7 @@ namespace Api.Services.Infrastructure
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_expiryMinutes),
+                expires: DateTime.Now.AddMinutes(_expiryMinutes),
                 signingCredentials: creds
             );
 
@@ -64,7 +64,7 @@ namespace Api.Services.Infrastructure
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.Now.AddMinutes(15),
                 signingCredentials: creds
             );
 

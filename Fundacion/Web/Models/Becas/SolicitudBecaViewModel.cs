@@ -1,5 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Shared.Enums;
+using Shared.Extensions;
 using System.ComponentModel.DataAnnotations;
+using Web.Helpers;
 
 namespace Web.Models.Becas
 {
@@ -53,6 +56,14 @@ namespace Web.Models.Becas
 
         public string Estado { get; set; } = "Pendiente";
 
-       //public decimal? MontoAsignado { get; set; }
-        }
+        public decimal? MontoAsignado { get; set; }
+        public decimal? Amount { get; set; }
+        public Currency? Currency { get; set; }
+        public ScholarshipFrequency? Frequency { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public IEnumerable<SelectListItem> CurrencyList { get; set; } = EnumHelper.ToSelectListItems<Currency>();
+        public IEnumerable<SelectListItem> FrequencyList { get; set; } = EnumHelper.ToSelectListItems<ScholarshipFrequency>();
+    }
 }

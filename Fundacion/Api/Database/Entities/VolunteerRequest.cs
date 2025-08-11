@@ -10,7 +10,7 @@ namespace Api.Database.Entities
         public User Volunteer { get; set; }
         public int? ApproverId { get; set; }
         public User Approver { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? ApprovedAt { get; set; } // Nueva propiedad para fecha de aprobación/rechazo
         public VolunteerState State { get; set; }
         public string Institution { get; set; }

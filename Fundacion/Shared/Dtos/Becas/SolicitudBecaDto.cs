@@ -43,7 +43,7 @@ namespace Shared.Dtos.Becas
         public byte[] CartaNotas { get; set; }
         public string CartaNotasContentType { get; set; }
 
-        public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
+        public DateTime FechaSolicitud { get; set; } = DateTime.Now;
 
         public string Estado { get; set; } = "Pendiente";
 
