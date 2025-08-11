@@ -7,10 +7,10 @@ namespace Shared.Enums
         [Description("Cólones (CRC)")]
         CRC,
 
-        [Description("Euros (EUR)")]
-        EUR,
-
         [Description("Dólares (USD")]
         USD,
+
+        [Description("Euros (EUR)")]
+        EUR,
     }
 }

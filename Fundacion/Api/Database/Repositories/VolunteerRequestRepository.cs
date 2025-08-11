@@ -74,7 +74,7 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Approved;
                 request.ApproverId = approverId;
-                request.ApprovedAt = DateTime.UtcNow; // ← Hora de aprobación
+                request.ApprovedAt = DateTime.Now; // ← Hora de aprobación
                 await UpdateRequestAsync(request);
             }
         }
@@ -86,7 +86,7 @@ namespace Api.Database.Repositories
             {
                 request.State = VolunteerState.Rejected;
                 request.ApproverId = approverId;
-                request.ApprovedAt = DateTime.UtcNow; // ← Hora de rechazo
+                request.ApprovedAt = DateTime.Now; // ← Hora de rechazo
                 request.RejectionReason = reason; // ← Razón del rechazo 
                 await UpdateRequestAsync(request);
             }
@@ -176,7 +176,7 @@ namespace Api.Database.Repositories
             {
                 hours.State = VolunteerState.Approved;
                 hours.ApproverId = approverId;
-                hours.ApprovedAt = DateTime.UtcNow;
+                hours.ApprovedAt = DateTime.Now;
                 await UpdateVolunteerHoursAsync(hours);
             }
         }
@@ -189,7 +189,7 @@ namespace Api.Database.Repositories
                 hours.State = VolunteerState.Rejected;
                 hours.ApproverId = approverId;
                 hours.RejectionReason = reason;
-                hours.ApprovedAt = DateTime.UtcNow;
+                hours.ApprovedAt = DateTime.Now;
                 await UpdateVolunteerHoursAsync(hours);
             }
         }

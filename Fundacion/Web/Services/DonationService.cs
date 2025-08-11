@@ -14,18 +14,15 @@ namespace Web.Services
             _apiClient = apiClient;
         }
 
-        public async Task<Result> AddMonetaryDonationAsync(AddMonetaryDonationViewModel addMonetaryDonationViewModel)
+        public async Task<Result> AddMonetaryDonationAsync(int userId, AddMonetaryDonationViewModel addMonetaryDonationViewModel)
         {
             var dto = new AddMonetaryDonationDto
             {
-
                 Amount = addMonetaryDonationViewModel.Amount,
-
                 Currency = addMonetaryDonationViewModel.SelectedCurrency,
-
                 Identification = addMonetaryDonationViewModel.Identification,
-
                 Name = addMonetaryDonationViewModel.Name,
+                CreatedById = userId
             };
 
             var result = await _apiClient.PostAsync("Donation/Add-MonetaryDonation", dto);
@@ -34,10 +31,10 @@ namespace Web.Services
             {
                 return Result.Failure(result.Errors);
             }
+
             return Result.Success();
         }
 
-        // crear metodo que haga el request al Api con HttpGet
         public async Task<Result<IEnumerable<DonationDto>>> GetAllDonationsAsync()
         {
             var result = await _apiClient.GetAsync<IEnumerable<DonationDto>>("Donation");
@@ -48,7 +45,6 @@ namespace Web.Services
 
             return Result<IEnumerable<DonationDto>>.Success(result.Value);
         }
-
 
         public async Task<Result<DonationDto>> GetDonationDetails(int id)
         {

@@ -27,7 +27,7 @@ namespace Api.Services.Application
             {
                 Description = $"Ingreso de alquiler para {leaseIncomeDto.TenantName}",
                 Amount = leaseIncomeDto.Amount,
-                Date = DateTime.UtcNow,
+                Date = DateTime.Now,
                 Type = MovementType.Inbound,
                 CreatedById = leaseIncomeDto.CreatedById
             };
@@ -81,7 +81,7 @@ namespace Api.Services.Application
             {
                 FinancialMovementId = financialMovement.Id,
                 Description = expenseDto.Description,
-                Date = DateTime.UtcNow,
+                Date = DateTime.Now,
                 ReceiptBytes = expenseDto.ReceiptBytes,
                 ReceiptContentType = expenseDto.ReceiptContentType,
                 ReceiptFileName = expenseDto.ReceiptFileName
@@ -93,7 +93,7 @@ namespace Api.Services.Application
 
         public async Task<Result<FinancialDashboardDto>> GetDashboardAsync()
         {
-            var budget = await _financialRepository.GetBudgetForDateAsync(DateTime.UtcNow);
+            var budget = await _financialRepository.GetBudgetForDateAsync(DateTime.Now);
             if (budget == null)
                 return Result<FinancialDashboardDto>.Failure("No se encontró un presupuesto para el periodo actual.");
 
@@ -112,7 +112,7 @@ namespace Api.Services.Application
             }
 
             var currentBalance = budget.RemainingAmountInCRC;
-            var ratio = budget.OriginalAmountInCRC == 0
+            var executed = budget.OriginalAmountInCRC == 0
                 ? 0
                 : (totalExpenseInCRC / budget.OriginalAmountInCRC) * 100;
 
@@ -134,8 +134,9 @@ namespace Api.Services.Application
             {
                 TotalIncome = totalIncomeInCRC,
                 TotalExpense = totalExpenseInCRC,
+                OriginalBudgetAmmount = budget.OriginalAmountInCRC,
                 CurrentBudgetBalance = currentBalance,
-                BudgetExecutionPercentage = ratio,
+                BudgetExecutionPercentage = executed,
                 MonthlyComparison = monthlyComparison
             };
 

@@ -9,7 +9,7 @@ namespace Api.Database.Entities
         public int FinancialMovementId { get; set; }
         public FinancialMovement FinancialMovement { get; set; }
         public string Description { get; set; } = string.Empty;
-        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public DateTime Date { get; set; } = DateTime.Now;
 
         [Column(TypeName = "nvarchar(max)")]
         public string ReceiptBytes { get; set; }

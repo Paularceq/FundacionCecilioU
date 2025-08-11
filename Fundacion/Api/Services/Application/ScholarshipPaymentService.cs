@@ -19,7 +19,7 @@ namespace Api.Services.Application
 
         public async Task<List<ScholarshipWithPaymentStatusDto>> GetScholarshipsWithPaymentStatusAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             var scholarships = await _db.Scholarships
                 .Include(s => s.Request)
@@ -53,7 +53,7 @@ namespace Api.Services.Application
 
         public async Task<Result<string>> ProcessPendingScholarshipsAsync(int userId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var firstDay = new DateTime(now.Year, now.Month, 1);
             var lastDay = firstDay.AddMonths(1).AddDays(-1);
 
@@ -123,7 +123,7 @@ namespace Api.Services.Application
 
         public async Task<Result> ProcessScholarshipPaymentAsync(int scholarshipId, int userId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var scholarship = await _db.Scholarships
                 .Include(s => s.Request)
                 .FirstOrDefaultAsync(s => s.Id == scholarshipId);

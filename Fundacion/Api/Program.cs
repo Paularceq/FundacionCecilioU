@@ -41,6 +41,12 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register in-memory caching
+builder.Services.AddMemoryCache();
+
+// Registar HTTP client factory
+builder.Services.AddHttpClient();
+
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
@@ -57,7 +63,7 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
-builder.Services.AddScoped<IExchangeRateService, ExchangeRateService>();
+builder.Services.AddScoped<IExchangeRateService, BccrHttpExchangeRateService>();
 
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

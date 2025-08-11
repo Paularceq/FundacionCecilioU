@@ -26,7 +26,7 @@ namespace Api.Database.Entities
         public string Comment { get; set; }
 
         [Required]
-        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public DateTime Date { get; set; } = DateTime.Now;
 
         [Required]
         public RequestStatus Status { get; set; }

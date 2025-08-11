@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shared.Enums;
+using System.Security.Claims;
 using Web.Extensions;
 using Web.Helpers;
 using Web.Models.Donation;
@@ -43,7 +44,8 @@ namespace Web.Controllers
                 return View(model);
             }
 
-            var result = await _donationService.AddMonetaryDonationAsync(model);
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var result = await _donationService.AddMonetaryDonationAsync(userId, model);
 
             if (result.IsFailure)
             {

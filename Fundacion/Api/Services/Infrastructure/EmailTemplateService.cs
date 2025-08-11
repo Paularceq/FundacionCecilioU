@@ -57,7 +57,7 @@ namespace Api.Services.Infrastructure
                 .Replace("{{Subject}}", subject)
                 .Replace("{{Header}}", header)
                 .Replace("{{Body}}", body)
-                .Replace("{{Year}}", DateTime.UtcNow.Year.ToString());
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
 
             return Task.FromResult(htmlContent);
         }

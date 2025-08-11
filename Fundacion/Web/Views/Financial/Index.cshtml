@@ -1,7 +1,9 @@
 ﻿@model Shared.Dtos.Financial.FinancialDashboardDto
+@using System.Globalization
 @{
     ViewData["Title"] = "Dashboard Financiero";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var crcCulture = new CultureInfo("es-CR");
 }
 
 @section Styles {
@@ -75,12 +77,12 @@
     </div>
 
     <!-- Estadísticas básicas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stats-card">
+    <div class="row mb-2">
+        <div class="col-12 col-md-6 mb-3 mb-md-0">
+            <div class="stats-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-primary mb-1">@Model.TotalIncome.ToString("C")</h3>
+                        <h3 class="text-primary mb-1">@Model.TotalIncome.ToString("C", crcCulture)</h3>
                         <p class="text-muted mb-0">Total Ingresos</p>
                     </div>
                     <div class="text-primary">
@@ -89,11 +91,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card">
+        <div class="col-12 col-md-6">
+            <div class="stats-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-danger mb-1">@Model.TotalExpense.ToString("C")</h3>
+                        <h3 class="text-danger mb-1">@Model.TotalExpense.ToString("C", crcCulture)</h3>
                         <p class="text-muted mb-0">Total Egresos</p>
                     </div>
                     <div class="text-danger">
@@ -102,11 +104,13 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card">
+    </div>
+    <div class="row mb-4">
+        <div class="col-12 col-md-4 mb-3 mb-md-0">
+            <div class="stats-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="text-info mb-1">@Model.CurrentBudgetBalance.ToString("C")</h3>
+                        <h3 class="text-info mb-1">@Model.CurrentBudgetBalance.ToString("C", crcCulture)</h3>
                         <p class="text-muted mb-0">Saldo Actual Presupuesto</p>
                     </div>
                     <div class="text-info">
@@ -115,8 +119,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card">
+        <div class="col-12 col-md-4 mb-3 mb-md-0">
+            <div class="stats-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="text-warning mb-1">@Model.OriginalBudgetAmmount.ToString("C", crcCulture)</h3>
+                        <p class="text-muted mb-0">Presupuesto Original</p>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="stats-card h-100">
                 @{
                     string GetRatioColorClass(decimal ratio)
                     {
@@ -162,8 +179,8 @@
                         <tr>
                             <td class="text-center">@item.Year</td>
                             <td class="text-center">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(item.Month)</td>
-                            <td class="text-success">@item.Income.ToString("C")</td>
-                            <td class="text-danger">@item.Expense.ToString("C")</td>
+                            <td class="text-success">@item.Income.ToString("C", crcCulture)</td>
+                            <td class="text-danger">@item.Expense.ToString("C", crcCulture)</td>
                         </tr>
                     }
                 </tbody>

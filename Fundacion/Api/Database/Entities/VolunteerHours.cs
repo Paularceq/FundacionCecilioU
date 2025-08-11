@@ -21,7 +21,7 @@ namespace Api.Database.Entities
 
         // Control de estado
         public VolunteerState State { get; set; } = VolunteerState.Pending;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? ApprovedAt { get; set; }
         public string? RejectionReason { get; set; }
 

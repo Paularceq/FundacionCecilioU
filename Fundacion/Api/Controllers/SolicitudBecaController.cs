@@ -1,5 +1,4 @@
-﻿using Api.Abstractions.Application;
-using Api.Database;
+﻿using Api.Database;
 using Api.Database.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -138,7 +137,7 @@ namespace Api.Controllers
                 CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
                 CartaNotas = dto.CartaNotas,
                 CartaNotasContentType = dto.CartaNotasContentType,
-                FechaSolicitud = DateTime.UtcNow,
+                FechaSolicitud = DateTime.Now,
                 Estado = EstadoSolicitud.Pendiente,
                 EsFormularioManual = dto.EsFormularioManual
             };
@@ -215,7 +214,7 @@ namespace Api.Controllers
                 {
                     RequestId = solicitud.Id,
                     Amount = dto.Amount ?? 0,
-                    Currency = dto.Currency ?? Currency.CRC, 
+                    Currency = dto.Currency ?? Currency.CRC,
                     Frequency = dto.Frequency ?? ScholarshipFrequency.Monthly,
                     StartDate = dto.StartDate ?? DateTime.Now,
                     EndDate = dto.EndDate,

@@ -46,7 +46,7 @@ namespace Api.Database.Entities
         public string? CartaNotasContentType { get; set; }
 
         //Otros campos
-        public DateTime FechaSolicitud { get; set; } = DateTime.UtcNow;
+        public DateTime FechaSolicitud { get; set; } = DateTime.Now;
 
         public EstadoSolicitud Estado { get; set; } = EstadoSolicitud.Pendiente;
 

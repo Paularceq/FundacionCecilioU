@@ -55,12 +55,11 @@ namespace Api.Database.Repositories
                 .Where(m => m.Date >= budget.StartDate && m.Date <= budget.EndDate)
                 .ToListAsync();
 
-            var exchangeRate = await _exchangeRateService.GetExchangeRateForCRCAsync(budget.Currency);
-            decimal remaining = budget.Amount * exchangeRate;
+            decimal remaining = await _exchangeRateService.GetAmountInCRCAsync(budget.Amount, budget.Currency);
 
             foreach (var m in movements)
             {
-                exchangeRate = await _exchangeRateService.GetExchangeRateForCRCAsync(m.Currency);
+                var exchangeRate = await _exchangeRateService.GetExchangeRateForCRCAsync(m.Currency);
 
                 if (m.Type == MovementType.Inbound)
                     remaining += m.Amount * exchangeRate;
@@ -71,7 +70,8 @@ namespace Api.Database.Repositories
             return new BudgetDto
             {
                 Id = budget.Id,
-                OriginalAmountInCRC = budget.Amount,
+                OriginalAmount = budget.Amount,
+                OriginalAmountInCRC = await _exchangeRateService.GetAmountInCRCAsync(budget.Amount, budget.Currency),
                 RemainingAmountInCRC = remaining,
                 StartDate = budget.StartDate,
                 EndDate = budget.EndDate
