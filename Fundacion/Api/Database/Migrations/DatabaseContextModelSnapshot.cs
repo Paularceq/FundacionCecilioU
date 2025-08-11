@@ -43,7 +43,32 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("ActivityDonations", (string)null);
+                    b.ToTable("ActivityDonations");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.Budget", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Budgets");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Donation", b =>
@@ -65,7 +90,77 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Donations", (string)null);
+                    b.ToTable("Donations");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.Expense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FinancialMovementId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiptBytes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiptContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ReceiptFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialMovementId");
+
+                    b.ToTable("Expenses");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.FinancialMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("FinancialMovements");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
@@ -83,6 +178,9 @@ namespace Api.Database.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("OutgoingDonationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -92,16 +190,71 @@ namespace Api.Database.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OutgoingDonationId");
+
                     b.HasIndex("ProductId");
 
                     b.HasIndex("ProductsDonationId");
 
-                    b.ToTable("InventoryMovements", (string)null);
+                    b.ToTable("InventoryMovements");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.Lease", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FinancialMovementId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiptBytes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiptContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ReceiptFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TenantIdentification")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TenantName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Usage")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialMovementId");
+
+                    b.ToTable("Leases");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
@@ -125,7 +278,53 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("MonetaryDonations", (string)null);
+                    b.ToTable("MonetaryDonations");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("Ammount")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("ApprovalDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ApproverId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecipientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequesterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApproverId");
+
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.ToTable("OutgoingDonations");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>
@@ -150,7 +349,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
@@ -168,7 +367,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("DonationId");
 
-                    b.ToTable("ProductsDonations", (string)null);
+                    b.ToTable("ProductsDonations");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Role", b =>
@@ -190,7 +389,46 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.Scholarship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastPayment")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("Scholarships");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.SolicitudBeca", b =>
@@ -261,7 +499,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SolicitudesBeca", (string)null);
+                    b.ToTable("SolicitudesBeca");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.User", b =>
@@ -313,7 +551,7 @@ namespace Api.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.VolunteerHours", b =>
@@ -375,7 +613,7 @@ namespace Api.Database.Migrations
                         .IsUnique()
                         .HasDatabaseName("UX_VolunteerHours_OnePerDay");
 
-                    b.ToTable("VolunteerHours", (string)null);
+                    b.ToTable("VolunteerHours");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.VolunteerRequest", b =>
@@ -423,7 +661,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("VolunteerId");
 
-                    b.ToTable("VolunteerRequests", (string)null);
+                    b.ToTable("VolunteerRequests");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -438,7 +676,7 @@ namespace Api.Database.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("RoleUser", (string)null);
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.ActivityDonation", b =>
@@ -452,8 +690,34 @@ namespace Api.Database.Migrations
                     b.Navigation("Donation");
                 });
 
+            modelBuilder.Entity("Api.Database.Entities.Expense", b =>
+                {
+                    b.HasOne("Api.Database.Entities.FinancialMovement", "FinancialMovement")
+                        .WithMany()
+                        .HasForeignKey("FinancialMovementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FinancialMovement");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.FinancialMovement", b =>
+                {
+                    b.HasOne("Api.Database.Entities.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+                });
+
             modelBuilder.Entity("Api.Database.Entities.InventoryMovement", b =>
                 {
+                    b.HasOne("Api.Database.Entities.OutgoingDonation", null)
+                        .WithMany("InventoryMovements")
+                        .HasForeignKey("OutgoingDonationId");
+
                     b.HasOne("Api.Database.Entities.Product", "Product")
                         .WithMany("Movements")
                         .HasForeignKey("ProductId")
@@ -467,6 +731,17 @@ namespace Api.Database.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Api.Database.Entities.Lease", b =>
+                {
+                    b.HasOne("Api.Database.Entities.FinancialMovement", "FinancialMovement")
+                        .WithMany()
+                        .HasForeignKey("FinancialMovementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FinancialMovement");
+                });
+
             modelBuilder.Entity("Api.Database.Entities.MonetaryDonation", b =>
                 {
                     b.HasOne("Api.Database.Entities.Donation", "Donation")
@@ -478,6 +753,32 @@ namespace Api.Database.Migrations
                     b.Navigation("Donation");
                 });
 
+            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
+                {
+                    b.HasOne("Api.Database.Entities.User", "Approver")
+                        .WithMany()
+                        .HasForeignKey("ApproverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Api.Database.Entities.User", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Api.Database.Entities.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Requester");
+                });
+
             modelBuilder.Entity("Api.Database.Entities.ProductsDonation", b =>
                 {
                     b.HasOne("Api.Database.Entities.Donation", "Donation")
@@ -487,6 +788,17 @@ namespace Api.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Donation");
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.Scholarship", b =>
+                {
+                    b.HasOne("Api.Database.Entities.SolicitudBeca", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Request");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.VolunteerHours", b =>
@@ -538,6 +850,11 @@ namespace Api.Database.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Database.Entities.OutgoingDonation", b =>
+                {
+                    b.Navigation("InventoryMovements");
                 });
 
             modelBuilder.Entity("Api.Database.Entities.Product", b =>

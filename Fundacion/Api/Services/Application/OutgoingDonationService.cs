@@ -115,7 +115,7 @@ namespace Api.Services.Application
             {
                 RequesterId = donationDto.RequesterId,
                 RecipientId = donationDto.RecipientId,
-                RequestDate = DateTime.UtcNow,
+                RequestDate = DateTime.Now,
                 Type = DonationType.InKind,
                 Status = RequestStatus.Pending,
                 InventoryMovements = donationDto.Products.Select(p => new InventoryMovement
@@ -124,7 +124,7 @@ namespace Api.Services.Application
                     Quantity = p.Quantity,
                     Type = MovementType.Outbound,
                     Comment = "Donación en especie.",
-                    Date = DateTime.UtcNow,
+                    Date = DateTime.Now,
                     Status = RequestStatus.Pending,
                 }).ToList(),
             };
@@ -150,7 +150,7 @@ namespace Api.Services.Application
 
             // Actualizar la donación con los datos de aprobación
             donation.ApproverId = dto.ApproverId;
-            donation.ApprovalDate = DateTime.UtcNow;
+            donation.ApprovalDate = DateTime.Now;
             donation.Status = dto.IsApproved ? RequestStatus.Approved : RequestStatus.Rejected;
 
             // Validar los movimientos de inventario

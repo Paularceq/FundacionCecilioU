@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 
 namespace Shared.Enums
 {
     public enum Currency
     {
-        Colones,
-        Euro,
-        Dolares,
+        [Description("Cólones (CRC)")]
+        CRC,
+
+        [Description("Dólares (USD")]
+        USD,
+
+        [Description("Euros (EUR)")]
+        EUR,
     }
 }

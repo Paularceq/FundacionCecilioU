@@ -142,7 +142,6 @@ namespace Web.Controllers
                 Colegio = response.Colegio,
                 NivelEducativo = response.NivelEducativo,
                 Estado = response.Estado,
-                //MontoAsignado = response.MontoAsignado,
                 CartaConsentimientoBytes = response.CartaConsentimiento,
                 CartaConsentimientoContentType = response.CartaConsentimientoContentType,
                 CartaNotasBytes = response.CartaNotas,
@@ -161,7 +160,12 @@ namespace Web.Controllers
             var dto = new TomarDesicionDto
             {
 
-                Estado = model.Estado
+                Estado = model.Estado,
+                Amount = model.Amount,
+                Currency = model.Currency,
+                Frequency = model.Frequency,
+                StartDate = model.StartDate,
+                EndDate = model.EndDate
             };
 
             var response = await cliente.PutAsJsonAsync($"solicitudesbeca/decidir/{model.Id}", dto);
@@ -190,7 +194,6 @@ namespace Web.Controllers
             model.CartaConsentimientoContentType = consultaSolicitud.CartaConsentimientoContentType;
             model.CartaNotasBytes = consultaSolicitud.CartaNotas;
             model.CartaNotasContentType = consultaSolicitud.CartaNotasContentType;
-
 
             this.SetErrorMessage("Ocurrió un error al guardar la decisión.");
             return View("TomarDecision", model);

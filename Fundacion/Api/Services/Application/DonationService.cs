@@ -1,7 +1,6 @@
 ﻿using Api.Abstractions.Application;
 using Api.Abstractions.Repositories;
 using Api.Database.Entities;
-using Microsoft.Identity.Client;
 using Shared.Dtos.Donations;
 using Shared.Enums;
 using Shared.Models;
@@ -11,10 +10,14 @@ namespace Api.Services.Application
     public class DonationService : IDonationService
     {
         private readonly IDonationsRepository _donationsRepository;
+        private readonly IFinancialRepository _financialRepository;
 
-        public DonationService(IDonationsRepository donationsRepository)
+        public DonationService(
+            IDonationsRepository donationsRepository,
+            IFinancialRepository financialRepository)
         {
             _donationsRepository = donationsRepository;
+            _financialRepository = financialRepository;
         }
 
         public async Task<Result> AddMonetaryDonationAsync(AddMonetaryDonationDto dto)
@@ -22,27 +25,33 @@ namespace Api.Services.Application
             var donation = new Donation
             {
                 IdentificacionNumber = dto.Identification,
-
                 Type = DonationType.Monetary,
-
                 Name = dto.Name,
-
             };
             await _donationsRepository.AddDonationAsync(donation);
-            var monetarydonation = new MonetaryDonation
+
+            var monetaryDonation = new MonetaryDonation
             {
                 DonationId = donation.Id,
-
                 Ammount = dto.Amount,
-
                 Currency = dto.Currency,
             };
+            await _donationsRepository.AddDonationMonetary(monetaryDonation);
 
-            await _donationsRepository.AddDonationMonetary(monetarydonation);
+            // Registrar el movimiento financiero que acredita el monto al saldo
+            var financialMovement = new FinancialMovement
+            {
+                Amount = (decimal)dto.Amount,
+                Currency = dto.Currency,
+                Type = MovementType.Inbound,
+                Description = $"Donación monetaria recibida de {dto.Name}",
+                Date = DateTime.Now,
+                CreatedById = dto.CreatedById
+            };
+            await _financialRepository.AddFinancialMovementAsync(financialMovement);
 
             return Result.Success();
         }
-        // ir a traer el listado del repositorio y listarlo en un nuevo dto
 
         public async Task<IEnumerable<DonationDto>> GetAllDonationsAsync()
         {
@@ -53,13 +62,10 @@ namespace Api.Services.Application
                 Name = d.Name,
                 IdentificationNumber = d.IdentificacionNumber,
                 Type = d.Type,
-
-
-
             });
         }
 
-        public async Task<Result<DonationDto>>GetDonationDetails(int id)
+        public async Task<Result<DonationDto>> GetDonationDetails(int id)
         {
             var donation = await _donationsRepository.GetDonationById(id);
 
@@ -68,13 +74,14 @@ namespace Api.Services.Application
                 return Result<DonationDto>.Failure("Donation not found");
             }
 
-            if(donation.Type == DonationType.Monetary)
+            if (donation.Type == DonationType.Monetary)
             {
                 var monetaryDonation = await _donationsRepository.GetMonetaryDonation(donation.Id);
                 if (monetaryDonation == null)
                 {
                     return Result<DonationDto>.Failure("Monetary donation details not found");
                 }
+
                 return Result<DonationDto>.Success(new DonationDto
                 {
                     Id = donation.Id,
@@ -85,12 +92,10 @@ namespace Api.Services.Application
                     Currency = monetaryDonation.Currency
                 });
             }
-            //hacer lo mismo para los otros tipos de donaciones
-             return Result<DonationDto>.Failure("Donation type not supported");
 
-
-        }
+            return Result<DonationDto>.Failure("Donation type not supported");
         }
     }
+}
 
 

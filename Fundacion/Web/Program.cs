@@ -42,11 +42,9 @@ builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<OutgoingDonationService>();
-
-// ===== SERVICIOS DE VOLUNTARIOS =====
 builder.Services.AddScoped<VolunteerRequestService>();
 builder.Services.AddScoped<VolunteerHoursService>();
-//builder.Services.AddScoped<VolunteerDashboardService>();
+builder.Services.AddScoped<FinancialService>();
 
 var app = builder.Build();
 
