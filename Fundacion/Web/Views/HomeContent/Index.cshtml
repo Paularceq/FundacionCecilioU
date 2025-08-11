@@ -1,0 +1,122 @@
+﻿
+@model IEnumerable<Web.Models.Newsletter.HomeContentViewModel>
+@{
+    ViewData["Title"] = "Gestión de Contenido";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .card-title {
+        color: #0d6efd;
+        font-weight: 700;
+    }
+    .btn-custom {
+        min-width: 130px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+    .status-active { color: #198754; font-weight: 600; }
+    .status-inactive { color: #6c757d; font-weight: 600; }
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-house-fill me-2"></i>Gestión de Contenido Home
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0">Administra el contenido que aparece en la página principal</p>
+                        @Html.ActionLink("Nuevo Contenido", "AddHomeContent", null, new { @class = "btn btn-success btn-custom" })
+                    </div>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>Estado</th>
+                                        <th>Vigencia</th>
+                                        <th>Creado por</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.Title</strong>
+                                                <br><small class="text-muted">@item.Description.Substring(0, Math.Min(50, item.Description.Length))...</small>
+                                            </td>
+                                            <td>
+                                                <span class="@(item.IsActive ? "status-active" : "status-inactive")">
+                                                    <i class="bi @(item.IsActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                                    @item.StatusBadge
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (item.StartDate.HasValue || item.EndDate.HasValue)
+                                                {
+                                                    <small>
+                                                        @(item.StartDate?.ToString("dd/MM/yyyy") ?? "Sin inicio")<br>
+                                                        @(item.EndDate?.ToString("dd/MM/yyyy") ?? "Sin fin")
+                                                    </small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">Permanente</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @item.CreatedBy<br>
+                                                <small class="text-muted">@item.CreatedDate.ToString("dd/MM/yyyy")</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    @Html.ActionLink("Ver", "Details", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
+                                                    @Html.ActionLink("Editar", "UpdateHomeContent", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
+                                                    @Html.ActionLink(item.IsActive ? "Desactivar" : "Activar", "ChangeHomeContentStatus", new { id = item.Id }, new { @class = $"btn btn-outline-{(item.IsActive ? "secondary" : "success")} btn-sm" })
+                                                    @Html.ActionLink("Eliminar", "DeleteHomeContent", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm", onclick = "return confirm('¿Está seguro de eliminar este contenido?')" })
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">No hay contenido disponible</h5>
+                            <p class="text-muted">Crea el primer contenido para la página principal</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="text-center mt-5 mb-4">
+                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
+            </div>
+        </div>
+    </div>
+</div>
