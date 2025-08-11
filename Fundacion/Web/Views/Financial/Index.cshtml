@@ -77,7 +77,7 @@
     </div>
 
     <!-- Estadísticas básicas -->
-    <div class="row mb-2">
+    <div class="row mb-4">
         <div class="col-12 col-md-6 mb-3 mb-md-0">
             <div class="stats-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
@@ -157,6 +157,22 @@
         </div>
     </div>
 
+    <!-- Gráficas comparativas -->
+    <div class="row mb-4">
+        <div class="col-12 col-md-8 mb-3">
+            <div class="stats-card h-100">
+                <h5 class="mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i>Ingresos vs Egresos Mensuales</h5>
+                <canvas id="monthlyComparisonChart" height="120"></canvas>
+            </div>
+        </div>
+        <div class="col-12 col-md-4 mb-3">
+            <div class="stats-card h-100">
+                <h5 class="mb-3"><i class="fas fa-balance-scale me-2 text-warning"></i>Presupuesto Original vs Saldo Actual</h5>
+                <canvas id="budgetComparisonChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Comparativa mensual -->
     <div class="table-wrapper">
         <h5 class="mb-3">
@@ -195,3 +211,74 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Datos para la gráfica de barras (mensual)
+        const monthlyLabels = [
+            @foreach (var item in Model.MonthlyComparison.OrderBy(x => x.Year).ThenBy(x => x.Month))
+            {
+                    <text>"@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(item.Month) @item.Year",</text>
+            }
+        ];
+        const monthlyIncome = [
+            @foreach (var item in Model.MonthlyComparison.OrderBy(x => x.Year).ThenBy(x => x.Month))
+            {
+                    <text>@item.Income,</text>
+            }
+        ];
+        const monthlyExpense = [
+            @foreach (var item in Model.MonthlyComparison.OrderBy(x => x.Year).ThenBy(x => x.Month))
+            {
+                    <text>@item.Expense,</text>
+            }
+        ];
+
+        // Gráfica de barras: Ingresos vs Egresos Mensuales
+        const ctx1 = document.getElementById('monthlyComparisonChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: 'Ingresos',
+                        data: monthlyIncome,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                    },
+                    {
+                        label: 'Egresos',
+                        data: monthlyExpense,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // Gráfica de dona: Presupuesto Original vs Saldo Actual
+        const ctx2 = document.getElementById('budgetComparisonChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Presupuesto Original', 'Saldo Actual'],
+                datasets: [{
+                    data: [@Model.OriginalBudgetAmmount, @Model.CurrentBudgetBalance],
+                    backgroundColor: ['#ffc107', '#17a2b8']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+    </script>
+}
