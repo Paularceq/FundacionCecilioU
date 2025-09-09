@@ -52,4 +52,4 @@ jobs:
           app-name: 'fundacion-api'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DAB84E2030B041288D453802A38DFB88 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B22D8D286873489ABA7CD9C2ED940447 }}
