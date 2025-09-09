@@ -6,7 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSession(options =>
@@ -16,14 +15,19 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Register HttpClient and custom handler for API calls
 builder.Services.AddTransient<ApiClientAuthHandler>();
-
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddHttpMessageHandler<ApiClientAuthHandler>();
-
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+// Configure authentication using cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -31,8 +35,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Auth/Denied";
     });
 
+// Register api services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<DonationService>();
+builder.Services.AddScoped<OutgoingDonationService>();
+builder.Services.AddScoped<VolunteerRequestService>();
+builder.Services.AddScoped<VolunteerHoursService>();
+builder.Services.AddScoped<FinancialService>();
 
 var app = builder.Build();
 
@@ -46,11 +58,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

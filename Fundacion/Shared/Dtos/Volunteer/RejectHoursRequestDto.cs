@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Shared.Dtos.Volunteer
+{
+    public class RejectHoursRequestDto
+    {
+        public int ApproverId { get; set; }
+        public string ApproverName { get; set; } = string.Empty;
+        public string RejectionReason { get; set; } = string.Empty;
+    }
+}

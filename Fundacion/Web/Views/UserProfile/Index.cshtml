@@ -1,0 +1,107 @@
+﻿@model Shared.Dtos.UserProfileDto
+@{
+    ViewData["Title"] = "Mi Perfil";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 40px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+        color: #0d6efd;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+    }
+
+    .profile-label {
+        font-weight: 600;
+        color: #0d6efd;
+        width: 40%;
+    }
+
+    .profile-value {
+        width: 60%;
+        text-align: left;
+    }
+
+    .card-footer {
+        border-top: none;
+        background-color: transparent;
+        padding-top: 30px;
+    }
+
+    .btn-custom {
+        min-width: 130px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <h4 class="card-title"><i class="bi bi-person-circle me-2"></i> Mi perfil</h4>
+
+                <div class="card-body">
+                    <div class="profile-row">
+                        @* <div class="profile-label">@Html.DisplayNameFor(model => model.NombreCompleto)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.NombreCompleto)</div> *@
+                    </div>
+                    <div class="profile-row">
+                        <div class="profile-label">@Html.DisplayNameFor(model => model.Nombre)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Nombre)</div>
+                    </div>
+                    <div class="profile-row">
+                        <div class="profile-label">@Html.DisplayNameFor(model => model.Apellidos)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Apellidos)</div>
+                    </div>
+                    <div class="profile-row">
+                        <div class="profile-label">@Html.DisplayNameFor(model => model.Email)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Email)</div>
+                    </div>
+                    <div class="profile-row">
+                        <div class="profile-label">@Html.DisplayNameFor(model => model.Nacionalidad)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Nacionalidad)</div>
+                    </div>
+                    <div class="profile-row">
+                        <div class="profile-label">@Html.DisplayNameFor(model => model.Identificacion)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Identificacion)</div>
+                    </div>
+                    <div class="profile-row">
+                       @*  <div class="profile-label">@Html.DisplayNameFor(model => model.Activo)</div>
+                        <div class="profile-value">@Html.DisplayFor(model => model.Activo)</div> *@
+                    </div>
+                </div>
+
+                <div class="card-footer d-flex justify-content-center gap-3">
+                    @Html.ActionLink("Editar Perfil", "Update", new { id = Model.Id }, new { @class = "btn btn-warning btn-sm btn-custom" })
+                    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-outline-secondary btn-sm btn-custom">Volver</a>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 mb-4">
+                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
+            </div>
+        </div>
+    </div>
+</div>

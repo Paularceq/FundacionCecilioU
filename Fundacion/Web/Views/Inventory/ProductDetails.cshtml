@@ -1,0 +1,89 @@
+﻿@using Shared.Enums
+@using Shared.Extensions
+@model Shared.Dtos.Inventory.ProductWithMovementsDto
+
+@{
+    ViewData["Title"] = "Detalle del producto";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container">
+    <h2 class="mb-4"><i class="fas fa-box-open me-2"></i> @Model.Name</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.UnitOfMeasure)</dt>
+                <dd class="col-sm-7">@Model.UnitOfMeasure.GetDescription()</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.MinimumStock)</dt>
+                <dd class="col-sm-7">@Model.MinimumStock</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.CurrentStock)</dt>
+                <dd class="col-sm-7">@Model.CurrentStock</dd>
+
+                <dt class="col-sm-5">@Html.DisplayNameFor(m => m.IsLowStock)</dt>
+                <dd class="col-sm-7">
+                    @if (Model.IsLowStock)
+                    {
+                        <span class="badge bg-danger"><i class="fas fa-triangle-exclamation me-1"></i> Bajo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Suficiente</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Movimientos de inventario</h4>
+
+    @if (!Model.Movements.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> Este producto no tiene movimientos registrados.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>@Html.DisplayNameFor(m => m.Movements.First().Type)</th>
+                    <th>@Html.DisplayNameFor(m => m.Movements.First().Quantity)</th>
+                    <th>@Html.DisplayNameFor(m => m.Movements.First().Comment)</th>
+                    <th>@Html.DisplayNameFor(m => m.Movements.First().Date)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movement in Model.Movements)
+                {
+                    <tr>
+                        <td>
+                            @if (movement.Type == MovementType.Inbound)
+                            {
+                                <span class="text-success">
+                                    <i class="fas fa-arrow-down me-1"></i> Ingreso
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-warning">
+                                    <i class="fas fa-arrow-up me-1"></i> Retiro
+                                </span>
+                            }
+                        </td>
+                        <td>@movement.Quantity</td>
+                        <td>@movement.Comment</td>
+                        <td>@movement.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary mt-4">
+        <i class="fas fa-arrow-left me-2"></i> Volver al listado
+    </a>
+</div>

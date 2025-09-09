@@ -1,0 +1,92 @@
+﻿@model Web.Models.Donation.AddMonetaryDonationViewModel
+
+@{
+    ViewData["Title"] = "Agregar Donación Monetaria";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+
+    .card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #003366;
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .btn-primary {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <h2 class="card-title text-center">
+                    <i class="fa-solid fa-hand-holding-dollar me-2"></i>
+                    @ViewData["Title"]
+                </h2>
+
+                <form asp-action="AddMonetaryDonation" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Identification" class="form-label"></label>
+                        <input asp-for="Identification" class="form-control" />
+                        <span asp-validation-for="Identification" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label"></label>
+                        <input asp-for="Amount" class="form-control" />
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SelectedCurrency" class="form-label"></label>
+                        <select asp-for="SelectedCurrency" asp-items="Model.AvailableCurrencies" class="form-select">
+                            <option value="">-- Seleccione una moneda --</option>
+                        </select>
+                        <span asp-validation-for="SelectedCurrency" class="text-danger"></span>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-circle-check me-1"></i> Donar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

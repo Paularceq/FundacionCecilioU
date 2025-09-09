@@ -40,5 +40,11 @@ namespace Web.Models.Auth
         [StringLength(50, ErrorMessage = "La identificación no puede exceder los 50 caracteres.")]
         [Display(Name = "Identificación", Description = "Número de identificación del usuario.")]
         public string Identificacion { get; set; }
+        public string Role { get; set; }
+
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [RegularExpression(@"^.{8}$", ErrorMessage = "El teléfono debe tener 8 dígitos.")]
+        public string Telefono { get; set; }
+
     }
 }

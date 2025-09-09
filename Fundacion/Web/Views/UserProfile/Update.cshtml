@@ -1,0 +1,109 @@
+﻿@model Shared.Dtos.UserProfileUpdateDto
+
+@{
+    ViewData["Title"] = "Editar Perfil";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 40px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+        color: #0d6efd;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .btn-custom {
+        min-width: 130px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <h4 class="card-title"><i class="bi bi-pencil-square me-2"></i>Editar Perfil</h4>
+
+                <form asp-action="Update">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input asp-for="Id" hidden />
+
+                    <div class="form-group">
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Apellidos" class="form-label"></label>
+                        <input asp-for="Apellidos" class="form-control" />
+                        <span asp-validation-for="Apellidos" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Nacionalidad" class="form-label"></label>
+                        <input asp-for="Nacionalidad" class="form-control" />
+                        <span asp-validation-for="Nacionalidad" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Identificacion" class="form-label"></label>
+                        <input asp-for="Identificacion" class="form-control" />
+                        <span asp-validation-for="Identificacion" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <button type="submit" class="btn btn-success btn-sm btn-custom">
+                            <i class="bi bi-save me-1"></i> Guardar
+                        </button>
+                        <a href="@Url.Action("Index", "Dashboard")" class="btn btn-outline-secondary btn-sm btn-custom">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="text-center mt-5 mb-4">
+                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

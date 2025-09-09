@@ -33,10 +33,23 @@ namespace Web.Http
 
             if (response.IsSuccessStatusCode)
                 return Result.Success();
-
+            string content = await response.Content.ReadAsStringAsync();
             var errors = await response.Content.ReadFromJsonAsync<List<string>>();
             return Result.Failure(errors?.ToArray() ?? ["Error desconocido"]);
         }
+        // POST sin body y sin respuesta
+        public async Task<Result> PostAsync(string url)
+        {
+            var response = await _httpClient.PostAsync(url, null);
+
+            if (response.IsSuccessStatusCode)
+                return Result.Success();
+
+            string content = await response.Content.ReadAsStringAsync();
+            var errors = await response.Content.ReadFromJsonAsync<List<string>>();
+            return Result.Failure(errors?.ToArray() ?? ["Error desconocido"]);
+        }
+
 
         // POST con respuesta
         public async Task<Result<TResponse>> PostAsync<TRequest, TResponse>(string url, TRequest data)

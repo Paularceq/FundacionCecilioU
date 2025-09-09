@@ -28,8 +28,15 @@ namespace Api.Database.Repositories
 
         public async Task<IEnumerable<Role>> GetRolesByNamesAsync(IEnumerable<string> roleNames)
         {
-           return await _context.Roles
-                .Where(c => roleNames.Contains(c.Name))
+            return await _context.Roles
+                 .Where(c => roleNames.Contains(c.Name))
+                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Role>> GetAllRolesAsync()
+        {
+            return await _context.Roles
+
                 .ToListAsync();
         }
     }

@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Shared.Dtos;
+using System.ComponentModel.DataAnnotations;
+using Web.Helpers.Validation;
 
 namespace Web.Models.UserManagement
 {
@@ -17,10 +20,6 @@ namespace Web.Models.UserManagement
         [StringLength(200, ErrorMessage = "El email no puede exceder los 200 caracteres.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "La contraseña es obligatoria.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
-        public string Password { get; set; }
-
         [Required(ErrorMessage = "La nacionalidad es obligatoria.")]
         public string Nacionalidad { get; set; }
 
@@ -29,5 +28,10 @@ namespace Web.Models.UserManagement
         public string Identificacion { get; set; }
 
         // Lista de roles {"RoleName" : "RoleDescripcion"} para usar en una lista de checks
+
+        public List<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
+        [MinCount(1, ErrorMessage = "Debe seleccionar al menos un rol.")] 
+        public List<string> SelectedRoles { get; set; } = new List<string>();
+
     }
 }

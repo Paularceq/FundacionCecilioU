@@ -7,6 +7,8 @@ namespace Api.Database.Entities
         [Key]
         public int Id { get; set; }
 
+        public bool Activo { get; set; } = true;
+
         [Required]
         [StringLength(100)]
         public string Nombre { get; set; }
@@ -19,6 +21,9 @@ namespace Api.Database.Entities
         [EmailAddress]
         [StringLength(256)]
         public string Email { get; set; }
+
+        [StringLength(8)]
+        public string Telefono { get; set; }
 
         [Required]
         [StringLength(20)]

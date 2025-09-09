@@ -1,0 +1,591 @@
+﻿@model List<Shared.Dtos.Volunteer.VolunteerHoursDto>
+
+@{
+    ViewData["Title"] = "Horas Pendientes de Aprobación";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #e3e6eb;
+        }
+
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+
+        .filter-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-hours {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .urgent-row {
+            border-left: 4px solid #dc3545;
+            background-color: #fef2f2;
+        }
+
+        .normal-row {
+            border-left: 4px solid #10b981;
+        }
+
+        .activities-text {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+        }
+
+        .quick-approve {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+            .quick-approve:hover {
+                background-color: #059669;
+                border-color: #059669;
+                color: white;
+            }
+
+        .quick-reject {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+
+            .quick-reject:hover {
+                background-color: #b91c1c;
+                border-color: #b91c1c;
+                color: white;
+            }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold text-primary">
+                <i class="fas fa-clock me-2"></i>Horas Pendientes de Aprobación
+            </h1>
+            <div>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Administración
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <!-- Estado vacío -->
+        <div class="table-wrapper">
+            <div class="empty-state">
+                <i class="fas fa-check-circle text-success fa-5x mb-3"></i>
+                <h4>No hay horas pendientes</h4>
+                <p class="text-muted">Todas las horas registradas han sido procesadas</p>
+                <a asp-action="Index" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Solicitudes
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-warning mb-1">@Model.Count</h3>
+                            <p class="text-muted mb-0">Registros Pendientes</p>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-hourglass-half fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-info mb-1">@Model.Sum(h => h.TotalHours).ToString("N1")</h3>
+                            <p class="text-muted mb-0">Total Horas</p>
+                        </div>
+                        <div class="text-info">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-success mb-1">@Model.Select(h => h.VolunteerRequestId).Distinct().Count()</h3>
+                            <p class="text-muted mb-0">Voluntarios</p>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-danger mb-1">@Model.Where(h => (DateTime.Now - h.CreatedAt).Days > 3).Count()</h3>
+                            <p class="text-muted mb-0">Urgentes (+3 días)</p>
+                        </div>
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-card">
+            <h6 class="mb-3"><i class="fas fa-filter me-2 text-primary"></i>Filtros</h6>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Voluntario</label>
+                    <select id="volunteerFilter" class="form-select">
+                        <option value="">Todos los voluntarios</option>
+                        @foreach (var volunteer in Model.GroupBy(h => h.VolunteerName).Select(g => g.Key).Where(name => !string.IsNullOrEmpty(name)).OrderBy(name => name))
+                        {
+                            <option value="@volunteer">@volunteer</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prioridad</label>
+                    <select id="priorityFilter" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="urgent">Solo urgentes</option>
+                        <option value="normal">Solo normales</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="fas fa-eraser me-1"></i>Limpiar
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="text-muted small text-center">
+                        <span id="visibleCount">@Model.Count</span> de @Model.Count registros
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>Registros de Horas Pendientes
+                </h5>
+                <div class="text-muted small">
+                    Ordenado por fecha de creación
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="hoursTable">
+                    <thead>
+                        <tr>
+                            <th>Voluntario</th>
+                            <th>Fecha Trabajo</th>
+                            <th>Horario</th>
+                            <th>Horas</th>
+                            <th>Actividades</th>
+                            <th>Registrado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var hours in Model.OrderBy(h => h.CreatedAt))
+                        {
+                            var isUrgent = (DateTime.Now - hours.CreatedAt).Days > 3;
+                            var priorityClass = isUrgent ? "urgent-row" : "normal-row";
+                            var volunteerName = hours.VolunteerName ?? "N/A";
+
+                            <tr class="@priorityClass" data-volunteer="@volunteerName" data-priority="@(isUrgent ? "urgent" : "normal")">
+                                <td>
+                                    <div>
+                                        <strong>@volunteerName</strong>
+                                        <br><small class="text-muted">ID: @hours.VolunteerRequestId</small>
+                                        @if (isUrgent)
+                                        {
+                                            <br>
+                                            <small class="text-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Urgente
+                                            </small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@hours.Date.ToString("dd/MM/yyyy")</strong>
+                                        <br><small class="text-muted">
+                                            @hours.Date.ToString("dddd", new System.Globalization.CultureInfo("es-ES"))
+                                        </small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <strong>@hours.StartTime.ToString(@"hh\:mm") - @hours.EndTime.ToString(@"hh\:mm")</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info badge-hours">
+                                        @hours.TotalHours.ToString("N1")h
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="activities-text" title="@hours.ActivitiesDescription">
+                                        @hours.ActivitiesDescription
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(hours.Notes))
+                                    {
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-sticky-note fa-xs"></i> Con notas
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@hours.CreatedAt.ToString("dd/MM/yyyy")</strong>
+                                        <br><small class="text-muted">@hours.CreatedAt.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm quick-approve"
+                                                onclick="approveHours(@hours.Id, '@volunteerName')"
+                                                title="Aprobar horas">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm quick-reject"
+                                                onclick="showRejectModal(@hours.Id, '@volunteerName')"
+                                                title="Rechazar horas">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info"
+                                                onclick="showDetails('@volunteerName', '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(Json.Serialize(hours.ActivitiesDescription))', '@Html.Raw(Json.Serialize(hours.Notes))', '@hours.TotalHours.ToString("N1")')"
+                                                title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal para Rechazar Horas -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-times-circle text-danger"></i> Rechazar Horas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea rechazar las horas de <strong id="rejectVolunteerName"></strong>?</p>
+                <div class="mb-3">
+                    <label for="rejectReason" class="form-label">Razón del rechazo <span class="text-danger">*</span></label>
+                    <textarea id="rejectReason" class="form-control" rows="3"
+                              placeholder="Explique claramente por qué se rechazan las horas..."
+                              required minlength="10" maxlength="500"></textarea>
+                    <div class="form-text">Esta razón será visible para el voluntario. Mínimo 10 caracteres.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">
+                    <i class="fas fa-times me-1"></i> Rechazar Horas
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Detalles -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle text-info"></i> Detalles del Registro de Horas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        let currentHoursId = 0;
+
+        // Filtros
+        document.getElementById('volunteerFilter').addEventListener('change', applyFilters);
+        document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const volunteerFilter = document.getElementById('volunteerFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const rows = document.querySelectorAll('#hoursTable tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const volunteer = row.dataset.volunteer || '';
+                const priority = row.dataset.priority || '';
+                let show = true;
+
+                if (volunteerFilter && volunteer !== volunteerFilter) show = false;
+                if (priorityFilter && priority !== priorityFilter) show = false;
+
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+
+            document.getElementById('visibleCount').textContent = visibleCount;
+        }
+
+        function clearFilters() {
+            document.getElementById('volunteerFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            applyFilters();
+        }
+
+        // Aprobar horas
+        function approveHours(hoursId, volunteerName) {
+            if (!confirm(`¿Está seguro que desea aprobar las horas de ${volunteerName}?`)) return;
+
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch('@Url.Action("ApproveHours")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `hoursId=${hoursId}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    showAlert('Horas aprobadas exitosamente', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Error al aprobar');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showAlert('Error al aprobar las horas', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
+        }
+
+        // Rechazar horas
+        function showRejectModal(hoursId, volunteerName) {
+            currentHoursId = hoursId;
+            document.getElementById('rejectVolunteerName').textContent = volunteerName || 'N/A';
+            document.getElementById('rejectReason').value = '';
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        document.getElementById('confirmRejectBtn').addEventListener('click', function() {
+            const reasonEl = document.getElementById('rejectReason');
+            const reason = reasonEl?.value.trim() || '';
+
+            if (!reason) {
+                showAlert('Debe proporcionar una razón para el rechazo', 'warning');
+                reasonEl?.focus();
+                return;
+            }
+
+            if (reason.length < 10) {
+                showAlert('La razón debe tener al menos 10 caracteres', 'warning');
+                reasonEl?.focus();
+                return;
+            }
+
+            const btn = this;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rechazando...';
+
+            fetch('@Url.Action("RejectHours")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `hoursId=${currentHoursId}&reason=${encodeURIComponent(reason)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    showAlert('Horas rechazadas exitosamente', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Error al rechazar');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showAlert('Error al rechazar las horas', 'danger');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
+        });
+
+        // Ver detalles
+        function showDetails(volunteerName, date, startTime, endTime, activities, notes, totalHours) {
+            const parsedActivities = JSON.parse(activities);
+            const parsedNotes = notes && notes !== 'null' ? JSON.parse(notes) : '';
+
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2 text-primary"></i>Información del Voluntario</h6>
+                        <p><strong>Nombre:</strong> ${volunteerName}</p>
+                        <p><strong>Fecha de trabajo:</strong> ${date}</p>
+                        <p><strong>Horario:</strong> ${startTime} - ${endTime}</p>
+                        <p><strong>Total horas:</strong> <span class="badge bg-info">${totalHours}h</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2 text-info"></i>Estado</h6>
+                        <p><span class="badge bg-warning"><i class="fas fa-hourglass-half"></i> Pendiente de aprobación</span></p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-tasks me-2 text-success"></i>Actividades Realizadas</h6>
+                        <p class="bg-light p-3 rounded">${parsedActivities || 'No especificadas'}</p>
+                    </div>
+                </div>
+                ${parsedNotes ? `
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-sticky-note me-2 text-warning"></i>Notas Adicionales</h6>
+                        <p class="bg-light p-3 rounded">${parsedNotes}</p>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+
+            new bootstrap.Modal(document.getElementById('detailsModal')).show();
+        }
+
+        // Alertas
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Auto-refresh condicional si hay horas pendientes
+        @if (Model.Any())
+        {
+                <text>
+                setInterval(() => {
+                    const currentTime = new Date().getTime();
+                    const lastReload = localStorage.getItem('lastHoursReload');
+                    if (!lastReload || currentTime - parseInt(lastReload) > 60000) { // 1 minuto
+                        localStorage.setItem('lastHoursReload', currentTime.toString());
+                        location.reload();
+                    }
+                }, 180000); // 3 minutos
+                </text>
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('PendingHours loaded - Count:', @Model.Count);
+            applyFilters(); // Inicializar contadores
+        });
+    </script>
+}

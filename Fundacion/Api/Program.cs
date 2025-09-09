@@ -41,19 +41,39 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register in-memory caching
+builder.Services.AddMemoryCache();
+
+// Registar HTTP client factory
+builder.Services.AddHttpClient();
+
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IDonationService, DonationService>();
+builder.Services.AddScoped<IOutgoingDonationService, OutgoingDonationService>();
+builder.Services.AddScoped<IVolunteerRequestService, VolunteerRequestService>();
+builder.Services.AddScoped<IFinancialService, FinancialService>();
+builder.Services.AddScoped<IScholarshipPaymentService, ScholarshipPaymentService>();
 
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+builder.Services.AddScoped<IExchangeRateService, BccrHttpExchangeRateService>();
 
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IInventoryMovementRepository, InventoryMovementRepository>();
+builder.Services.AddScoped<IOutgoingDonationRepository, OutgoingDonationRepository>();
+builder.Services.AddScoped<IVolunteerRequestRepository, VolunteerRequestRepository>();
+builder.Services.AddScoped<IDonationsRepository, DonationsRepository>();
+builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
 
 var app = builder.Build();
 
@@ -70,8 +90,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Use custom middlewares
-app.UseMiddleware<UnhandledExceptionMiddleware>();
 app.UseMiddleware<ModelStateValidationMiddleware>();
+app.UseMiddleware<TransactionalMiddleware>();
+app.UseMiddleware<UnhandledExceptionMiddleware>();
 
 app.MapControllers();
 

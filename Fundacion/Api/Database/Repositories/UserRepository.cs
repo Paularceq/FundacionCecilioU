@@ -26,6 +26,12 @@ namespace Api.Database.Repositories
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+        public async Task<User> GetUserByIdentificacionAsync(string identificacion)
+        {
+            return await _context.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.Identificacion == identificacion);
+        }
 
         public async Task<User> AddUserAsync(User user)
         {
@@ -42,11 +48,17 @@ namespace Api.Database.Repositories
             return user;
         }
         
-
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _context.Users
                 .Include(u => u.Roles)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByRole(string roleName)
+        {
+            return await _context.Users
+                .Where(u => u.Activo && u.Roles.Any(r => r.Name == roleName))
                 .ToListAsync();
         }
     }

@@ -1,60 +1,136 @@
-﻿@model IEnumerable<Shared.Dtos.UsertoListDto>
+﻿@model IEnumerable<Shared.Dtos.UserToListDto>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Usuarios";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    int userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
 }
 
-<h1>Index</h1>
+<style>
+    body {
+        background-color: #e3e6eb;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Identificacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NombreCompleto)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Nacionalidad)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Identificacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NombreCompleto)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nacionalidad)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    .table-wrapper {
+       /*  overflow: hidden; */
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        padding: 1rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f9f9f9;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .table thead th {
+        text-align: center !important;
+        vertical-align: middle !important;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #333;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-size: 0.8rem;
+    }
+
+    .dropdown-menu li a i {
+        width: 16px;
+    }
+
+    .btn {
+        border-radius: 6px;
+    }
+</style>
+
+
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+            <i class="bi bi-people-fill me-2 text-primary"></i> Gestión de Usuarios
+        </h1>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a asp-action="AddUser" class="btn btn-success">
+                <i class="fa-solid fa-user-plus"></i></i> Crear nuevo usuario
+            </a>
+            <div id="customFilterContainer" class="flex-grow-1" style="min-width: 250px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="table-wrapper">
+    <table class="table table-bordered table-hover align-middle" id="dataTable">
+        <thead class="table-light">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.First().Id)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Identificacion)</th>
+                <th>@Html.DisplayNameFor(model => model.First().NombreCompleto)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Email)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Nacionalidad)</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Identificacion</td>
+                    <td>@item.NombreCompleto</td>
+                    <td>@item.Email</td>
+                    <td>@item.Nacionalidad</td>
+                    <td class="text-center">
+                        <span class="fw-semibold estado-label d-inline-block"
+                              style="color:@(item.Activo ? "#28a745" : "#dc3545");">
+                            @(item.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Acción
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-action="UpdateUser" asp-route-id="@item.Id">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                </li>
+                                @if (item.Id != userId)
+                                {
+                                    if (item.Activo)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-danger" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
+                                                <i class="bi bi-x-circle"></i> Desactivar
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-success" asp-action="ChangeUserStatus" asp-route-id="@item.Id">
+                                                <i class="bi bi-check-circle"></i> Activar
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+

@@ -1,0 +1,128 @@
+﻿@model IEnumerable<Shared.Dtos.OutgoingDonations.OutgoingDonationToListDto>
+
+@{
+    ViewData["Title"] = "Solicitudes de donación";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #e3e6eb;
+        }
+
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9f9f9;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .table thead th {
+            text-align: center !important;
+            vertical-align: middle !important;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+    </style>
+}
+
+<div class="container">
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-hand-holding-heart me-2"></i> Administración de solicitudes de donación
+            </h1>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Solicitante</th>
+                    <th>Beneficiario</th>
+                    <th>Aprobador</th>
+                    <th>Estado</th>
+                    <th>Fecha solicitud</th>
+                    <th>Fecha aprobación</th>
+                    <th>Tipo</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.RequesterName</td>
+                        <td>@item.RecipientName</td>
+                        <td>@item.ApproverName</td>
+                        <td>
+                            @{
+                                var badgeClass = item.StatusDescription switch
+                                {
+                                    "Pendiente" => "bg-warning text-dark",
+                                    "Aprobada" => "bg-success",
+                                    "Rechazada" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badgeClass">@item.StatusDescription</span>
+                        </td>
+                        <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
+                        <td>@(item.ApprovalDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td>@item.TypeDescription</td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">
+                                            <i class="fas fa-circle-info fa-fw me-2 text-secondary"></i> Detalles
+                                        </a>
+                                    </li>
+                                   @if (item.Status == Shared.Enums.RequestStatus.Pending)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-action="Resolve" asp-route-id="@item.Id" asp-route-isApproved="@true">
+                                                <i class="fa-solid fa-check fa-fw me-2 text-success"></i> Aprobar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-action="Resolve" asp-route-id="@item.Id" asp-route-isApproved="@false">
+                                                <i class="fa-solid fa-xmark fa-fw me-2 text-danger"></i> Rechazar
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

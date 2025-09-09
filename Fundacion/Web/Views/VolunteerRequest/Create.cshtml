@@ -1,0 +1,405 @@
+﻿@model Web.Models.Volunteer.CreateRequestViewModel
+@{
+    ViewData["Title"] = "Nueva Solicitud de Voluntariado";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+
+    .card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #003366;
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .btn-primary {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        border-color: #6b7280;
+    }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            border-color: #4b5563;
+        }
+
+    .btn-outline-info {
+        color: #0891b2;
+        border-color: #0891b2;
+    }
+
+        .btn-outline-info:hover {
+            background-color: #0891b2;
+            border-color: #0891b2;
+        }
+
+    .info-card {
+        background-color: #dbeafe;
+        border-left: 4px solid #3b82f6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+        .info-card h6 {
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card ul {
+            color: #1e3a8a;
+            margin-bottom: 0;
+        }
+
+    .required:after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .form-help {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .character-count {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+
+        .character-count.near-limit {
+            color: #f59e0b;
+        }
+
+        .character-count.at-limit {
+            color: #dc2626;
+        }
+
+    .alert {
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .next-steps {
+        background-color: #f8fafc;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+        .next-steps h6 {
+            color: #003366;
+            margin-bottom: 1rem;
+        }
+
+    .step-item {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+        .step-item i {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-item h6 {
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-item small {
+            color: #6b7280;
+        }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Información Importante -->
+            <div class="info-card">
+                <h6>
+                    <i class="fas fa-info-circle me-2"></i>Información Importante
+                </h6>
+                <ul>
+                    <li>Solo puedes tener <strong>una solicitud activa</strong> a la vez</li>
+                    <li>Una vez enviada, la solicitud será <strong>revisada por un administrador</strong></li>
+                    <li>Asegúrate de completar todos los campos correctamente</li>
+                    <li>La descripción debe ser detallada y clara sobre las actividades a realizar</li>
+                </ul>
+            </div>
+
+            <!-- Formulario Principal -->
+            <div class="card">
+                <h2 class="card-title text-center">
+                    <i class="fas fa-hands-helping me-2"></i>
+                    @ViewData["Title"]
+                </h2>
+
+                <form asp-action="Create" method="post" id="volunteerForm">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Institution" class="form-label required">Institución</label>
+                        <input asp-for="Institution" class="form-control" placeholder="Ej: Hospital Nacional, Escuela Primaria San José, etc." />
+                        <span asp-validation-for="Institution" class="text-danger"></span>
+                        <div class="form-help">
+                            Nombre completo de la institución donde realizarás tu voluntariado
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Profession" class="form-label required">Profesión</label>
+                        <input asp-for="Profession" class="form-control" placeholder="Ej: Enfermería, Medicina, Psicología, Derecho, etc." />
+                        <span asp-validation-for="Profession" class="text-danger"></span>
+                        <div class="form-help">
+                            Tu área profesional o campo de estudio
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label required">Descripción del Trabajo</label>
+                        <textarea asp-for="Description" class="form-control" rows="5"
+                                  placeholder="Describe detalladamente las actividades que realizarás como voluntario..."
+                                  maxlength="1000" id="descriptionTextarea"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                        <div class="d-flex justify-content-between">
+                            <div class="form-help">
+                                Explica claramente qué actividades específicas realizarás, horarios aproximados, y cómo contribuirás a la institución
+                            </div>
+                            <div class="character-count" id="descriptionCount">0/1000</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Hours" class="form-label required">Total de Horas Propuestas</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input asp-for="Hours" class="form-control" type="number" min="1" max="1000"
+                                       placeholder="Ej: 150" id="hoursInput" />
+                                <span asp-validation-for="Hours" class="text-danger"></span>
+                                <div class="form-help">
+                                    Número total de horas que planeas dedicar (entre 1 y 1000 horas)
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-help">
+                                    <strong>Equivalencias aproximadas:</strong><br>
+                                    <small>• 40 horas = 1 semana completa</small><br>
+                                    <small>• 120 horas = 3 semanas completas</small><br>
+                                    <small>• 200 horas = 5 semanas completas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a asp-action="Index" class="btn btn-secondary me-2">
+                            <i class="fas fa-times me-1"></i> Cancelar
+                        </a>
+                        <button type="button" class="btn btn-outline-info me-2" id="validateBtn">
+                            <i class="fas fa-check-circle me-1"></i> Validar
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane me-1"></i> Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Próximos Pasos -->
+                <div class="next-steps">
+                    <h6>
+                        <i class="fas fa-route me-2"></i>¿Qué sigue después?
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="step-item">
+                                <i class="fas fa-paper-plane fa-2x text-primary"></i>
+                                <h6>1. Envío</h6>
+                                <small>Tu solicitud será enviada al sistema</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-item">
+                                <i class="fas fa-user-check fa-2x text-warning"></i>
+                                <h6>2. Revisión</h6>
+                                <small>Un administrador revisará tu solicitud</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-item">
+                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                                <h6>3. Aprobación</h6>
+                                <small>Podrás comenzar a registrar horas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const descriptionTextarea = document.getElementById('descriptionTextarea');
+            const descriptionCount = document.getElementById('descriptionCount');
+            const hoursInput = document.getElementById('hoursInput');
+            const validateBtn = document.getElementById('validateBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('volunteerForm');
+
+            // Contador de caracteres para descripción
+            function updateCharacterCount() {
+                const currentLength = descriptionTextarea.value.length;
+                const maxLength = 1000;
+                descriptionCount.textContent = `${currentLength}/${maxLength}`;
+
+                // Cambiar color según proximidad al límite
+                descriptionCount.classList.remove('near-limit', 'at-limit');
+                if (currentLength > maxLength * 0.9) {
+                    descriptionCount.classList.add('at-limit');
+                } else if (currentLength > maxLength * 0.8) {
+                    descriptionCount.classList.add('near-limit');
+                }
+            }
+
+            // Event listeners
+            descriptionTextarea.addEventListener('input', updateCharacterCount);
+            validateBtn.addEventListener('click', validateForm);
+            form.addEventListener('submit', handleSubmit);
+
+            // Validación del formulario
+            function validateForm() {
+                let isValid = true;
+                const errors = [];
+
+                // Validar institución
+                const institution = document.getElementById('Institution').value.trim();
+                if (!institution) {
+                    errors.push('La institución es obligatoria');
+                    isValid = false;
+                } else if (institution.length < 3) {
+                    errors.push('La institución debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+
+                // Validar profesión
+                const profession = document.getElementById('Profession').value.trim();
+                if (!profession) {
+                    errors.push('La profesión es obligatoria');
+                    isValid = false;
+                } else if (profession.length < 3) {
+                    errors.push('La profesión debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+
+                // Validar descripción
+                const description = descriptionTextarea.value.trim();
+                if (!description) {
+                    errors.push('La descripción es obligatoria');
+                    isValid = false;
+                } else if (description.length < 50) {
+                    errors.push('La descripción debe tener al menos 50 caracteres para ser significativa');
+                    isValid = false;
+                } else if (description.length > 1000) {
+                    errors.push('La descripción no puede exceder 1000 caracteres');
+                    isValid = false;
+                }
+
+                // Validar horas
+                const hours = parseInt(hoursInput.value);
+                if (!hours || hours < 1) {
+                    errors.push('Debes especificar al menos 1 hora');
+                    isValid = false;
+                } else if (hours > 1000) {
+                    errors.push('El máximo de horas permitidas es 1000');
+                    isValid = false;
+                }
+
+                // Mostrar resultado de validación
+                if (isValid) {
+                    showAlert('✅ Todos los datos son válidos. Puedes enviar la solicitud.', 'success');
+                } else {
+                    showAlert('❌ Errores encontrados: ' + errors.join(', '), 'danger');
+                }
+
+                return isValid;
+            }
+
+            // Manejar envío del formulario
+            function handleSubmit(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Deshabilitar botón para evitar doble envío
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+
+                return true;
+            }
+
+            // Función para mostrar alertas
+            function showAlert(message, type) {
+                // Remover alertas previas
+                const existingAlert = document.querySelector('.alert.custom-alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+
+                // Crear nueva alerta
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                // Insertar antes del formulario
+                const card = document.querySelector('.card');
+                card.insertBefore(alertDiv, card.firstChild.nextSibling);
+
+                // Auto-remover después de 5 segundos
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            }
+
+            // Inicializar contador
+            updateCharacterCount();
+        });
+    </script>
+}
