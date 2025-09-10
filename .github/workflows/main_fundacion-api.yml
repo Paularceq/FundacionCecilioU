@@ -1,4 +1,4 @@
-# Workflow corregido para la estructura de Fundacion
+# Workflow corregido con Publish Profile
 name: Build and deploy ASP.Net Core app to Azure Web App - fundacion-api
 
 on:
@@ -24,17 +24,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Debug - Show repository structure
-        run: |
-          echo "=== Root directory ==="
-          ls -la
-          echo "=== Fundacion folder ==="
-          ls -la Fundacion/
-          echo "=== Api folder ==="
-          ls -la Fundacion/Api/
-          echo "=== Looking for .csproj files ==="
-          find . -name "*.csproj" -type f
-
       - name: Restore dependencies
         run: dotnet restore Fundacion/Api/Api.csproj
 
@@ -56,8 +45,6 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write
 
     steps:
       - name: Download artifact from build job
@@ -65,17 +52,10 @@ jobs:
         with:
           name: .net-app
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
