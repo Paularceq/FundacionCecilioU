@@ -1,4 +1,4 @@
-# Workflow para desplegar Fundacion API
+# Workflow corregido para la estructura de Fundacion
 name: Build and deploy ASP.Net Core app to Azure Web App - fundacion-api
 
 on:
@@ -11,7 +11,6 @@ env:
   AZURE_WEBAPP_NAME: fundacion-api
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: '8.0.x'
-  PROJECT_PATH: 'Fundacion/Api/Api.csproj'  # Ruta específica al proyecto API
 
 jobs:
   build:
@@ -25,31 +24,25 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Verify project structure
+      - name: Debug - Show repository structure
         run: |
-          echo "=== Estructura del repositorio ==="
+          echo "=== Root directory ==="
           ls -la
-          echo "=== Contenido de la carpeta Fundacion ==="
+          echo "=== Fundacion folder ==="
           ls -la Fundacion/
-          echo "=== Verificando proyecto API ==="
+          echo "=== Api folder ==="
           ls -la Fundacion/Api/
+          echo "=== Looking for .csproj files ==="
+          find . -name "*.csproj" -type f
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.PROJECT_PATH }}
+        run: dotnet restore Fundacion/Api/Api.csproj
 
       - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} --no-restore --configuration Release
-
-      - name: Test (si tienes tests)
-        run: |
-          if [ -f "Fundacion/Api.Tests/Api.Tests.csproj" ]; then
-            dotnet test Fundacion/Api.Tests/Api.Tests.csproj --no-build --verbosity normal --configuration Release
-          else
-            echo "No se encontraron tests, continuando..."
-          fi
+        run: dotnet build Fundacion/Api/Api.csproj --no-restore --configuration Release
 
       - name: Publish
-        run: dotnet publish ${{ env.PROJECT_PATH }} --no-build --configuration Release --output ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish Fundacion/Api/Api.csproj --no-build --configuration Release --output ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
