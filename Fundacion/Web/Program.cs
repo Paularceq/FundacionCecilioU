@@ -45,6 +45,9 @@ builder.Services.AddScoped<OutgoingDonationService>();
 builder.Services.AddScoped<VolunteerRequestService>();
 builder.Services.AddScoped<VolunteerHoursService>();
 builder.Services.AddScoped<FinancialService>();
+builder.Services.AddScoped<HomeContentService>();
+builder.Services.AddScoped<NewsletterService>();
+builder.Services.AddScoped<SubscriptionService>();
 
 var app = builder.Build();
 

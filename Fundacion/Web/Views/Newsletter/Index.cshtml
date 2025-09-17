@@ -1,0 +1,123 @@
+﻿
+@model IEnumerable<Web.Models.Newsletter.NewsletterViewModel>
+@{
+    ViewData["Title"] = "Gestión de Newsletters";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .card-title {
+        color: #0d6efd;
+        font-weight: 700;
+    }
+    .btn-custom {
+        min-width: 130px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+    .badge-success { background-color: #198754; }
+    .badge-warning { background-color: #ffc107; color: #000; }
+    .badge-info { background-color: #0dcaf0; color: #000; }
+    .badge-danger { background-color: #dc3545; }
+    .badge-secondary { background-color: #6c757d; }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-envelope-fill me-2"></i>Gestión de Newsletters
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0">Administra y envía boletines informativos</p>
+                        <div>
+                            @Html.ActionLink("Estadísticas", "Statistics", null, new { @class = "btn btn-info btn-custom me-2" })
+                            @Html.ActionLink("Nuevo Newsletter", "CreateNewsletter", null, new { @class = "btn btn-success btn-custom" })
+                        </div>
+                    </div>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Asunto</th>
+                                        <th>Estado</th>
+                                        <th>Destinatarios</th>
+                                        <th>Fecha</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.Subject</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge @item.StatusClass">@item.StatusText</span>
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-people me-1"></i>@item.RecipientCount
+                                            </td>
+                                            <td>
+                                                @if (item.SendDate.HasValue)
+                                                {
+                                                    @item.SendDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Sin programar</span>
+                                                }
+                                                <br><small class="text-muted">Creado: @item.CreatedDate.ToString("dd/MM/yyyy")</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    @Html.ActionLink("Ver", "Details", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
+                                                    @if (item.CanBeSent)
+                                                    {
+                                                        @Html.ActionLink("Enviar", "SendNewsletter", new { id = item.Id }, new { @class = "btn btn-outline-success btn-sm", onclick = "return confirm('¿Está seguro de enviar este newsletter?')" })
+                                                    }
+                                                    @if (item.CanBeDeleted)
+                                                    {
+                                                        @Html.ActionLink("Eliminar", "DeleteNewsletter", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm", onclick = "return confirm('¿Está seguro de eliminar este newsletter?')" })
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-envelope display-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">No hay newsletters disponibles</h5>
+                            <p class="text-muted">Crea tu primer boletín informativo</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="text-center mt-5 mb-4">
+                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -57,6 +57,9 @@ builder.Services.AddScoped<IOutgoingDonationService, OutgoingDonationService>();
 builder.Services.AddScoped<IVolunteerRequestService, VolunteerRequestService>();
 builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IScholarshipPaymentService, ScholarshipPaymentService>();
+builder.Services.AddScoped<IHomeContentService, HomeContentService>();
+builder.Services.AddScoped<INewsletterService, NewsletterService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -74,6 +77,9 @@ builder.Services.AddScoped<IOutgoingDonationRepository, OutgoingDonationReposito
 builder.Services.AddScoped<IVolunteerRequestRepository, VolunteerRequestRepository>();
 builder.Services.AddScoped<IDonationsRepository, DonationsRepository>();
 builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
+builder.Services.AddScoped<IHomeContentRepository, HomeContentRepository>();
+builder.Services.AddScoped<INewsletterRepository, NewsletterRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 var app = builder.Build();
 

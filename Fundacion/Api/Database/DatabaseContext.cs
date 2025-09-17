@@ -83,6 +83,58 @@ namespace Api.Database
                 .WithMany()
                 .HasForeignKey(d => d.ApproverId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // HomeContent configuraciones
+            modelBuilder.Entity<HomeContent>()
+                .HasOne(hc => hc.Creator)
+                .WithMany()
+                .HasForeignKey(hc => hc.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HomeContent>()
+                .HasIndex(hc => hc.IsActive)
+                .HasDatabaseName("IX_HomeContent_IsActive");
+
+            modelBuilder.Entity<HomeContent>()
+                .HasIndex(hc => new { hc.IsActive, hc.StartDate, hc.EndDate })
+                .HasDatabaseName("IX_HomeContent_Active_Dates");
+
+            // Newsletter configuraciones
+            modelBuilder.Entity<Newsletter>()
+                .Property(n => n.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Newsletter>()
+                .HasOne(n => n.Creator)
+                .WithMany()
+                .HasForeignKey(n => n.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Newsletter>()
+                .HasIndex(n => n.Status)
+                .HasDatabaseName("IX_Newsletter_Status");
+
+            modelBuilder.Entity<Newsletter>()
+                .HasIndex(n => n.SendDate)
+                .HasDatabaseName("IX_Newsletter_SendDate");
+
+            // NewsletterSubscription configuraciones
+            modelBuilder.Entity<NewsletterSubscription>()
+                .Property(ns => ns.Frequency)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<NewsletterSubscription>()
+                .HasIndex(ns => ns.Email)
+                .IsUnique()
+                .HasDatabaseName("UX_NewsletterSubscription_Email");
+
+            modelBuilder.Entity<NewsletterSubscription>()
+                .HasIndex(ns => ns.ConfirmationToken)
+                .HasDatabaseName("IX_NewsletterSubscription_Token");
+
+            modelBuilder.Entity<NewsletterSubscription>()
+                .HasIndex(ns => new { ns.IsActive, ns.Frequency })
+                .HasDatabaseName("IX_NewsletterSubscription_Active_Frequency");
         }
 
         // Define DbSet properties for your entities
@@ -103,5 +155,8 @@ namespace Api.Database
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Budget> Budgets { get; set; }
         public DbSet<Scholarship> Scholarships { get; set; }
+        public DbSet<HomeContent> HomeContents { get; set; }
+        public DbSet<Newsletter> Newsletters { get; set; }
+        public DbSet<NewsletterSubscription> NewsletterSubscriptions { get; set; }
     }
 }
