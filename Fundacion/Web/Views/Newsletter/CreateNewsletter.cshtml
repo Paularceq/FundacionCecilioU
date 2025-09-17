@@ -1,0 +1,146 @@
+﻿
+@model Web.Models.Newsletter.CreateNewsletterViewModel
+@{
+    ViewData["Title"] = "Nuevo Newsletter";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #12263a;
+    }
+    .card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 40px;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .card-title {
+        color: #0d6efd;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .btn-custom {
+        min-width: 130px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+    #preview-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <h4 class="card-title">
+                    <i class="bi bi-envelope-plus me-2"></i>Crear Nuevo Newsletter
+                </h4>
+
+                @using (Html.BeginForm("CreateNewsletter", "Newsletter", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.Subject, new { @class = "form-label fw-semibold" })
+                                @Html.TextBoxFor(model => model.Subject, new { @class = "form-control", placeholder = "Asunto del newsletter" })
+                                @Html.ValidationMessageFor(model => model.Subject, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                @Html.LabelFor(model => model.SendDate, new { @class = "form-label fw-semibold" })
+                                @Html.TextBoxFor(model => model.SendDate, new { @class = "form-control", @type = "datetime-local" })
+                                @Html.ValidationMessageFor(model => model.SendDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(model => model.CustomContent, new { @class = "form-label fw-semibold" })
+                        @Html.TextAreaFor(model => model.CustomContent, new { @class = "form-control", rows = "6", placeholder = "Contenido personalizado del newsletter" })
+                        @Html.ValidationMessageFor(model => model.CustomContent, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                @Html.CheckBoxFor(model => model.IncludeHomeContent, new { @class = "form-check-input" })
+                                @Html.LabelFor(model => model.IncludeHomeContent, new { @class = "form-check-label fw-semibold" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                @Html.CheckBoxFor(model => model.SendNow, new { @class = "form-check-input" })
+                                @Html.LabelFor(model => model.SendNow, new { @class = "form-check-label fw-semibold" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <button type="button" id="preview-btn" class="btn btn-outline-info btn-custom">
+                            <i class="bi bi-eye me-1"></i>Vista Previa
+                        </button>
+                        <div id="preview-container" class="mt-3" style="display: none;">
+                            <h6>Vista Previa del Newsletter:</h6>
+                            <div id="preview-content"></div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-center gap-3">
+                        <input type="submit" value="Crear Newsletter" class="btn btn-primary btn-custom" />
+                        @Html.ActionLink("Cancelar", "Index", null, new { @class = "btn btn-outline-secondary btn-custom" })
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-5 mb-4">
+                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('preview-btn').addEventListener('click', function() {
+    const subject = document.getElementById('Subject').value;
+    const customContent = document.getElementById('CustomContent').value;
+    const includeHomeContent = document.getElementById('IncludeHomeContent').checked;
+    
+    if (!subject || !customContent) {
+        alert('Por favor complete el asunto y contenido para generar la vista previa');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('Subject', subject);
+    formData.append('CustomContent', customContent);
+    formData.append('IncludeHomeContent', includeHomeContent);
+    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+    
+    fetch('@Url.Action("PreviewNewsletter", "Newsletter")', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('preview-content').innerHTML = html;
+        document.getElementById('preview-container').style.display = 'block';
+    })
+    .catch(error => {
+        alert('Error al generar vista previa');
+        console.error(error);
+    });
+});
+</script>
