@@ -1,122 +1,514 @@
-﻿
-@model IEnumerable<Web.Models.Newsletter.HomeContentViewModel>
+﻿@model IEnumerable<Web.Models.Newsletter.HomeContentViewModel>
 @{
     ViewData["Title"] = "Gestión de Contenido";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
 <style>
-    body {
-        background-color: #12263a;
+    .content-management-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
     }
-    .card {
-        background-color: #fff;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+    .main-content-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        max-width: 1200px;
+        margin: 0 auto;
     }
-    .card-title {
-        color: #0d6efd;
+
+    .header-section {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        padding: 2.5rem 2rem;
+        color: white;
+        position: relative;
+    }
+
+    .header-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stats-container {
+        display: flex;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+        flex-wrap: wrap;
+    }
+
+    .stat-pill {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-section {
+        padding: 2rem;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .action-info h3 {
+        color: #2d3748;
         font-weight: 700;
+        margin-bottom: 0.5rem;
     }
-    .btn-custom {
-        min-width: 130px;
+
+    .action-info p {
+        color: #718096;
+        margin: 0;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 8px 25px rgba(238, 90, 82, 0.3);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(238, 90, 82, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .content-grid {
+        padding: 2rem;
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .content-item {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f7fafc;
+        transition: all 0.3s ease;
+        position: relative;
+        border-left: 4px solid #667eea;
+    }
+
+    .content-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+        border-left-color: #764ba2;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .content-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .content-description {
+        color: #718096;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+    }
+
+    .status-inactive {
+        background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(160, 174, 192, 0.3);
+    }
+
+    .content-meta {
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .meta-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .meta-content {
+        flex: 1;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #4a5568;
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        color: #2d3748;
         font-weight: 500;
-        padding: 8px 16px;
+        font-size: 0.9rem;
     }
-    .status-active { color: #198754; font-weight: 600; }
-    .status-inactive { color: #6c757d; font-weight: 600; }
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
+
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        border: 2px solid;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-view {
+        color: #3182ce;
+        border-color: #3182ce;
+        background: rgba(49, 130, 206, 0.1);
+    }
+
+    .btn-view:hover {
+        background: #3182ce;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-edit {
+        color: #d69e2e;
+        border-color: #d69e2e;
+        background: rgba(214, 158, 46, 0.1);
+    }
+
+    .btn-edit:hover {
+        background: #d69e2e;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-toggle {
+        color: #38a169;
+        border-color: #38a169;
+        background: rgba(56, 161, 105, 0.1);
+    }
+
+    .btn-toggle:hover {
+        background: #38a169;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-toggle-inactive {
+        color: #718096;
+        border-color: #718096;
+        background: rgba(113, 128, 150, 0.1);
+    }
+
+    .btn-toggle-inactive:hover {
+        background: #718096;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .btn-delete {
+        color: #e53e3e;
+        border-color: #e53e3e;
+        background: rgba(229, 62, 62, 0.1);
+    }
+
+    .btn-delete:hover {
+        background: #e53e3e;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-illustration {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .empty-icon {
+        font-size: 3.5rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .empty-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .empty-description {
+        font-size: 1.1rem;
+        color: #718096;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .live-indicator {
+        color: #e53e3e;
+        font-weight: 600;
+        animation: blink 2s infinite;
     }
 </style>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="bi bi-house-fill me-2"></i>Gestión de Contenido Home
-                    </h4>
+<div class="content-management-container">
+    <div class="main-content-card">
+        <!-- Header con gradiente -->
+        <div class="header-section">
+            <h1 class="header-title">
+                <i class="bi bi-house-heart me-2"></i>
+                Gestión de Contenido
+            </h1>
+            <p class="header-subtitle">
+                Administra y controla todo el contenido que aparece en tu página principal
+            </p>
+            
+            <div class="stats-container">
+                @{
+                    var totalCount = Model?.Count() ?? 0;
+                    var activeCount = Model?.Where(x => x.IsActive).Count() ?? 0;
+                }
+                <div class="stat-pill">
+                    <i class="bi bi-files"></i>
+                    <span>@totalCount Contenidos</span>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <p class="text-muted mb-0">Administra el contenido que aparece en la página principal</p>
-                        @Html.ActionLink("Nuevo Contenido", "AddHomeContent", null, new { @class = "btn btn-success btn-custom" })
-                    </div>
+                <div class="stat-pill">
+                    <i class="bi bi-check-circle"></i>
+                    <span>@activeCount Activos</span>
+                </div>
+                <div class="stat-pill">
+                    <i class="bi bi-calendar-date"></i>
+                    <span>@DateTime.Now.ToString("dd MMM yyyy")</span>
+                </div>
+            </div>
+        </div>
 
-                    @if (Model != null && Model.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Título</th>
-                                        <th>Estado</th>
-                                        <th>Vigencia</th>
-                                        <th>Creado por</th>
-                                        <th class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <strong>@item.Title</strong>
-                                                <br><small class="text-muted">@item.Description.Substring(0, Math.Min(50, item.Description.Length))...</small>
-                                            </td>
-                                            <td>
-                                                <span class="@(item.IsActive ? "status-active" : "status-inactive")">
-                                                    <i class="bi @(item.IsActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
-                                                    @item.StatusBadge
-                                                </span>
-                                            </td>
-                                            <td>
-                                                @if (item.StartDate.HasValue || item.EndDate.HasValue)
-                                                {
-                                                    <small>
-                                                        @(item.StartDate?.ToString("dd/MM/yyyy") ?? "Sin inicio")<br>
-                                                        @(item.EndDate?.ToString("dd/MM/yyyy") ?? "Sin fin")
-                                                    </small>
-                                                }
-                                                else
-                                                {
-                                                    <small class="text-muted">Permanente</small>
-                                                }
-                                            </td>
-                                            <td>
-                                                @item.CreatedBy<br>
-                                                <small class="text-muted">@item.CreatedDate.ToString("dd/MM/yyyy")</small>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group" role="group">
-                                                    @Html.ActionLink("Ver", "Details", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
-                                                    @Html.ActionLink("Editar", "UpdateHomeContent", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
-                                                    @Html.ActionLink(item.IsActive ? "Desactivar" : "Activar", "ChangeHomeContentStatus", new { id = item.Id }, new { @class = $"btn btn-outline-{(item.IsActive ? "secondary" : "success")} btn-sm" })
-                                                    @Html.ActionLink("Eliminar", "DeleteHomeContent", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm", onclick = "return confirm('¿Está seguro de eliminar este contenido?')" })
-                                                </div>
-                                            </td>
-                                        </tr>
+        <!-- Sección de acciones -->
+        <div class="action-section">
+            <div class="action-info">
+                <h3>Panel de Control</h3>
+                <p>Crea, edita y gestiona el contenido de tu sitio web de manera fácil e intuitiva</p>
+            </div>
+            @Html.ActionLink("Crear Nuevo Contenido", "AddHomeContent", null, new { @class = "btn-create" })
+        </div>
+
+        <!-- Grid de contenido -->
+        <div class="content-grid">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="content-item">
+                        <div class="content-header">
+                            <div style="flex: 1;">
+                                <h3 class="content-title">@item.Title</h3>
+                                <p class="content-description">
+                                    @{
+                                        var description = item.Description.Length > 120 ? 
+                                            item.Description.Substring(0, 120) + "..." : 
+                                            item.Description;
                                     }
-                                </tbody>
-                            </table>
+                                    @description
+                                </p>
+                            </div>
+                            <div class="status-badge @(item.IsActive ? "status-active" : "status-inactive")">
+                                <i class="bi @(item.IsActive ? "bi-check-circle-fill" : "bi-x-circle-fill")"></i>
+                                @item.StatusBadge
+                            </div>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="bi bi-inbox display-1 text-muted"></i>
-                            <h5 class="mt-3 text-muted">No hay contenido disponible</h5>
-                            <p class="text-muted">Crea el primer contenido para la página principal</p>
-                        </div>
-                    }
-                </div>
-            </div>
 
-            <div class="text-center mt-5 mb-4">
-                <img src="~/img/Logo.png" alt="Logo Fundación" style="max-height: 80px;" />
-            </div>
+                        <div class="content-meta">
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="bi bi-calendar-range"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <span class="meta-label">Vigencia</span>
+                                    <div class="meta-value">
+                                        @if (item.StartDate.HasValue || item.EndDate.HasValue)
+                                        {
+                                            {
+                                                var startText = item.StartDate?.ToString("dd/MM/yyyy") ?? "Sin inicio";
+                                                var endText = item.EndDate?.ToString("dd/MM/yyyy") ?? "Sin fin";
+                                                var dateRange = startText + " - " + endText;
+                                            }
+                                            @* dateRange *@
+                                        }
+                                        else
+                                        {
+                                            <span>Contenido Permanente</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <span class="meta-label">Creador</span>
+                                    <div class="meta-value">@item.CreatedBy</div>
+                                </div>
+                            </div>
+
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="meta-content">
+                                    <span class="meta-label">Fecha de Creación</span>
+                                    <div class="meta-value">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                            </div>
+
+                            @if (item.IsCurrentlyActive)
+                            {
+                                <div class="meta-item">
+                                    <div class="meta-icon">
+                                        <i class="bi bi-broadcast"></i>
+                                    </div>
+                                    <div class="meta-content">
+                                        <span class="meta-label">Estado Actual</span>
+                                        <div class="meta-value live-indicator">
+                                            🔴 En Vivo Ahora
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="action-buttons">
+                            @Html.ActionLink("Ver", "Details", new { id = item.Id }, new { @class = "btn-action btn-view" })
+                            @Html.ActionLink("Editar", "UpdateHomeContent", new { id = item.Id }, new { @class = "btn-action btn-edit" })
+                            @Html.ActionLink(item.IsActive ? "Desactivar" : "Activar", "ChangeHomeContentStatus", new { id = item.Id }, new { @class = $"btn-action {(item.IsActive ? "btn-toggle-inactive" : "btn-toggle")}" })
+                            @Html.ActionLink("Eliminar", "DeleteHomeContent", new { id = item.Id }, new { @class = "btn-action btn-delete", onclick = "return confirm('¿Estás seguro de que quieres eliminar este contenido?')" })
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-illustration">
+                        <i class="bi bi-file-earmark-plus empty-icon"></i>
+                    </div>
+                    <h2 class="empty-title">¡Comienza a crear contenido!</h2>
+                    <p class="empty-description">
+                        Aún no has creado ningún contenido para tu página principal.<br>
+                        Crea tu primer contenido y dale vida a tu sitio web.
+                    </p>
+                    @Html.ActionLink("Crear Mi Primer Contenido", "AddHomeContent", null, new { @class = "btn-create" })
+                </div>
+            }
         </div>
     </div>
 </div>

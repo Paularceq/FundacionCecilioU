@@ -15,3 +15,4 @@ namespace Api.Abstractions.Repositories
         Task<IEnumerable<NewsletterSubscription>> GetSubscriptionsByFrequencyAsync(SubscriptionFrequency frequency);
         Task<int> GetActiveSubscriptionsCountAsync();
     }
+}
