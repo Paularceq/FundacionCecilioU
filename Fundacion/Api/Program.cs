@@ -37,9 +37,19 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-// Add database context (assuming you have a DbContext class named DatabaseContext)
+// CONFIGURACIÓN DE BASE DE DATOS
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Usar connection string por defecto para testing en Azure
+    Console.WriteLine("No connection string found, using default");
+    connectionString = "Server=(localdb)\\mssqllocaldb;Database=FundacionTest;Trusted_Connection=true;MultipleActiveResultSets=true;";
+}
+
+Console.WriteLine("Configuring SQL Server database");
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
@@ -83,14 +93,13 @@ builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// CONFIGURACIÓN MEJORADA DEL PIPELINE
+// Habilitar Swagger en TODOS los entornos (incluyendo Azure)
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// Comentar HTTPS redirection para Azure (puede causar problemas)
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -101,5 +110,30 @@ app.UseMiddleware<TransactionalMiddleware>();
 app.UseMiddleware<UnhandledExceptionMiddleware>();
 
 app.MapControllers();
+
+// MANEJO SEGURO DE MIGRACIONES
+if (!string.IsNullOrEmpty(app.Configuration.GetConnectionString("DefaultConnection")) &&
+    Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
+{
+    try
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            Console.WriteLine("Applying migrations...");
+            context.Database.Migrate();
+            Console.WriteLine("Migrations applied successfully");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration error: {ex.Message}");
+        // No fallar la aplicación por errores de migración en el primer intento
+    }
+}
+
+// CONFIGURACIÓN ESPECÍFICA PARA AZURE
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 await app.RunAsync();
