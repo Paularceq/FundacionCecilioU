@@ -20,10 +20,10 @@ namespace Web.Controllers
 
         public async Task<IActionResult> IndexAsync()
         {
-            // invocar el service para consultar las donaciones y pasarlo al view. Crear la vista con el nuevo dto como modelo
             var donations = await _donationService.GetAllDonationsAsync();
             return View(donations.Value);
         }
+
         [HttpGet]
         public IActionResult AddMonetaryDonation()
         {
@@ -36,7 +36,6 @@ namespace Web.Controllers
         }
 
         [HttpPost]
-
         public async Task<IActionResult> AddMonetaryDonationAsync(AddMonetaryDonationViewModel model)
         {
             if (!ModelState.IsValid)
@@ -52,9 +51,11 @@ namespace Web.Controllers
                 this.SetErrorMessage(result.Errors);
                 return View(model);
             }
+
             this.SetSuccessMessage("Se agregó la donación correctamente");
-            return RedirectToAction("index", "dashboard");
+            return RedirectToAction("index");
         }
+
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {

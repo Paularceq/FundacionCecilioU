@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
 using Shared.Dtos.Financial;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -175,11 +177,11 @@ namespace Web.Controllers
         [HttpGet]
         public IActionResult AddBudget()
         {
-            return View(new AddBudgetDto());
+            return View(new AddBudgetViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddBudget(AddBudgetDto model)
+        public async Task<IActionResult> AddBudget(AddBudgetViewModel model)
         {
             if (!ModelState.IsValid)
             {

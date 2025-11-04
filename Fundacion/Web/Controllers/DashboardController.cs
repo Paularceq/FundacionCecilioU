@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Constants;
 
 namespace Web.Controllers
 {
@@ -8,12 +7,6 @@ namespace Web.Controllers
     public class DashboardController : Controller
     {
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        [Authorize(Roles = Roles.AdminSistema)]  
-        public IActionResult ProtectedForAdmins()
         {
             return View();
         }

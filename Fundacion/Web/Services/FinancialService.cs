@@ -101,8 +101,16 @@ namespace Web.Services
             return await _apiClient.GetAsync<List<BudgetDto>>("financial/budgets");
         }
 
-        public async Task<Result> AddBudgetAsync(AddBudgetDto dto)
+        public async Task<Result> AddBudgetAsync(AddBudgetViewModel viewModel)
         {
+            var dto = new AddBudgetDto
+            {
+                Amount = viewModel.Amount,
+                Currency = viewModel.Currency,
+                StartDate = viewModel.StartDate,
+                EndDate = viewModel.EndDate
+            };
+
             return await _apiClient.PostAsync("financial/budgets", dto);
         }
     }

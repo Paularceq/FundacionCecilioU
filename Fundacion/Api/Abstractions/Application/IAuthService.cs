@@ -9,5 +9,6 @@ namespace Api.Abstractions.Application
         Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto);
         Task<Result> RegisterAsync(RegisterDto registerDto);
         Task<Result> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
+        Task<Result> VerifyAccountAsync(string token);
     }
 }

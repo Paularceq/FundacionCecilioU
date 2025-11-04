@@ -62,5 +62,17 @@ namespace Api.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("verify-account")]
+        public async Task<IActionResult> VerifyAccount([FromQuery] string token)
+        {
+            var result = await _authService.VerifyAccountAsync(token);
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return NoContent();
+        }
     }
 }

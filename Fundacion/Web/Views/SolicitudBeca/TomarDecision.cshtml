@@ -1,4 +1,4 @@
-﻿@model Web.Models.Becas.SolicitudBecaViewModel
+﻿@model Web.Models.Becas.TomarDesicionViewModel
 
 @{
     ViewData["Title"] = "Tomar decisión";
@@ -8,35 +8,35 @@
 <div class="container mt-5">
     <div class="card shadow-sm rounded mb-5">
         <div class="card-body">
-            <h2 class="card-title mb-4">
+            <h2 class="card-title mb-4 text-primary">
                 <i class="fas fa-gavel me-2"></i>
                 Tomar decisión sobre la solicitud
             </h2>
 
             <dl class="row mb-4">
                 <dt class="col-sm-4">Nombre</dt>
-                <dd class="col-sm-8">@Model.NombreEstudiante</dd>
+                <dd class="col-sm-8">@Model.Solicitud.NombreEstudiante</dd>
 
                 <dt class="col-sm-4">Cédula</dt>
-                <dd class="col-sm-8">@Model.CedulaEstudiante</dd>
+                <dd class="col-sm-8">@Model.Solicitud.CedulaEstudiante</dd>
 
                 <dt class="col-sm-4">Correo</dt>
-                <dd class="col-sm-8">@Model.CorreoContacto</dd>
+                <dd class="col-sm-8">@Model.Solicitud.CorreoContacto</dd>
 
                 <dt class="col-sm-4">Teléfono</dt>
-                <dd class="col-sm-8">@Model.TelefonoContacto</dd>
+                <dd class="col-sm-8">@Model.Solicitud.TelefonoContacto</dd>
 
                 <dt class="col-sm-4">Dirección</dt>
-                <dd class="col-sm-8">@Model.Direccion</dd>
+                <dd class="col-sm-8">@Model.Solicitud.Direccion</dd>
 
                 <dt class="col-sm-4">Colegio</dt>
-                <dd class="col-sm-8">@Model.Colegio</dd>
+                <dd class="col-sm-8">@Model.Solicitud.Colegio</dd>
 
                 <dt class="col-sm-4">Nivel educativo</dt>
-                <dd class="col-sm-8">@Model.NivelEducativo</dd>
+                <dd class="col-sm-8">@Model.Solicitud.NivelEducativo</dd>
 
                 <dt class="col-sm-4">Estado actual</dt>
-                <dd class="col-sm-8">@Model.Estado</dd>
+                <dd class="col-sm-8">@Model.Solicitud.Estado</dd>
             </dl>
 
             <div class="row mb-4">
@@ -44,9 +44,9 @@
                     <div class="card">
                         <div class="card-header">Carta de consentimiento</div>
                         <div class="card-body text-center">
-                            @if (Model.CartaConsentimientoBytes != null)
+                            @if (Model.Solicitud.CartaConsentimientoBytes != null)
                             {
-                                <img src="data:@Model.CartaConsentimientoContentType;base64,@Convert.ToBase64String(Model.CartaConsentimientoBytes)"
+                                <img src="data:@Model.Solicitud.CartaConsentimientoContentType;base64,@Convert.ToBase64String(Model.Solicitud.CartaConsentimientoBytes)"
                                      alt="Carta de consentimiento"
                                      class="img-fluid" />
                             }
@@ -62,9 +62,9 @@
                     <div class="card">
                         <div class="card-header">Carta de notas</div>
                         <div class="card-body text-center">
-                            @if (Model.CartaNotasBytes != null)
+                            @if (Model.Solicitud.CartaNotasBytes != null)
                             {
-                                <img src="data:@Model.CartaNotasContentType;base64,@Convert.ToBase64String(Model.CartaNotasBytes)"
+                                <img src="data:@Model.Solicitud.CartaNotasContentType;base64,@Convert.ToBase64String(Model.Solicitud.CartaNotasBytes)"
                                      alt="Carta de notas"
                                      class="img-fluid" />
                             }
@@ -81,26 +81,26 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
 
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label asp-for="Estado" class="form-label">Nuevo estado</label>
                         <select asp-for="Estado" class="form-select" id="estadoSelect">
-                            <option value="Pendiente">Pendiente</option>
+                            <option value="">-- Seleccione una opción</option>
                             <option value="Aprobada">Aprobada</option>
                             <option value="Rechazada">Rechazada</option>
                         </select>
-                        <span asp-validation-for="Estado" class="text-danger"></span>
+                        <span asp-validation-for="Estado" class="text-danger small"></span>
                     </div>
 
                     <div id="aprobadaFields" style="display:none;">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="Amount" class="form-label">Monto asignado</label>
                             <input asp-for="Amount" type="number" step="0.01" min="0" class="form-control" />
-                            <span asp-validation-for="Amount" class="text-danger"></span>
+                            <span asp-validation-for="Amount" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="Currency" class="form-label">Moneda</label>
                             <select asp-for="Currency" class="form-select">
                                 <option value="">Seleccione...</option>
@@ -109,9 +109,9 @@
                                     <option value="@item.Value">@item.Text</option>
                                 }
                             </select>
-                            <span asp-validation-for="Currency" class="text-danger"></span>
+                            <span asp-validation-for="Currency" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="Frequency" class="form-label">Frecuencia</label>
                             <select asp-for="Frequency" class="form-select">
                                 <option value="">Seleccione...</option>
@@ -120,32 +120,32 @@
                                     <option value="@item.Value">@item.Text</option>
                                 }
                             </select>
-                            <span asp-validation-for="Frequency" class="text-danger"></span>
+                            <span asp-validation-for="Frequency" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="StartDate" class="form-label">Fecha inicio</label>
                             <input asp-for="StartDate" type="date" class="form-control" />
-                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                            <span asp-validation-for="StartDate" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="EndDate" class="form-label">Fecha fin</label>
                             <input asp-for="EndDate" type="date" class="form-control" />
-                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                            <span asp-validation-for="EndDate" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-12">
                         <label asp-for="ComentarioAdministrador" class="form-label">Comentario</label>
-                        <textarea asp-for="ComentarioAdministrador" rows="1" class="form-control"></textarea>
-                        <span asp-validation-for="ComentarioAdministrador" class="text-danger"></span>
+                        <textarea asp-for="ComentarioAdministrador" rows="3" class="form-control"></textarea>
+                        <span asp-validation-for="ComentarioAdministrador" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">
+                <div class="d-flex justify-content-start gap-2 mt-4">
+                    <button type="submit" class="btn btn-success btn-sm">
                         <i class="fas fa-check me-2"></i>Guardar decisión
                     </button>
-                    <a asp-action="Index" class="btn btn-secondary ms-2">
+                    <a asp-action="VerBecas" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-arrow-left me-2"></i>Cancelar
                     </a>
                 </div>
@@ -154,22 +154,38 @@
     </div>
 </div>
 
-<script>
-    function toggleAprobadaFields() {
-        var estado = document.getElementById('estadoSelect').value;
-        var fields = document.getElementById('aprobadaFields');
-        if (estado === 'Aprobada') {
-            fields.style.display = '';
-            fields.querySelectorAll('input, select').forEach(function(el) {
-                el.setAttribute('required', 'required');
-            });
-        } else {
-            fields.style.display = 'none';
-            fields.querySelectorAll('input, select').forEach(function(el) {
-                el.removeAttribute('required');
-            });
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        function toggleAprobadaFields() {
+            var estado = document.getElementById('estadoSelect').value;
+            var fields = document.getElementById('aprobadaFields');
+            if (estado === 'Aprobada') {
+                fields.style.display = '';
+            } else {
+                fields.style.display = 'none';
+            }
         }
-    }
-    document.getElementById('estadoSelect').addEventListener('change', toggleAprobadaFields);
-    window.addEventListener('DOMContentLoaded', toggleAprobadaFields);
-</script>
+        document.getElementById('estadoSelect').addEventListener('change', toggleAprobadaFields);
+        window.addEventListener('DOMContentLoaded', toggleAprobadaFields);
+    </script>
+
+    <script>
+        $.validator.addMethod("requiredif", function (value, element, params) {
+            var dependentValue = $('#' + params.dependentProperty).val();
+            if (dependentValue === params.targetValue) {
+                return value !== null && value.trim() !== "";
+            }
+            return true;
+        });
+
+        $.validator.unobtrusive.adapters.add("requiredif", ["dependentproperty", "targetvalue"], function (options) {
+            options.rules["requiredif"] = {
+                dependentProperty: options.params.dependentproperty,
+                targetValue: options.params.targetvalue
+            };
+            options.messages["requiredif"] = options.message;
+        });
+    </script>
+}

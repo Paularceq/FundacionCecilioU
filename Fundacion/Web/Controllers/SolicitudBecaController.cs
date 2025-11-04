@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
 using Shared.Dtos.Becas;
 using System.Net;
+using System.Security.Claims;
 using Web.Extensions;
+using Web.Helpers.Attributes;
 using Web.Models.Becas;
 
 namespace Web.Controllers
@@ -9,12 +12,10 @@ namespace Web.Controllers
     public class SolicitudBecaController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IWebHostEnvironment _env;
 
-        public SolicitudBecaController(IHttpClientFactory httpClientFactory, IWebHostEnvironment env)
+        public SolicitudBecaController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
-            _env = env;
         }
 
         [HttpGet]
@@ -29,14 +30,21 @@ namespace Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Aquí podrías subir los archivos a disco o a una API si tenés configurado
             var cartaConsentBytes = await LeerArchivoComoBytes(model.CartaConsentimiento);
             var cartaNotasBytes = await LeerArchivoComoBytes(model.CartaNotas);
 
             var cliente = _httpClientFactory.CreateClient("API");
 
-            var dto = new Shared.Dtos.Becas.SolicitudBecaDto
+            int? idEstudiante = null;
+
+            if (User.IsInRole(Roles.Estudiante))
             {
+                idEstudiante = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            }
+
+            var dto = new SolicitudBecaDto
+            {
+                EstudianteId = idEstudiante,
                 CedulaEstudiante = model.CedulaEstudiante,
                 NombreEstudiante = model.NombreEstudiante,
                 CorreoContacto = model.CorreoContacto,
@@ -68,16 +76,9 @@ namespace Web.Controllers
             }
             this.SetSuccessMessage("Solicitud enviada correctamente.");
             return RedirectToAction("VerBecas");
-
-            //var errorMsg = await response.Content.ReadAsStringAsync();
-
-            //if (response.IsSuccessStatusCode)
-            //    return RedirectToAction("VerBecas");
-            ////ModelState.AddModelError("", "Ocurrió un error al enviar la solicitud.");
-            //ModelState.AddModelError("", $"Ocurrió un error al enviar la solicitud: ");
-            //return View(model);
         }
-        private async Task<byte[]> LeerArchivoComoBytes(IFormFile archivo)
+
+        private static async Task<byte[]> LeerArchivoComoBytes(IFormFile archivo)
         {
             if (archivo == null || archivo.Length == 0)
                 return null;
@@ -85,8 +86,19 @@ namespace Web.Controllers
             await archivo.CopyToAsync(ms);
             return ms.ToArray();
         }
+
         [HttpGet]
         public async Task<IActionResult> VerBecas()
+        {
+            if (User.IsInRole(Roles.AdminBecas) || User.IsInRole(Roles.AdminSistema))
+            {
+                return await ListarParaAdmin();
+            }
+
+            return await ListarParaEstudiante();
+        }
+
+        private async Task<IActionResult> ListarParaAdmin()
         {
             var cliente = _httpClientFactory.CreateClient("API");
             var response = await cliente.GetAsync("SolicitudesBeca");
@@ -94,7 +106,7 @@ namespace Web.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 TempData["Error"] = "No se pudieron cargar las solicitudes.";
-                return View(new List<SolicitudBecaViewModel>());
+                return View(nameof(VerBecas), new List<SolicitudBecaViewModel>());
             }
 
             var solicitudesDto = await response.Content.ReadFromJsonAsync<List<SolicitudBecaDto>>();
@@ -114,16 +126,51 @@ namespace Web.Controllers
                 CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
                 CartaNotasBytes = dto.CartaNotas,
                 CartaNotasContentType = dto.CartaNotasContentType
-            }).ToList();
+            })
+                .OrderByDescending(s => s.Id)
+                .ToList();
 
-            return View(solicitudesViewModel);
+            return View(nameof(VerBecas), solicitudesViewModel);
         }
 
-        // GET: /SolicitudesBeca/TomarDecision/12345678
+        private async Task<IActionResult> ListarParaEstudiante()
+        {
+            var idEstudiante = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var cliente = _httpClientFactory.CreateClient("API");
+            var response = await cliente.GetAsync($"SolicitudesBeca/estudiante/{idEstudiante}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "No se pudieron cargar las solicitudes.";
+                return View(nameof(VerBecas), new List<SolicitudBecaViewModel>());
+            }
+            var solicitudesDto = await response.Content.ReadFromJsonAsync<List<SolicitudBecaDto>>();
+            var solicitudesViewModel = solicitudesDto.Select(dto => new SolicitudBecaViewModel
+            {
+                Id = dto.Id,
+                CedulaEstudiante = dto.CedulaEstudiante,
+                NombreEstudiante = dto.NombreEstudiante,
+                CorreoContacto = dto.CorreoContacto,
+                TelefonoContacto = dto.TelefonoContacto,
+                Direccion = dto.Direccion,
+                Colegio = dto.Colegio,
+                NivelEducativo = dto.NivelEducativo,
+                Estado = dto.Estado,
+                CartaConsentimientoBytes = dto.CartaConsentimiento,
+                CartaConsentimientoContentType = dto.CartaConsentimientoContentType,
+                CartaNotasBytes = dto.CartaNotas,
+                CartaNotasContentType = dto.CartaNotasContentType
+            })
+                .OrderByDescending(s => s.Id)
+                .ToList();
+
+            return View(nameof(VerBecas), solicitudesViewModel);
+        }
+
+        [AuthorizeRoles(Roles.AdminSistema, Roles.AdminBecas)]
         public async Task<IActionResult> TomarDecision(int Id)
         {
             var cliente = _httpClientFactory.CreateClient("API");
-
 
             var response = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"SolicitudesBeca/{Id}");
             if (response == null)
@@ -132,7 +179,7 @@ namespace Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            var model = new SolicitudBecaViewModel
+            var solicitud = new SolicitudBecaViewModel
             {
                 CedulaEstudiante = response.CedulaEstudiante,
                 NombreEstudiante = response.NombreEstudiante,
@@ -148,14 +195,50 @@ namespace Web.Controllers
                 CartaNotasContentType = response.CartaNotasContentType
             };
 
+            var model = new TomarDesicionViewModel
+            {
+                Solicitud = solicitud,
+                Id = response.Id,
+            };
+
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarDecision(SolicitudBecaViewModel model)
+        public async Task<IActionResult> GuardarDecision(TomarDesicionViewModel model)
         {
-
             var cliente = _httpClientFactory.CreateClient("API");
+
+            if (!ModelState.IsValid)
+            {
+                var solicitud = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"SolicitudesBeca/{model.Id}");
+                if (solicitud == null)
+                {
+                    TempData["Error"] = "No se encontró la solicitud.";
+                    return RedirectToAction("Index");
+                }
+
+                var solicitudModel = new SolicitudBecaViewModel
+                {
+                    CedulaEstudiante = solicitud.CedulaEstudiante,
+                    NombreEstudiante = solicitud.NombreEstudiante,
+                    CorreoContacto = solicitud.CorreoContacto,
+                    TelefonoContacto = solicitud.TelefonoContacto,
+                    Direccion = solicitud.Direccion,
+                    Colegio = solicitud.Colegio,
+                    NivelEducativo = solicitud.NivelEducativo,
+                    Estado = solicitud.Estado,
+                    CartaConsentimientoBytes = solicitud.CartaConsentimiento,
+                    CartaConsentimientoContentType = solicitud.CartaConsentimientoContentType,
+                    CartaNotasBytes = solicitud.CartaNotas,
+                    CartaNotasContentType = solicitud.CartaNotasContentType
+                };
+
+                model.Solicitud = solicitudModel;
+
+                this.SetErrorMessage("Ocurrió un error al guardar la decisión.");
+                return View("TomarDecision", model);
+            }
 
             var dto = new TomarDesicionDto
             {
@@ -175,6 +258,7 @@ namespace Web.Controllers
                 this.SetSuccessMessage("La decisión se guardó correctamente.");
                 return RedirectToAction("VerBecas");
             }
+
             var consultaSolicitud = await cliente.GetFromJsonAsync<SolicitudBecaDto>($"SolicitudesBeca/{model.Id}");
             if (consultaSolicitud == null)
             {
@@ -182,43 +266,53 @@ namespace Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.CedulaEstudiante = consultaSolicitud.CedulaEstudiante;
-            model.NombreEstudiante = consultaSolicitud.NombreEstudiante;
-            model.CorreoContacto = consultaSolicitud.CorreoContacto;
-            model.TelefonoContacto = consultaSolicitud.TelefonoContacto;
-            model.Direccion = consultaSolicitud.Direccion;
-            model.Colegio = consultaSolicitud.Colegio;
-            model.NivelEducativo = consultaSolicitud.NivelEducativo;
-            model.Estado = consultaSolicitud.Estado;
-            model.CartaConsentimientoBytes = consultaSolicitud.CartaConsentimiento;
-            model.CartaConsentimientoContentType = consultaSolicitud.CartaConsentimientoContentType;
-            model.CartaNotasBytes = consultaSolicitud.CartaNotas;
-            model.CartaNotasContentType = consultaSolicitud.CartaNotasContentType;
+            var solicitudViewModel = new SolicitudBecaViewModel
+            {
+                CedulaEstudiante = consultaSolicitud.CedulaEstudiante,
+                NombreEstudiante = consultaSolicitud.NombreEstudiante,
+                CorreoContacto = consultaSolicitud.CorreoContacto,
+                TelefonoContacto = consultaSolicitud.TelefonoContacto,
+                Direccion = consultaSolicitud.Direccion,
+                Colegio = consultaSolicitud.Colegio,
+                NivelEducativo = consultaSolicitud.NivelEducativo,
+                Estado = consultaSolicitud.Estado,
+                CartaConsentimientoBytes = consultaSolicitud.CartaConsentimiento,
+                CartaConsentimientoContentType = consultaSolicitud.CartaConsentimientoContentType,
+                CartaNotasBytes = consultaSolicitud.CartaNotas,
+                CartaNotasContentType = consultaSolicitud.CartaNotasContentType
+            };
+
+            model.Solicitud = solicitudViewModel;
 
             this.SetErrorMessage("Ocurrió un error al guardar la decisión.");
             return View("TomarDecision", model);
         }
 
-        //[HttpGet]
-        //public IActionResult VerBecas()
-        //{
-        //    // Aquí podrías obtener las solicitudes desde tu API o base de datos
-        //    // Por ejemplo, si usás una API:
-        //    var cliente = _httpClientFactory.CreateClient("API");
-        //    var response = cliente.GetAsync("SolicitudesBeca").Result;
+        [HttpGet]
+        public async Task<IActionResult> DetallesBeca(int id)
+        {
+            var cliente = _httpClientFactory.CreateClient("API");
 
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        ViewBag.Error = "No se pudieron cargar las solicitudes.";
-        //        return View(new List<SolicitudBecaViewModel>());
-        //    }
+            try
+            {
+                var response = await cliente.GetAsync($"SolicitudesBeca/detalles-beca/{id}");
 
-        //    var solicitudes = response.Content.ReadFromJsonAsync<List<SolicitudBecaViewModel>>().Result;
-        //    return View(solicitudes);
-        //}
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return View(null); // Devuelve null a la vista si la API responde con 404
+                }
 
-        //private async Task<string> GuardarArchivo(IFormFile archivo, string subcarpeta)
+                response.EnsureSuccessStatusCode();
 
-
+                var detallesBeca = await response.Content.ReadFromJsonAsync<ScholarshipDetailsDto>();
+                return View(detallesBeca);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores generales
+                TempData["Error"] = "Ocurrió un error al obtener los detalles de la beca.";
+                return View(null);
+            }
+        }
     }
 }

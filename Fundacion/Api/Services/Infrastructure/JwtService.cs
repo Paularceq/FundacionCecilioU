@@ -71,7 +71,7 @@ namespace Api.Services.Infrastructure
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public Result<int> ValidateForgotPasswordToken(string token)
+        public Result<int> ValidateVerificationToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
@@ -107,13 +107,12 @@ namespace Api.Services.Infrastructure
             }
             catch (SecurityTokenExpiredException)
             {
-                return Result<int>.Failure("El enlace para restablecer la contraseña ha expirado. Por favor, solicita uno nuevo.");
+                return Result<int>.Failure("El token ha expirado. Por favor, realiza el proceso nuevamente.");
             }
             catch (Exception)
             {
                 return Result<int>.Failure("Token inválido.");
             }
         }
-        
     }
 }

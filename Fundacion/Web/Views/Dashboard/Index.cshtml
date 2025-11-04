@@ -13,8 +13,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 75vh; /* Puedes ajustar a 80vh o más si quieres más espacio vertical */
-        padding-top: 40px; /* Espacio superior adicional si lo deseas */
+        height: 75vh;
+        padding-top: 40px;
     }
 
     .foundation-logo {
@@ -43,37 +43,4 @@
         <h1 class="foundation-name">Fundación Cecilio Umaña</h1>
         <p class="foundation-slogan">La educación transforma vidas</p>
     </div>
-</div>
-
-
-
-<div class="container">
-    @* <div class="claim-card">
-        <h4 class="text-primary mb-3"><i class="bi bi-person-lines-fill me-2"></i>Información de Usuario</h4>
-
-        @if (User.Identity?.IsAuthenticated == true && claims != null && claims.Any())
-        {
-            <table class="table table-bordered claim-table">
-                <thead>
-                    <tr class="text-center">
-                        <th>Tipo</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var claim in claims)
-                    {
-                        <tr>
-                            <td>@claim.Type</td>
-                            <td>@claim.Value</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p class="no-claims">No se encontraron claims para el usuario actual.</p>
-        }
-    </div> *@
 </div>

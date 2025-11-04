@@ -107,6 +107,16 @@ namespace Web.Services
             _httpContextAccessor.HttpContext.Session.Remove("AccessToken");
         }
 
+        public async Task<Result> VerifyAccountAsync(string token)
+        {
+            var result = await _apiClient.PostAsync($"auth/verify-account?token={token}");
+
+            if (!result.IsSuccess)
+                return Result.Failure(result.Errors);
+
+            return Result.Success();
+        }
+
         #region Private methods
         private static JwtSecurityToken ReadJwtToken(string token)
         {

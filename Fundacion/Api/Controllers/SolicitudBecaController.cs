@@ -10,7 +10,6 @@ namespace Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class SolicitudesBecaController : ControllerBase
-
     {
         private readonly DatabaseContext _context;
 
@@ -74,46 +73,44 @@ namespace Api.Controllers
             };
             return Ok(dto);
         }
-        //[HttpGet("cedula/{cedula}")]
-        //public async Task<ActionResult<SolicitudBecaDto>> GetByCedula(string cedula)
-        //{
-        //    var s = await _context.SolicitudesBeca
-        //        .Where(x => x.CedulaEstudiante == cedula)
-        //        .Select(x => new SolicitudBecaDto
-        //        {
-        //            CedulaEstudiante = x.CedulaEstudiante,
-        //            NombreEstudiante = x.NombreEstudiante,
-        //            CorreoContacto = x.CorreoContacto,
-        //            TelefonoContacto = x.TelefonoContacto,
-        //            Direccion = x.Direccion,
-        //            Colegio = x.Colegio,
-        //            NivelEducativo = x.NivelEducativo,
-        //            CartaConsentimiento = x.CartaConsentimiento,
-        //            CartaConsentimientoContentType = x.CartaConsentimientoContentType,
-        //            CartaNotas = x.CartaNotas,
-        //            CartaNotasContentType = x.CartaNotasContentType,
-        //            FechaSolicitud = x.FechaSolicitud,
-        //            Estado = x.Estado.ToString(),
-        //            EsFormularioManual = x.EsFormularioManual
-        //        })
-        //        .FirstOrDefaultAsync();
 
-        //    if (s == null) return NotFound();
-        //    return Ok(s);
-        //}
+        [HttpGet("estudiante/{id}")]
+        public async Task<IActionResult> GetByEstudianteId(int id)
+        {
+            var s = await _context.SolicitudesBeca
+                .Where(x => x.EstudianteId == id)
+                .Select(x => new SolicitudBecaDto
+                {
+                    CedulaEstudiante = x.CedulaEstudiante,
+                    NombreEstudiante = x.NombreEstudiante,
+                    CorreoContacto = x.CorreoContacto,
+                    TelefonoContacto = x.TelefonoContacto,
+                    Direccion = x.Direccion,
+                    Colegio = x.Colegio,
+                    NivelEducativo = x.NivelEducativo,
+                    CartaConsentimiento = x.CartaConsentimiento,
+                    CartaConsentimientoContentType = x.CartaConsentimientoContentType,
+                    CartaNotas = x.CartaNotas,
+                    CartaNotasContentType = x.CartaNotasContentType,
+                    FechaSolicitud = x.FechaSolicitud,
+                    Estado = x.Estado.ToString(),
+                    EsFormularioManual = x.EsFormularioManual
+                })
+                .ToListAsync();
 
+            return Ok(s);
+        }
 
         // POST: api/SolicitudesBeca
 
         [HttpPost]
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var solicitudExistente = await _context.SolicitudesBeca
-        .AnyAsync(s => s.CedulaEstudiante == dto.CedulaEstudiante);
+                .AnyAsync(s => s.CedulaEstudiante == dto.CedulaEstudiante);
 
             if (solicitudExistente)
             {
@@ -123,9 +120,9 @@ namespace Api.Controllers
                 });
             }
 
-
             var solicitud = new SolicitudBeca
             {
+                EstudianteId = dto.EstudianteId,
                 CedulaEstudiante = dto.CedulaEstudiante,
                 NombreEstudiante = dto.NombreEstudiante,
                 CorreoContacto = dto.CorreoContacto,
@@ -228,19 +225,43 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        // DELETE: api/SolicitudesBeca/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Eliminar(int id)
-        //{
-        //    var solicitud = await _context.SolicitudesBeca.FindAsync(id);
-        //    if (solicitud == null)
-        //        return NotFound();
+        [HttpGet("detalles-beca/{id}")]
+        public async Task<IActionResult> GetDetallesBeca(int id)
+        {
+            var detallesBeca = await (from s in _context.SolicitudesBeca
+                join b in _context.Scholarships on s.Id equals b.RequestId
+                where s.Id == id
+                select new ScholarshipDetailsDto
+                {
+                    // Datos de la beca
+                    ScholarshipId = b.Id,
+                    Amount = b.Amount,
+                    Currency = b.Currency,
+                    Frequency = b.Frequency,
+                    StartDate = b.StartDate,
+                    EndDate = b.EndDate,
+                    LastPayment = b.LastPayment,
+                    IsActive = b.IsActive,
 
-        //    _context.SolicitudesBeca.Remove(solicitud);
-        //    await _context.SaveChangesAsync();
+                    // Datos de la solicitud
+                    SolicitudId = s.Id,
+                    CedulaEstudiante = s.CedulaEstudiante,
+                    NombreEstudiante = s.NombreEstudiante,
+                    CorreoContacto = s.CorreoContacto,
+                    TelefonoContacto = s.TelefonoContacto,
+                    Direccion = s.Direccion,
+                    Colegio = s.Colegio,
+                    NivelEducativo = s.NivelEducativo,
+                    FechaSolicitud = s.FechaSolicitud,
+                    Estado = s.Estado.ToString(),
+                    ComentarioAdministrador = s.ComentarioAdministrador
+                })
+                .FirstOrDefaultAsync();
 
-        //    return NoContent();
-        //}
+            if (detallesBeca == null)
+                return NotFound();
 
+            return Ok(detallesBeca);
+        }
     }
 }
