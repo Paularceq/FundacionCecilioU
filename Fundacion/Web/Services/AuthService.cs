@@ -57,7 +57,6 @@ namespace Web.Services
             {
                 Nombre = model.Nombre,
                 Apellidos = model.Apellidos,
-                Nacionalidad = model.Nacionalidad,
                 Identificacion = model.Identificacion,
                 Email = model.Email,
                 Password = model.Password,

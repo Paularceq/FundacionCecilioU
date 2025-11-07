@@ -30,7 +30,6 @@ namespace Web.Services
                 Nombre = model.Nombre,
                 Apellidos = model.Apellidos,
                 Email = model.Email,
-                Nacionalidad = model.Nacionalidad,
                 Identificacion = model.Identificacion,
                 Roles = model.SelectedRoles.ToArray(),
             };
@@ -62,7 +61,6 @@ namespace Web.Services
                 Nombre = model.Nombre,
                 Apellidos = model.Apellidos,
                 Email = model.Email,
-                Nacionalidad = model.Nacionalidad,
                 Identificacion = model.Identificacion,
                 Roles = model.SelectedRoles.ToArray(),
             };

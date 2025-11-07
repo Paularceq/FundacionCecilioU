@@ -32,7 +32,6 @@ namespace Api.Services.Application
                 Activo = u.Activo,
                 NombreCompleto = u.NombreCompleto,
                 Email = u.Email,
-                Nacionalidad = u.Nacionalidad,
                 Identificacion = u.Identificacion
             });
             return Result<IEnumerable<UserToListDto>>.Success(userDtos);
@@ -57,13 +56,15 @@ namespace Api.Services.Application
                 Apellidos = userDto.Apellidos,
                 Email = userDto.Email,
                 PasswordHash = _passwordService.HashPassword(temporaryPassword),
-                Nacionalidad = userDto.Nacionalidad,
                 Identificacion = userDto.Identificacion,
                 RequiereCambioDePassword = true,
             };
+
             var roles = await _roleRepository.GetRolesByNamesAsync(userDto.Roles);
             newUser.Roles = roles.ToList();
+
             await _userRepository.AddUserAsync(newUser);
+
             var subject = "Creacion de Usuario";
             var header = "Creacion de Usuario";
             var body = $@"
@@ -77,6 +78,7 @@ namespace Api.Services.Application
 
             var emailContent = await _emailTemplateService.RenderTemplateAsync(subject, header, body);
             await _emailService.SendEmailAsync(newUser.Email, subject, emailContent);
+
             return Result.Success();
         }
         public async Task<Result<IEnumerable<RoleDto>>> GetAllRoles()
@@ -109,7 +111,6 @@ namespace Api.Services.Application
             userToUpdate.Nombre = userDto.Nombre;
             userToUpdate.Apellidos = userDto.Apellidos;
             userToUpdate.Email = userDto.Email;
-            userToUpdate.Nacionalidad = userDto.Nacionalidad;
             userToUpdate.Identificacion = userDto.Identificacion;
             var roles = await _roleRepository.GetRolesByNamesAsync(userDto.Roles);
             userToUpdate.Roles = roles.ToList();
@@ -130,7 +131,6 @@ namespace Api.Services.Application
                 Nombre = user.Nombre,
                 Apellidos = user.Apellidos,
                 Email = user.Email,
-                Nacionalidad = user.Nacionalidad,
                 Identificacion = user.Identificacion,
                 Roles = user.Roles.Select(r => new RoleDto
                 {
@@ -162,7 +162,6 @@ namespace Api.Services.Application
                 Activo = u.Activo,
                 NombreCompleto = u.NombreCompleto,
                 Email = u.Email,
-                Nacionalidad = u.Nacionalidad,
                 Identificacion = u.Identificacion
             });
             return Result<IEnumerable<UserToListDto>>.Success(userDtos);

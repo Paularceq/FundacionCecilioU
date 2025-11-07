@@ -43,7 +43,6 @@ namespace Web.Controllers
                 Nombre = userProfile.Value.Nombre,
                 Apellidos = userProfile.Value.Apellidos,
                 Email = userProfile.Value.Email,
-                Nacionalidad = userProfile.Value.Nacionalidad,
                 Identificacion = userProfile.Value.Identificacion
             };
             return View(viewModel);

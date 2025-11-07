@@ -55,7 +55,6 @@ namespace Api.Services.Application
                 Apellidos = registerDto.Apellidos,
                 Email = registerDto.Email,
                 PasswordHash = _passwordService.HashPassword(registerDto.Password),
-                Nacionalidad = registerDto.Nacionalidad,
                 Identificacion = registerDto.Identificacion,
                 RequiereCambioDePassword = false,
                 Activo = false // El usuario estará inactivo hasta que verifique su cuenta
@@ -104,7 +103,7 @@ namespace Api.Services.Application
 
             var userRoles = user.Roles.Select(r => r.Name).ToList();
 
-            var token = _jwtService.GenerateAccessToken(user.Id, user.NombreCompleto, user.Email, userRoles);
+            var token = _jwtService.GenerateAccessToken(user.Id, user.Identificacion, user.NombreCompleto, user.Email, userRoles);
 
             var response = new LoginResponseDto
             {

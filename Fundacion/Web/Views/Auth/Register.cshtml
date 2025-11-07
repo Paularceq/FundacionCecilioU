@@ -29,11 +29,6 @@
                     </div>
                 </div>
                 <div class="form-floating mb-3">
-                    <input asp-for="Nacionalidad" class="form-control" placeholder="Ingresa tu nacionalidad" />
-                    <label asp-for="Nacionalidad"></label>
-                    <span asp-validation-for="Nacionalidad" class="text-danger"></span>
-                </div>
-                <div class="form-floating mb-3">
                     <input asp-for="Identificacion" class="form-control" placeholder="Ingresa tu identificación" />
                     <label asp-for="Identificacion"></label>
                     <span asp-validation-for="Identificacion" class="text-danger"></span>
@@ -88,4 +83,23 @@
 @section Scripts {
 
     @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <!-- jQuery Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Aplicar la máscara al campo de identificación
+            $("#Identificacion").inputmask("9-9999-9999", {
+                placeholder: "_",
+                clearIncomplete: true
+            });
+
+            $("#Telefono").inputmask("9999-9999", {
+                placeholder: "_",
+                clearIncomplete: true
+            });
+        });
+    </script>
 }

@@ -25,11 +25,12 @@ namespace Api.Services.Infrastructure
                 : throw new ArgumentNullException("JwtSettings:ExpiryMinutes");
         }
 
-        public string GenerateAccessToken(int userId, string userName, string userEmail, IEnumerable<string> roles)
+        public string GenerateAccessToken(int userId, string identification, string userName, string userEmail, IEnumerable<string> roles)
         {
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.PrimarySid, identification),
                 new(ClaimTypes.Name, userName),
                 new(ClaimTypes.Email, userEmail),
             };

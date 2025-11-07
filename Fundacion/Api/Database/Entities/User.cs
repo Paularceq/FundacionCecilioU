@@ -27,10 +27,6 @@ namespace Api.Database.Entities
 
         [Required]
         [StringLength(20)]
-        public string Nacionalidad { get; set; }
-
-        [Required]
-        [StringLength(20)]
         public string Identificacion { get; set; }
 
         [Required]

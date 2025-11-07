@@ -10,6 +10,7 @@ using Web.Services;
 
 namespace Web.Controllers
 {
+    [Authorize(Roles = $"{Roles.AdminSistema},{Roles.AdminFinanzas}")]
     public class FinancialController : Controller
     {
         private readonly FinancialService _financialService;

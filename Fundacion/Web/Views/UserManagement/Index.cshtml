@@ -70,11 +70,9 @@
     <table class="table table-bordered table-hover align-middle" id="dataTable">
         <thead class="table-light">
             <tr>
-                <th>@Html.DisplayNameFor(model => model.First().Id)</th>
                 <th>@Html.DisplayNameFor(model => model.First().Identificacion)</th>
                 <th>@Html.DisplayNameFor(model => model.First().NombreCompleto)</th>
                 <th>@Html.DisplayNameFor(model => model.First().Email)</th>
-                <th>@Html.DisplayNameFor(model => model.First().Nacionalidad)</th>
                 <th class="text-center">Estado</th>
                 <th class="text-center">Acción</th>
             </tr>
@@ -83,11 +81,9 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@item.Id</td>
-                    <td>@item.Identificacion</td>
+                        <td>@item.Identificacion</td>
                     <td>@item.NombreCompleto</td>
                     <td>@item.Email</td>
-                    <td>@item.Nacionalidad</td>
                     <td class="text-center">
                         <span class="fw-semibold estado-label d-inline-block"
                               style="color:@(item.Activo ? "#28a745" : "#dc3545");">

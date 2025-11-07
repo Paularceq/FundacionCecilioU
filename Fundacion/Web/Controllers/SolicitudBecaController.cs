@@ -21,7 +21,18 @@ namespace Web.Controllers
         [HttpGet]
         public IActionResult Crear()
         {
-            return View();
+            string? nombreEstudiante = null;
+            string? cedulaEstudiante = null;
+
+            if (User.IsInRole(Roles.Estudiante))
+            {
+                nombreEstudiante = User.FindFirst(ClaimTypes.Name)?.Value;
+                cedulaEstudiante = User.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            }
+
+            var model = new SolicitudBecaViewModel { NombreEstudiante = nombreEstudiante, CedulaEstudiante = cedulaEstudiante };
+
+            return View(model);
         }
 
         [HttpPost]

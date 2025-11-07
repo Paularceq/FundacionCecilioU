@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
 using Shared.Enums;
 using System.Security.Claims;
 using Web.Extensions;
 using Web.Helpers;
+using Web.Helpers.Attributes;
 using Web.Models.Donation;
 using Web.Services;
 
 namespace Web.Controllers
 {
+    [AuthorizeRoles(Roles.AdminSistema, Roles.AdminDonaciones)]
     public class DonationController : Controller
     {
 

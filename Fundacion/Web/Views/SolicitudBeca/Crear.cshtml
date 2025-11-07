@@ -1,4 +1,5 @@
-﻿@model Web.Models.Becas.SolicitudBecaViewModel
+﻿@using Shared.Constants
+@model Web.Models.Becas.SolicitudBecaViewModel
 
 @{
     ViewData["Title"] = "Solicitud de Beca";
@@ -34,13 +35,13 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label asp-for="NombreEstudiante" class="form-label"></label>
-                                <input asp-for="NombreEstudiante" class="form-control" />
+                                <input asp-for="NombreEstudiante" class="form-control" readonly=@(User.IsInRole(Roles.Estudiante)) />
                                 <span asp-validation-for="NombreEstudiante" class="text-danger small"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="CedulaEstudiante" class="form-label"></label>
-                                <input asp-for="CedulaEstudiante" class="form-control" />
+                                <input asp-for="CedulaEstudiante" class="form-control" readonly=@(User.IsInRole(Roles.Estudiante)) />
                                 <span asp-validation-for="CedulaEstudiante" class="text-danger small"></span>
                             </div>
 
