@@ -86,7 +86,7 @@ namespace Api.Services.Infrastructure
                     ValidAudience = _audience,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ClockSkew = TimeSpan.Zero
                 };
 
