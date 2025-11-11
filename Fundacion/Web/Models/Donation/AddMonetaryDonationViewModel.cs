@@ -12,6 +12,7 @@ namespace Web.Models.Donation
 
         [Required(ErrorMessage = "La identificación es obligatoria.")]
         [Display(Name = "Número de identificación")]
+        [RegularExpression(@"^\d-\d{4}-\d{4}$", ErrorMessage = "El formato de la identificación debe ser 0-0000-0000.")]
         public string Identification { get; set; }
 
         [Required(ErrorMessage = "El monto es obligatorio.")]

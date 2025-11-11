@@ -50,7 +50,7 @@
                     <ul class="mb-0 @(showBullets ? "" : "list-unstyled")">
                         @foreach (var msg in Model.Messages)
                         {
-                            <li>@msg</li>
+                            <li>@Html.Raw(msg)</li>
                         }
                     </ul>
                 </div>

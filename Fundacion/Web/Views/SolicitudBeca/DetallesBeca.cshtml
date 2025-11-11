@@ -1,0 +1,109 @@
+﻿@model Shared.Dtos.Becas.ScholarshipDetailsDto
+@using System.Globalization
+@using Shared.Extensions
+
+@{
+    ViewData["Title"] = "Detalles de la Beca";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+
+    string GetCurrencySymbol(Shared.Enums.Currency? currency)
+    {
+        return currency switch
+        {
+            Shared.Enums.Currency.CRC => "₡",
+            Shared.Enums.Currency.USD => "$",
+            Shared.Enums.Currency.EUR => "€",
+            _ => string.Empty
+        };
+    }
+
+    string FormatAmount(decimal? amount, Shared.Enums.Currency? currency)
+    {
+        if (amount == null || currency == null)
+        {
+            return "N/A";
+        }
+
+        var culture = currency switch
+        {
+            Shared.Enums.Currency.CRC => new CultureInfo("es-CR"),
+            Shared.Enums.Currency.USD => new CultureInfo("en-US"),
+            Shared.Enums.Currency.EUR => new CultureInfo("fr-FR"),
+            _ => CultureInfo.InvariantCulture
+        };
+
+        return string.Format(culture, "{0:C}", amount);
+    }
+}
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-graduation-cap me-2"></i> Detalles de la Beca
+            </h1>
+        </div>
+    </div>
+
+    @if (Model == null)
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            La solicitud no ha sido procesada o no se encontró.
+        </div>
+    }
+    else
+    {
+        <!-- Detalles de la beca -->
+        <div class="stats-card">
+            <h5 class="mb-3 text-primary"><i class="fas fa-info-circle me-2"></i>Información General</h5>
+            <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">@Model.ScholarshipId</dd>
+
+                <dt class="col-sm-3">Nombre del Estudiante</dt>
+                <dd class="col-sm-9">@Model.NombreEstudiante</dd>
+
+                <dt class="col-sm-3">Cédula del Estudiante</dt>
+                <dd class="col-sm-9">@Model.CedulaEstudiante</dd>
+
+                <dt class="col-sm-3">Correo de Contacto</dt>
+                <dd class="col-sm-9">@Model.CorreoContacto</dd>
+
+                <dt class="col-sm-3">Teléfono de Contacto</dt>
+                <dd class="col-sm-9">@Model.TelefonoContacto</dd>
+
+                <dt class="col-sm-3">Dirección</dt>
+                <dd class="col-sm-9">@Model.Direccion</dd>
+
+                <dt class="col-sm-3">Colegio</dt>
+                <dd class="col-sm-9">@Model.Colegio</dd>
+
+                <dt class="col-sm-3">Nivel Educativo</dt>
+                <dd class="col-sm-9">@Model.NivelEducativo</dd>
+
+                <dt class="col-sm-3">Estado de la Solicitud</dt>
+                <dd class="col-sm-9">@Model.Estado</dd>
+
+                <dt class="col-sm-3">Monto de la Beca</dt>
+                <dd class="col-sm-9">@FormatAmount(Model.Amount, Model.Currency)</dd>
+
+                <dt class="col-sm-3">Frecuencia</dt>
+                <dd class="col-sm-9">@Model.Frequency.GetDescription()</dd>
+
+                <dt class="col-sm-3">Fecha de Inicio</dt>
+                <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Fecha de Fin</dt>
+                <dd class="col-sm-9">@Model.EndDate?.ToString("dd/MM/yyyy")</dd>
+            </dl>
+        </div>
+    }
+
+    <!-- Botón para regresar -->
+    <div class="mt-4">
+        <a asp-action="VerBecas" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Volver a la Lista
+        </a>
+    </div>
+</div>

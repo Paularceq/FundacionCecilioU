@@ -4,6 +4,7 @@ using Api.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dtos.Financial;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.Models;
 
 namespace Api.Services.Application
@@ -114,7 +115,7 @@ namespace Api.Services.Application
             sb.AppendLine("<ul>");
             foreach (var s in pagadas)
             {
-                sb.AppendLine($"<li>{s.Request.NombreEstudiante} ({s.Request.CedulaEstudiante}), Monto: {s.Amount} {s.Currency}, Frecuencia: {s.Frequency}</li>");
+                sb.AppendLine($"<li>{s.Request.NombreEstudiante} ({s.Request.CedulaEstudiante}), Monto: {s.Amount} {s.Currency.GetDescription()}, Frecuencia: {s.Frequency.GetDescription()}</li>");
             }
             sb.AppendLine("</ul>");
 

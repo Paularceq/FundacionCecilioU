@@ -91,11 +91,11 @@
                     <nav class="sb-sidenav-menu-nested nav">
                         @if (User.IsInRole(Roles.AdminSistema) || User.IsInRole(Roles.AdminBecas) || User.IsInRole(Roles.Estudiante))
                         {
-                            <a asp-controller="SolicitudBeca" asp-action="Crear" class="nav-link">Solicitudes de Becas</a>
+                            <a asp-controller="SolicitudBeca" asp-action="VerBecas" class="nav-link">Solicitudes de Becas</a>
                         }
                         @if (User.IsInRole(Roles.AdminBecas) || User.IsInRole(Roles.AdminSistema))
                         {
-                            <a asp-controller="SolicitudBeca" asp-action="VerBecas" class="nav-link">Administrar Solicitudes</a>
+                            <a asp-controller="SolicitudBeca" asp-action="Crear" class="nav-link">Crear Solicitud</a>
                         }
                     </nav>
                 </div>

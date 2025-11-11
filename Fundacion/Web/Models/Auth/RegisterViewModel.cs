@@ -32,19 +32,15 @@ namespace Web.Models.Auth
         [Display(Name = "Confirmar contraseña", Description = "Confirme la contraseña ingresada.")]
         public string ConfirmPassword { get; set; }
 
-        [Required(ErrorMessage = "La nacionalidad es obligatoria.")]
-        [Display(Name = "Nacionalidad", Description = "Nacionalidad del usuario.")]
-        public string Nacionalidad { get; set; }
-
         [Required(ErrorMessage = "La identificación es obligatoria.")]
-        [StringLength(50, ErrorMessage = "La identificación no puede exceder los 50 caracteres.")]
+        [RegularExpression(@"^\d-\d{4}-\d{4}$", ErrorMessage = "La identificación debe tener el formato 9-9999-9999.")]
         [Display(Name = "Identificación", Description = "Número de identificación del usuario.")]
         public string Identificacion { get; set; }
+
         public string Role { get; set; }
 
         [Required(ErrorMessage = "El teléfono es obligatorio.")]
-        [RegularExpression(@"^.{8}$", ErrorMessage = "El teléfono debe tener 8 dígitos.")]
+        [RegularExpression(@"^\d{4}-\d{4}$", ErrorMessage = "El teléfono debe tener el formato 8888-8888.")]
         public string Telefono { get; set; }
-
     }
 }

@@ -1,3 +1,4 @@
+@using Shared.Extensions
 @model List<Shared.Dtos.Financial.ScholarshipWithPaymentStatusDto>
 @{
     ViewData["Title"] = "Gestión de Becas";
@@ -47,7 +48,6 @@
             <table class="table table-bordered table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Estudiante</th>
                         <th>Cédula</th>
                         <th>Monto</th>
@@ -65,12 +65,11 @@
                     @foreach (var s in Model.OrderByDescending(x => x.Id))
                     {
                         <tr>
-                            <td class="text-center">@s.Id</td>
                             <td>@s.NombreEstudiante</td>
                             <td>@s.CedulaEstudiante</td>
                             <td class="text-end">@s.Amount.ToString("N2")</td>
                             <td class="text-center">@s.Currency</td>
-                            <td class="text-center">@s.Frequency</td>
+                            <td class="text-center">@s.Frequency.GetDescription()</td>
                             <td class="text-center">@s.StartDate.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">@s.EndDate?.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">@s.LastPayment?.ToString("dd/MM/yyyy")</td>

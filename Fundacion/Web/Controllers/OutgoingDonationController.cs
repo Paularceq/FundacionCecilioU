@@ -5,11 +5,13 @@ using Shared.Constants;
 using Shared.Dtos.OutgoingDonations;
 using Shared.Extensions;
 using Web.Extensions;
+using Web.Helpers.Attributes;
 using Web.Models.OutgoingDonation;
 using Web.Services;
 
 namespace Web.Controllers
 {
+    [AuthorizeRoles(Roles.AdminSistema, Roles.AdminDonaciones)]
     public class OutgoingDonationController : Controller
     {
         private readonly OutgoingDonationService _outgoingDonationService;
@@ -27,7 +29,6 @@ namespace Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = Roles.AdminDonaciones)]
         public async Task<IActionResult> Index()
         {
             var requesterId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);

@@ -46,7 +46,7 @@ namespace Api.Services.Application
             existingUser = await _userRepository.GetUserByIdentificacionAsync(registerDto.Identificacion);
             if (existingUser != null)
             {
-                return Result.Failure("La identificacion ya está en uso.");
+                return Result.Failure("La identificación ya está en uso.");
             }
 
             var newUser = new User
@@ -55,16 +55,32 @@ namespace Api.Services.Application
                 Apellidos = registerDto.Apellidos,
                 Email = registerDto.Email,
                 PasswordHash = _passwordService.HashPassword(registerDto.Password),
-                Nacionalidad = registerDto.Nacionalidad,
                 Identificacion = registerDto.Identificacion,
-                RequiereCambioDePassword = false
+                RequiereCambioDePassword = false,
+                Activo = false // El usuario estará inactivo hasta que verifique su cuenta
             };
-            var asingedRole = registerDto.Role == Roles.Voluntario ? Roles.Voluntario : Roles.Estudiante;
-            var role = await _roleRepository.GetRoleByNameAsync(asingedRole);
+            var assignedRole = registerDto.Role == Roles.Voluntario ? Roles.Voluntario : Roles.Estudiante;
+            var role = await _roleRepository.GetRoleByNameAsync(assignedRole);
 
             newUser.Roles.Add(role);
 
             await _userRepository.AddUserAsync(newUser);
+
+            // Generar token de verificación
+            var verificationToken = _jwtService.GenerateForgotPasswordToken(newUser.Id);
+
+            // Enviar correo de verificación
+            var subject = "Verificación de cuenta";
+            var header = "Verifica tu cuenta";
+            var body = $@"
+                <p>Hola {newUser.Nombre} {newUser.Apellidos},</p>
+                <p>Gracias por registrarte en nuestra plataforma. Antes de comenzar, necesitamos que verifiques tu cuenta.</p>
+                <p>Haz clic en el siguiente enlace para verificar tu cuenta:</p>
+                <p><a href='{_configuration["WebSettings:AccountVerificationUrl"]}?token={verificationToken}'>Verificar cuenta</a></p>
+                <p>Si no realizaste este registro, puedes ignorar este correo.</p>";
+
+            var emailContent = await _emailTemplateService.RenderTemplateAsync(subject, header, body);
+            await _emailService.SendEmailAsync(newUser.Email, subject, emailContent);
 
             return Result.Success();
         }
@@ -78,7 +94,7 @@ namespace Api.Services.Application
             }
             if (!user.Activo)
             {
-                return Result<LoginResponseDto>.Failure("El usuario está inactivo. Contactarse con soporte tecnico");
+                return Result<LoginResponseDto>.Failure("El usuario está inactivo o no ha verificado su cuenta.");
             }
             if (!_passwordService.VerifyPassword(loginDto.Password, user.PasswordHash))
             {
@@ -87,7 +103,7 @@ namespace Api.Services.Application
 
             var userRoles = user.Roles.Select(r => r.Name).ToList();
 
-            var token = _jwtService.GenerateAccessToken(user.Id, user.NombreCompleto, user.Email, userRoles);
+            var token = _jwtService.GenerateAccessToken(user.Id, user.Identificacion, user.NombreCompleto, user.Email, userRoles);
 
             var response = new LoginResponseDto
             {
@@ -124,7 +140,7 @@ namespace Api.Services.Application
 
         public async Task<Result> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
         {
-            var tokenValidationResult = _jwtService.ValidateForgotPasswordToken(resetPasswordDto.Token);
+            var tokenValidationResult = _jwtService.ValidateVerificationToken(resetPasswordDto.Token);
             if (tokenValidationResult.IsFailure)
             {
                 return Result.Failure(tokenValidationResult.Errors);
@@ -146,6 +162,27 @@ namespace Api.Services.Application
             user.PasswordHash = _passwordService.HashPassword(resetPasswordDto.Password);
             user.RequiereCambioDePassword = false;
 
+            await _userRepository.UpdateUserAsync(user);
+
+            return Result.Success();
+        }
+
+        public async Task<Result> VerifyAccountAsync(string token)
+        {
+            var tokenValidationResult = _jwtService.ValidateVerificationToken(token);
+            if (tokenValidationResult.IsFailure)
+            {
+                return Result.Failure("El token de verificación no es válido o ha expirado.");
+            }
+
+            var userId = tokenValidationResult.Value;
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return Result.Failure("Usuario no encontrado.");
+            }
+
+            user.Activo = true;
             await _userRepository.UpdateUserAsync(user);
 
             return Result.Success();

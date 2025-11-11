@@ -21,9 +21,6 @@ namespace Shared.Dtos
         [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "La nacionalidad es obligatoria.")]
-        public string Nacionalidad { get; set; }
-
         [Required(ErrorMessage = "La identificación es obligatoria.")]
         [StringLength(50, ErrorMessage = "La identificación no puede exceder los 50 caracteres.")]
         public string Identificacion { get; set; }
