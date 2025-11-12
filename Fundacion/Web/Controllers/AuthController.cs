@@ -69,7 +69,9 @@ namespace Web.Controllers
                 return View(model);
             }
 
-            this.SetSuccessMessage("¡Registro exitoso! Ahora puedes iniciar sesión.");
+            this.SetSuccessMessage("¡Registro exitoso! Hemos enviado un correo electrónico a la dirección proporcionada. " +
+                "Por favor, revisa tu bandeja de entrada y sigue las instrucciones para verificar tu cuenta.");
+
             return RedirectToAction("Login");
         }
 
@@ -124,6 +126,18 @@ namespace Web.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> VerifyAccount(string token)
+        {
+            var result = await _authService.VerifyAccountAsync(token);
+            if (!result.IsSuccess)
+            {
+                this.SetErrorMessage(result.Errors);
+                return RedirectToAction("Login");
+            }
+            this.SetSuccessMessage("¡Correo electrónico verificado con éxito! Ahora puedes iniciar sesión.");
+            return RedirectToAction("Login");
+        }
+
         [HttpGet]
         public IActionResult Denied()
         {

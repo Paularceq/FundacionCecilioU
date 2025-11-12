@@ -8,11 +8,11 @@
 <div class="container">
     <h1 class="h2 mb-4">Agregar gasto administrativo</h1>
 
-    <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm bg-light">
+    <form id="administrativeExpenseForm" method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm bg-light">
         <div class="mb-3 row">
             <div class="col-md-6">
                 <label asp-for="Amount" class="form-label"><i class="fas fa-dollar-sign me-2"></i>Monto</label>
-                <input asp-for="Amount" class="form-control" />
+                <input asp-for="Amount" class="form-control" id="Amount" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="col-md-6">
@@ -24,7 +24,7 @@
 
         <div class="mb-3">
             <label asp-for="Description" class="form-label"><i class="fas fa-align-left me-2"></i>Descripción</label>
-            <input asp-for="Description" class="form-control" />
+            <input asp-for="Description" class="form-control" id="Description" />
             <span asp-validation-for="Description" class="text-danger"></span>
         </div>
 
@@ -49,5 +49,57 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <!-- jQuery Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/3.2.0/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Máscara para el campo de monto
+            $("#Amount").inputmask({
+                alias: "currency",
+                prefix: "",
+                groupSeparator: ",",
+                autoGroup: true,
+                digits: 2,
+                digitsOptional: false,
+                placeholder: "0",
+                rightAlign: false,
+                removeMaskOnSubmit: true
+            });
+
+            // Validación personalizada para el campo de monto
+            $.validator.addMethod("greaterThanZero", function (value, element) {
+                // Eliminar separadores de miles y convertir a número
+                const numericValue = parseFloat(value.replace(/,/g, ""));
+                return !isNaN(numericValue) && numericValue > 0;
+            }, "El monto debe ser mayor a 0.");
+
+            // Validación para el campo de descripción (solo letras, números y espacios)
+            $("#Description").inputmask({
+                regex: "^[a-zA-Z0-9 ]*$",
+                placeholder: "",
+                clearIncomplete: true
+            });
+
+            // Configurar validación del formulario
+            $("#administrativeExpenseForm").validate({
+                rules: {
+                    Amount: {
+                        required: true,
+                        greaterThanZero: true
+                    }
+                },
+                messages: {
+                    Amount: {
+                        required: "El monto es obligatorio."
+                    }
+                }
+            });
+        });
+    </script>
 }

@@ -20,14 +20,9 @@ namespace Web.Models.UserManagement
         [StringLength(200, ErrorMessage = "El email no puede exceder los 200 caracteres.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "La nacionalidad es obligatoria.")]
-        public string Nacionalidad { get; set; }
-
         [Required(ErrorMessage = "La identificación es obligatoria.")]
-        [StringLength(50, ErrorMessage = "La identificación no puede exceder los 50 caracteres.")]
+        [RegularExpression(@"^\d-\d{4}-\d{4}$", ErrorMessage = "La identificación debe tener el formato 9-9999-9999.")]
         public string Identificacion { get; set; }
-
-        // Lista de roles {"RoleName" : "RoleDescripcion"} para usar en una lista de checks
 
         public List<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
         [MinCount(1, ErrorMessage = "Debe seleccionar al menos un rol.")] 

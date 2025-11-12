@@ -89,4 +89,18 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <!-- jQuery Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Aplicar la máscara al campo de identificación
+            $("#Identification").inputmask("9-9999-9999", {
+                placeholder: "_",
+                clearIncomplete: true
+            });
+        });
+    </script>
 }

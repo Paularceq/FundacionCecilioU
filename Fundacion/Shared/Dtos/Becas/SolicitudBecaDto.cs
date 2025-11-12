@@ -1,11 +1,13 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Shared.Dtos.Becas
 {
     public class SolicitudBecaDto
     {
         public int Id { get; set; }
+
+        public int? EstudianteId { get; set; }
+
         [Required]
         [StringLength(20)]
         public string CedulaEstudiante { get; set; }
@@ -39,7 +41,7 @@ namespace Shared.Dtos.Becas
         public byte[] CartaConsentimiento { get; set; }
         public string CartaConsentimientoContentType { get; set; }
 
-        [Required(ErrorMessage ="La carta de notas es obligatoria")]
+        [Required(ErrorMessage = "La carta de notas es obligatoria")]
         public byte[] CartaNotas { get; set; }
         public string CartaNotasContentType { get; set; }
 
@@ -48,8 +50,5 @@ namespace Shared.Dtos.Becas
         public string Estado { get; set; } = "Pendiente";
 
         public bool EsFormularioManual { get; set; } = false;
-
-        //public decimal? MontoAsignado { get; set; }
-
     }
 }

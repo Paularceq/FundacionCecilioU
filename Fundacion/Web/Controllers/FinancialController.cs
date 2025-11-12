@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Shared.Constants;
 using Shared.Dtos.Financial;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using Web.Services;
 
 namespace Web.Controllers
 {
+    [Authorize(Roles = $"{Roles.AdminSistema},{Roles.AdminFinanzas}")]
     public class FinancialController : Controller
     {
         private readonly FinancialService _financialService;
@@ -175,11 +178,11 @@ namespace Web.Controllers
         [HttpGet]
         public IActionResult AddBudget()
         {
-            return View(new AddBudgetDto());
+            return View(new AddBudgetViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddBudget(AddBudgetDto model)
+        public async Task<IActionResult> AddBudget(AddBudgetViewModel model)
         {
             if (!ModelState.IsValid)
             {

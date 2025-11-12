@@ -57,7 +57,6 @@ namespace Web.Services
             {
                 Nombre = model.Nombre,
                 Apellidos = model.Apellidos,
-                Nacionalidad = model.Nacionalidad,
                 Identificacion = model.Identificacion,
                 Email = model.Email,
                 Password = model.Password,
@@ -105,6 +104,16 @@ namespace Web.Services
         {
             await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             _httpContextAccessor.HttpContext.Session.Remove("AccessToken");
+        }
+
+        public async Task<Result> VerifyAccountAsync(string token)
+        {
+            var result = await _apiClient.PostAsync($"auth/verify-account?token={token}");
+
+            if (!result.IsSuccess)
+                return Result.Failure(result.Errors);
+
+            return Result.Success();
         }
 
         #region Private methods

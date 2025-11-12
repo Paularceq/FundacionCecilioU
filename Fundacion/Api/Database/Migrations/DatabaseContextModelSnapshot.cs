@@ -623,6 +623,9 @@ namespace Api.Database.Migrations
                     b.Property<int>("Estado")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EstudianteId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("FechaSolicitud")
                         .HasColumnType("datetime2");
 
@@ -667,11 +670,6 @@ namespace Api.Database.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Identificacion")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Nacionalidad")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");

@@ -28,11 +28,11 @@ namespace Api.Services.Application
                 Nombre = user.Nombre,
                 Apellidos = user.Apellidos,
                 Email = user.Email,
-                Nacionalidad = user.Nacionalidad,
                 Identificacion = user.Identificacion
             };
             return Result<UserProfileDto>.Success(userProfileDto);
         }
+
         public async Task<Result> UpdateUserProfileAsync(UserProfileUpdateDto updateDto)
         {
             var user = await _userRepository.GetUserByIdAsync(updateDto.Id);
@@ -53,7 +53,6 @@ namespace Api.Services.Application
             user.Nombre = updateDto.Nombre;
             user.Apellidos = updateDto.Apellidos;
             user.Email = updateDto.Email;
-            user.Nacionalidad = updateDto.Nacionalidad;
             user.Identificacion = updateDto.Identificacion;
             await _userRepository.UpdateUserAsync(user);
             return Result.Success();

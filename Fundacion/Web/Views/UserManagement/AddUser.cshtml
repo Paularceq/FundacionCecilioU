@@ -77,11 +77,6 @@
                                 <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="Nacionalidad" class="form-label">Nacionalidad</label>
-                                <input asp-for="Nacionalidad" class="form-control" />
-                                <span asp-validation-for="Nacionalidad" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-6">
                                 <label asp-for="Identificacion" class="form-label">Identificación</label>
                                 <input asp-for="Identificacion" class="form-control" />
                                 <span asp-validation-for="Identificacion" class="text-danger small"></span>
@@ -130,4 +125,18 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <!-- jQuery Inputmask -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Aplicar la máscara al campo de identificación
+            $("#Identificacion").inputmask("9-9999-9999", {
+                placeholder: "_",
+                clearIncomplete: true
+            });
+        });
+    </script>
 }

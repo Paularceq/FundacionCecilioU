@@ -25,11 +25,12 @@ namespace Api.Services.Infrastructure
                 : throw new ArgumentNullException("JwtSettings:ExpiryMinutes");
         }
 
-        public string GenerateAccessToken(int userId, string userName, string userEmail, IEnumerable<string> roles)
+        public string GenerateAccessToken(int userId, string identification, string userName, string userEmail, IEnumerable<string> roles)
         {
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.PrimarySid, identification),
                 new(ClaimTypes.Name, userName),
                 new(ClaimTypes.Email, userEmail),
             };
@@ -71,7 +72,7 @@ namespace Api.Services.Infrastructure
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public Result<int> ValidateForgotPasswordToken(string token)
+        public Result<int> ValidateVerificationToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
@@ -85,7 +86,7 @@ namespace Api.Services.Infrastructure
                     ValidAudience = _audience,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ClockSkew = TimeSpan.Zero
                 };
 
@@ -107,13 +108,12 @@ namespace Api.Services.Infrastructure
             }
             catch (SecurityTokenExpiredException)
             {
-                return Result<int>.Failure("El enlace para restablecer la contraseña ha expirado. Por favor, solicita uno nuevo.");
+                return Result<int>.Failure("El token ha expirado. Por favor, realiza el proceso nuevamente.");
             }
             catch (Exception)
             {
                 return Result<int>.Failure("Token inválido.");
             }
         }
-        
     }
 }

@@ -87,7 +87,6 @@ namespace Web.Controllers
                 Nombre = user.Value.Nombre,
                 Apellidos = user.Value.Apellidos,
                 Email = user.Value.Email,
-                Nacionalidad = user.Value.Nacionalidad,
                 Identificacion = user.Value.Identificacion,
                 SelectedRoles = user.Value.Roles.Select(r => r.Name).ToList(),
                 Roles = roles.Value.Select(role => new SelectListItem

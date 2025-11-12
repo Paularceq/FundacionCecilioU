@@ -1,69 +1,82 @@
 ﻿@model Shared.Dtos.Donations.DonationDto
+@using System.ComponentModel
+@using System.Globalization
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles de Donación";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-}
 
-<h1>Details</h1>
-
-<div>
-    <h4>DonationDto</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Id)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdentificationNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdentificationNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Type)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Type)
-        </dd>
-        
-        @if(Model.Type == Shared.Enums.DonationType.Monetary)
+    string GetCurrencySymbol(Shared.Enums.Currency? currency)
+    {
+        return currency switch
         {
-           
-           
+            Shared.Enums.Currency.CRC => "₡",
+            Shared.Enums.Currency.USD => "$",
+            Shared.Enums.Currency.EUR => "€",
+            _ => string.Empty
+        };
+    }
 
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.Amount)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.Amount)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.Currency)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.Currency)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.TypeDescription)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.TypeDescription)
-            </dd>
+    string FormatAmount(double? amount, Shared.Enums.Currency? currency)
+    {
+        if (amount == null || currency == null)
+        {
+            return "N/A";
+        }
+
+        var culture = currency switch
+        {
+            Shared.Enums.Currency.CRC => new CultureInfo("es-CR"),
+            Shared.Enums.Currency.USD => new CultureInfo("en-US"),
+            Shared.Enums.Currency.EUR => new CultureInfo("fr-FR"),
+            _ => CultureInfo.InvariantCulture
+        };
+
+        return string.Format(culture, "{0:C}", amount);
+    }
 }
-       
-    </dl>
-</div>
-<div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    <a asp-action="Index">Back to List</a>
+
+<div class="container">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-hand-holding-heart me-2"></i> Detalles de Donación
+            </h1>
+        </div>
+    </div>
+
+    <!-- Detalles de la donación -->
+    <div class="stats-card">
+        <h5 class="mb-3 text-primary"><i class="fas fa-info-circle me-2"></i>Información General</h5>
+        <dl class="row">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Nombre</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Número de Identificación</dt>
+            <dd class="col-sm-9">@Model.IdentificationNumber</dd>
+
+            <dt class="col-sm-3">Tipo de Donación</dt>
+            <dd class="col-sm-9">@Model.TypeDescription</dd>
+
+            @if (Model.Type == Shared.Enums.DonationType.Monetary)
+            {
+                <dt class="col-sm-3">Monto</dt>
+                <dd class="col-sm-9">@FormatAmount(Model.Amount, Model.Currency)</dd>
+
+                <dt class="col-sm-3">Moneda</dt>
+                <dd class="col-sm-9">@Model.Currency</dd>
+            }
+        </dl>
+    </div>
+
+    <!-- Botón para regresar -->
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Volver a la Lista
+        </a>
+    </div>
 </div>

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-
 namespace Api.Database.Entities
 {
     public class SolicitudBeca
@@ -9,6 +8,8 @@ namespace Api.Database.Entities
         public int Id { get; set; }
 
         //Informacion del estudiante 
+
+        public int? EstudianteId { get; set; }
 
         [Required]
         [StringLength(20)]
