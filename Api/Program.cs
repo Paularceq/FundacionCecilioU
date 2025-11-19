@@ -49,7 +49,7 @@ if (string.IsNullOrEmpty(connectionString))
 
 Console.WriteLine("Configuring SQL Server database");
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
