@@ -8,7 +8,7 @@ using Web.Services;
 
 namespace Web.Controllers
 {
-    [Authorize(Roles = Roles.AdminSistema)]
+    [Authorize(Roles = $"{Roles.AdminUsuarios}, {Roles.AdminSistema}")]
     public class VolunteerAdminController : Controller
     {
         private readonly VolunteerRequestService _volunteerRequestService;

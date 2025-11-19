@@ -17,7 +17,7 @@ namespace Api.Database.Migrations
                         INSERT INTO [Users] (
                             [Nombre], [Apellidos], [Email], [Nacionalidad], [Identificacion], [PasswordHash], [RequiereCambioDePassword]
                         ) VALUES (
-                            'Super', 'Admin', 'super@admin.com', 'N/A', '000000000', 
+                            'Super', 'Admin', 'super@admin.com', 'N/A', '1-1111-1111', 
                             -- Password: 'superAdmin123!' hashed with BCrypt
                             '$2a$11$UNHFtiOBSPAMGkiO8Wh.uujDP4sQUIIOT5gsGxs9OhfT/gJ4qhSWK', 
                             1
@@ -25,14 +25,24 @@ namespace Api.Database.Migrations
                     END
                 ");
 
-            // Assign all existing roles to SuperAdmin user
+            // Assign only admin roles to SuperAdmin user
             migrationBuilder.Sql(@"
                     DECLARE @SuperAdminId INT = (SELECT TOP 1 [Id] FROM [Users] WHERE [Email] = 'super@admin.com');
                     IF @SuperAdminId IS NOT NULL
                     BEGIN
                         INSERT INTO [RoleUser] ([RolesId], [UsersId])
-                        SELECT [Id], @SuperAdminId FROM [Roles]
-                        WHERE NOT EXISTS (
+                        SELECT [Id], @SuperAdminId 
+                        FROM [Roles]
+                        WHERE [Name] IN (
+                            'AdminSistema', 
+                            'AdminBecas', 
+                            'AdminUsuarios', 
+                            'AdminFinanzas', 
+                            'AdminDonaciones', 
+                            'AdminInventario', 
+                            'AdminPublicitario'
+                        )
+                        AND NOT EXISTS (
                             SELECT 1 FROM [RoleUser] 
                             WHERE [RolesId] = [Roles].[Id] AND [UsersId] = @SuperAdminId
                         )
