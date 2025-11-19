@@ -28,10 +28,12 @@ jobs:
         run: dotnet build Api/Api.csproj -c Release --no-restore
 
       - name: Publish
-        run: dotnet publish Api/Api.csproj -c Release -o api_publish
+        run: dotnet publish Api/Api.csproj -c Release -o ./publish
 
       - name: Zip published files
-        run: zip -r api.zip api_publish
+        run: |
+          cd publish
+          zip -r ../api.zip .
 
       - name: Azure Login
         uses: azure/login@v2

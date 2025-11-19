@@ -28,10 +28,12 @@ jobs:
         run: dotnet build Web/Web.csproj -c Release --no-restore
 
       - name: Publish
-        run: dotnet publish Web/Web.csproj -c Release -o web_publish
+        run: dotnet publish Web/Web.csproj -c Release -o ./publish
 
       - name: Zip published files
-        run: zip -r web.zip web_publish
+        run: |
+          cd publish
+          zip -r ../app.zip .
 
       - name: Azure Login
         uses: azure/login@v2
@@ -42,4 +44,4 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.WEB_APP_NAME }}
-          package: web.zip
+          package: app.zip
