@@ -48,7 +48,7 @@ jobs:
 
       - name: Run EF Core Migrations
         run: |
-          dotnet tool install --global dotnet-ef
+          dotnet tool install --global dotnet-ef --version 8.*
           export PATH="$PATH:/github/home/.dotnet/tools"
           dotnet ef database update --project Api/Api.csproj --connection "$PROD_CONNECTION_STRING"
         env:
