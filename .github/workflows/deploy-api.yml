@@ -1,0 +1,45 @@
+name: Deploy API
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "Api/**"
+      - ".github/workflows/deploy-api.yml"
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Api/Api.csproj
+
+      - name: Build
+        run: dotnet build Api/Api.csproj -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Api/Api.csproj -c Release -o api_publish
+
+      - name: Zip published files
+        run: zip -r api.zip api_publish
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy API App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.API_APP_NAME }}
+          package: api.zip

@@ -111,29 +111,4 @@ app.UseMiddleware<UnhandledExceptionMiddleware>();
 
 app.MapControllers();
 
-// MANEJO SEGURO DE MIGRACIONES
-if (!string.IsNullOrEmpty(app.Configuration.GetConnectionString("DefaultConnection")) &&
-    Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
-{
-    try
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            Console.WriteLine("Applying migrations...");
-            context.Database.Migrate();
-            Console.WriteLine("Migrations applied successfully");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Migration error: {ex.Message}");
-        // No fallar la aplicación por errores de migración en el primer intento
-    }
-}
-
-// CONFIGURACIÓN ESPECÍFICA PARA AZURE
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
-
 await app.RunAsync();

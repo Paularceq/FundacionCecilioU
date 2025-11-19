@@ -1,0 +1,45 @@
+name: Deploy Web MVC
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "Web/**"
+      - ".github/workflows/deploy-web.yml"
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Web/Web.csproj
+
+      - name: Build
+        run: dotnet build Web/Web.csproj -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Web/Web.csproj -c Release -o web_publish
+
+      - name: Zip published files
+        run: zip -r web.zip web_publish
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Web App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.WEB_APP_NAME }}
+          package: web.zip
