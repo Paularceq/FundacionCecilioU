@@ -39,7 +39,7 @@ builder.Services.AddAuthentication("Bearer")
 
 // Configure Entity Framework and SQL Server with retry on failure
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions => sqlOptions.EnableRetryOnFailure()));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
