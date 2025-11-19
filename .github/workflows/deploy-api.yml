@@ -45,3 +45,11 @@ jobs:
         with:
           app-name: ${{ secrets.API_APP_NAME }}
           package: api.zip
+
+      - name: Run EF Core Migrations
+        run: |
+          dotnet tool install --global dotnet-ef
+          export PATH="$PATH:/github/home/.dotnet/tools"
+          dotnet ef database update --project Api/Api.csproj --connection "$PROD_CONNECTION_STRING"
+        env:
+          PROD_CONNECTION_STRING: ${{ secrets.PROD_CONNECTION_STRING }}
