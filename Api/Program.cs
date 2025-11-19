@@ -37,24 +37,14 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-// CONFIGURACIÓN DE BASE DE DATOS
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    // Usar connection string por defecto para testing en Azure
-    Console.WriteLine("No connection string found, using default");
-    connectionString = "Server=(localdb)\\mssqllocaldb;Database=FundacionTest;Trusted_Connection=true;MultipleActiveResultSets=true;";
-}
-
-Console.WriteLine("Configuring SQL Server database");
+// Configure Entity Framework and SQL Server with retry on failure
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Register in-memory caching
 builder.Services.AddMemoryCache();
 
-// Registar HTTP client factory
+// Register HTTP client factory
 builder.Services.AddHttpClient();
 
 // Register application services
@@ -74,9 +64,18 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 // Register infrastructure services
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IExchangeRateService, BccrHttpExchangeRateService>();
+
+// Conditional registration of services based on environment
+if (builder.Environment.IsProduction())
+{
+    builder.Services.AddScoped<IEmailService, DummyEmailService>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+}
 
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
