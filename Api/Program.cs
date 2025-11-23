@@ -7,6 +7,8 @@ using Api.Middleware;
 using Api.Middlewares;
 using Api.Services.Application;
 using Api.Services.Infrastructure;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +49,10 @@ builder.Services.AddMemoryCache();
 // Register HTTP client factory
 builder.Services.AddHttpClient();
 
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
@@ -70,7 +76,7 @@ builder.Services.AddScoped<IExchangeRateService, BccrHttpExchangeRateService>();
 // Conditional registration of services based on environment
 if (builder.Environment.IsProduction())
 {
-    builder.Services.AddScoped<IEmailService, DummyEmailService>();
+    builder.Services.AddScoped<IEmailService, AzureEmailService>();
 }
 else
 {
@@ -92,10 +98,11 @@ builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 var app = builder.Build();
 
-// CONFIGURACIÓN MEJORADA DEL PIPELINE
-// Habilitar Swagger en TODOS los entornos (incluyendo Azure)
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Comentar HTTPS redirection para Azure (puede causar problemas)
 // app.UseHttpsRedirection();
@@ -107,6 +114,11 @@ app.UseAuthorization();
 app.UseMiddleware<ModelStateValidationMiddleware>();
 app.UseMiddleware<TransactionalMiddleware>();
 app.UseMiddleware<UnhandledExceptionMiddleware>();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.MapControllers();
 
