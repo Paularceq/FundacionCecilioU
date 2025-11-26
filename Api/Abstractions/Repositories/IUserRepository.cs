@@ -11,5 +11,6 @@ namespace Api.Abstractions.Repositories
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task<User> GetUserByIdentificacionAsync(string identificacion);
         Task<IEnumerable<User>> GetUsersByRole(string roleName);
+        Task<string> SetSessionIdAsync(User user);
     }
 }

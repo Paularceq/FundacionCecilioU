@@ -61,5 +61,12 @@ namespace Api.Database.Repositories
                 .Where(u => u.Activo && u.Roles.Any(r => r.Name == roleName))
                 .ToListAsync();
         }
+
+        public async Task<string> SetSessionIdAsync(User user)
+        {
+            user.SessionId = Guid.NewGuid();
+            await _context.SaveChangesAsync();
+            return user.SessionId.ToString();
+        }
     }
 }

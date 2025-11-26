@@ -103,7 +103,9 @@ namespace Api.Services.Application
 
             var userRoles = user.Roles.Select(r => r.Name).ToList();
 
-            var token = _jwtService.GenerateAccessToken(user.Id, user.Identificacion, user.NombreCompleto, user.Email, userRoles);
+            var sessionId = await _userRepository.SetSessionIdAsync(user);
+
+            var token = _jwtService.GenerateAccessToken(user.Id, sessionId, user.Identificacion, user.NombreCompleto, user.Email, userRoles);
 
             var response = new LoginResponseDto
             {

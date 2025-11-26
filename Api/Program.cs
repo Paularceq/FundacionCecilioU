@@ -112,6 +112,7 @@ app.UseAuthorization();
 
 // Use custom middlewares
 app.UseMiddleware<ModelStateValidationMiddleware>();
+app.UseMiddleware<SessionValidationMiddleware>();
 app.UseMiddleware<TransactionalMiddleware>();
 app.UseMiddleware<UnhandledExceptionMiddleware>();
 
