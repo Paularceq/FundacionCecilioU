@@ -45,11 +45,11 @@ namespace Web.Controllers
         }
 
         // Acción para manejar errores y mostrar la vista Error.cshtml
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Error(string? message)
         {
-            // Se crea un modelo de error con el ID de la solicitud actual
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ViewData["ErrorMessage"] = message ?? "La sesión ha expirado o se ha iniciado en otro dispositivo.";
+            return View();
         }
     }
 }

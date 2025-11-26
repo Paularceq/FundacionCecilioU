@@ -66,6 +66,18 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        context.Response.Redirect($"/Home/Error?message={Uri.EscapeDataString(ex.Message)}");
+    }
+});
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

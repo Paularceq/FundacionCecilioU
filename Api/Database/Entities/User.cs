@@ -34,6 +34,8 @@ namespace Api.Database.Entities
         
         public bool RequiereCambioDePassword { get; set; }
 
+        public Guid? SessionId { get; set; }
+
         public string NombreCompleto => $"{Nombre} {Apellidos}";
 
         public ICollection<Role> Roles { get; set; } = [];
