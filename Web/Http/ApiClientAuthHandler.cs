@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net;
 using System.Net.Http.Headers;
-using Web.Services;
 
 namespace Web.Http
 {
@@ -18,7 +17,7 @@ namespace Web.Http
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Agregar el token de autorización si está disponible
-            var token = _httpContextAccessor.HttpContext?.Session.GetString("AccessToken");
+            var token = _httpContextAccessor.HttpContext?.User?.FindFirst("AccessToken")?.Value;
             if (!string.IsNullOrEmpty(token))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -31,7 +30,6 @@ namespace Web.Http
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                _httpContextAccessor.HttpContext.Session.Remove("AccessToken");
 
                 throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
             }

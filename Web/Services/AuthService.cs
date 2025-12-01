@@ -34,8 +34,7 @@ namespace Web.Services
                 return Result.Failure(result.Errors);
 
             var accessToken = result.Value.AccessToken;
-            var jwtToken = ReadJwtToken(accessToken);
-            var principal = CreatePrincipalFromJwt(jwtToken);
+            var principal = CreatePrincipalFromJwt(accessToken);
 
             await _httpContextAccessor.HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
@@ -43,10 +42,7 @@ namespace Web.Services
                 new AuthenticationProperties
                 {
                     IsPersistent = model.RememberMe,
-                    ExpiresUtc = jwtToken.ValidTo
                 });
-
-            _httpContextAccessor.HttpContext.Session.SetString("AccessToken", accessToken);
 
             return Result.Success();
         }
@@ -123,10 +119,15 @@ namespace Web.Services
             return handler.ReadJwtToken(token);
         }
 
-        private static ClaimsPrincipal CreatePrincipalFromJwt(JwtSecurityToken jwtToken)
+        private static ClaimsPrincipal CreatePrincipalFromJwt(string accessToken)
         {
+            var jwtToken = ReadJwtToken(accessToken);
+
             var claims = jwtToken.Claims.ToList();
+            claims.Add(new Claim("AccessToken", accessToken));
+
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
             return new ClaimsPrincipal(identity);
         }
         #endregion
