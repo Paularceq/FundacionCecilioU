@@ -26,11 +26,11 @@ namespace Web.Http
             // Enviar la solicitud
             var response = await base.SendAsync(request, cancellationToken);
 
-            // Manejar el caso de 401 Unauthorized
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            // Manejar el caso de sesión expirada
+            if (response.StatusCode == HttpStatusCode.Unauthorized &&
+                       await response.Content.ReadAsStringAsync() == "Sesión expirada o iniciada en otro dispositivo")
             {
                 await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
                 throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
             }
 

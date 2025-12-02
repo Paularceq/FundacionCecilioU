@@ -71,6 +71,7 @@ namespace Web.Controllers
             }
             return RedirectToAction("Index");
         }
+
         [HttpGet]
         public async Task<IActionResult> UpdateUserAsync(int id)
         {
@@ -98,6 +99,7 @@ namespace Web.Controllers
             };
             return View(model);
         }
+
         [HttpPost]
         public async Task<IActionResult> UpdateUserAsync(UpdateUserViewModel model)
         {
@@ -126,6 +128,7 @@ namespace Web.Controllers
             this.SetSuccessMessage("Usuario actualizado correctamente.");
             return RedirectToAction("Index");
         }
+
         [HttpGet]
         public async Task<IActionResult> ChangeUserStatusAsync(int id)
         {
@@ -151,11 +154,5 @@ namespace Web.Controllers
             this.SetSuccessMessage($"El usuario {user.Value.NombreCompleto} ha sido {(user.Value.Activo ? "Desactivado" : "Activado")} correctamente.");
             return RedirectToAction("Index");
         }
-
-
     }
-
-
 }
-
-
