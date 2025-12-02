@@ -81,6 +81,7 @@ namespace Api.Controllers
                 .Where(x => x.EstudianteId == id)
                 .Select(x => new SolicitudBecaDto
                 {
+                    Id = x.Id,
                     CedulaEstudiante = x.CedulaEstudiante,
                     NombreEstudiante = x.NombreEstudiante,
                     CorreoContacto = x.CorreoContacto,
@@ -94,7 +95,7 @@ namespace Api.Controllers
                     CartaNotasContentType = x.CartaNotasContentType,
                     FechaSolicitud = x.FechaSolicitud,
                     Estado = x.Estado.ToString(),
-                    EsFormularioManual = x.EsFormularioManual
+                    EsFormularioManual = x.EsFormularioManual,
                 })
                 .ToListAsync();
 
