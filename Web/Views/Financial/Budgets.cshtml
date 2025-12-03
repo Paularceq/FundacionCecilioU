@@ -42,7 +42,6 @@
             <table class="table table-bordered table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Monto Original</th>
                         <th>Moneda</th>
                         <th>Inicio</th>
@@ -53,7 +52,6 @@
                     @foreach (var b in Model)
                     {
                         <tr>
-                            <td class="text-center">@b.Id</td>
                             <td class="text-end">@b.OriginalAmount.ToString("N2")</td>
                             <td class="text-center">@b.Currency</td>
                             <td class="text-center">@b.StartDate.ToString("dd/MM/yyyy")</td>
