@@ -69,12 +69,17 @@ app.UseAuthorization();
 
 app.Use(async (context, next) =>
 {
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
     try
     {
         await next();
     }
     catch (Exception ex)
     {
+        // Log the error
+        logger.LogError(ex, ex.StackTrace);
+
+        // Redirect to the error page
         context.Response.Redirect($"/Home/Error?message={Uri.EscapeDataString(ex.Message)}");
     }
 });
