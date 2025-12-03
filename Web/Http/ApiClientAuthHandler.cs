@@ -27,11 +27,22 @@ namespace Web.Http
             var response = await base.SendAsync(request, cancellationToken);
 
             // Manejar el caso de sesión expirada
-            if (response.StatusCode == HttpStatusCode.Unauthorized &&
-                       await response.Content.ReadAsStringAsync() == "Sesión expirada o iniciada en otro dispositivo")
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+
             {
-                await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
+                try
+                {
+                    var isExpired = await response.Content.ReadAsStringAsync(cancellationToken) == "Sesión expirada o iniciada en otro dispositivo";
+
+                    if (isExpired)
+                    {
+                        await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
+                    }
+                }
+                catch
+                { // ignorar si falla
+                }
             }
 
             return response;
