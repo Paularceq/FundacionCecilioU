@@ -1,4 +1,4 @@
-@model Web.Models.Financial.AddBudgetViewModel
+﻿@model Web.Models.Financial.AddBudgetViewModel
 @{
     ViewData["Title"] = "Agregar Presupuesto";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
@@ -6,7 +6,10 @@
 
 @section Styles {
     <style>
-        body { background-color: #e3e6eb; }
+        body {
+            background-color: #e3e6eb;
+        }
+
         .form-card {
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
