@@ -240,11 +240,11 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
-                                    <button class="btn btn-info btn-sm"
+      @*                               <button class="btn btn-info btn-sm"
                                             onclick="showHoursDetails(@hours.Id, '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(hours.ActivitiesDescription)', '@Html.Raw(hours.Notes)', '@hours.RejectionReason', '@hours.StateDescription')"
                                             title="Ver detalles">
                                         <i class="fas fa-eye"></i>
-                                    </button>
+                                    </button> *@
 
                                     @if (hours.State == Shared.Enums.VolunteerState.Pending)
                                     {

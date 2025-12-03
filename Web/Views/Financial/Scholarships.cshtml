@@ -1,13 +1,16 @@
-@using Shared.Extensions
+ï»¿@using Shared.Extensions
 @model List<Shared.Dtos.Financial.ScholarshipWithPaymentStatusDto>
 @{
-    ViewData["Title"] = "Gestión de Becas";
+    ViewData["Title"] = "GestiÃ³n de Becas";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
 @section Styles {
     <style>
-        body { background-color: #e3e6eb; }
+        body {
+            background-color: #e3e6eb;
+        }
+
         .table-wrapper {
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -15,6 +18,7 @@
             padding: 1.5rem;
             margin-bottom: 1rem;
         }
+
         .table thead th {
             text-align: center !important;
             vertical-align: middle !important;
@@ -23,14 +27,17 @@
             font-size: 0.85rem;
             color: #333;
         }
-        .table td { vertical-align: middle; }
+
+        .table td {
+            vertical-align: middle;
+        }
     </style>
 }
 
 <div class="container">
     <div class="mb-4">
         <h1 class="h3 fw-bold text-primary">
-            <i class="fas fa-graduation-cap me-2"></i> @Html.Raw("Gestión de Becas")
+            <i class="fas fa-graduation-cap me-2"></i> @Html.Raw("GestiÃ³n de Becas")
         </h1>
     </div>
 
@@ -49,13 +56,13 @@
                 <thead>
                     <tr>
                         <th>Estudiante</th>
-                        <th>Cédula</th>
+                        <th>CÃ©dula</th>
                         <th>Monto</th>
                         <th>Moneda</th>
                         <th>Frecuencia</th>
                         <th>Inicio</th>
                         <th>Fin</th>
-                        <th>Último Pago</th>
+                        <th>Ãšltimo Pago</th>
                         <th>Estado</th>
                         <th>Pendiente Pago</th>
                         <th class="text-center">Acciones</th>
