@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net;
 using System.Net.Http.Headers;
-using Web.Services;
 
 namespace Web.Http
 {
@@ -18,7 +17,7 @@ namespace Web.Http
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Agregar el token de autorización si está disponible
-            var token = _httpContextAccessor.HttpContext?.Session.GetString("AccessToken");
+            var token = _httpContextAccessor.HttpContext?.User?.FindFirst("AccessToken")?.Value;
             if (!string.IsNullOrEmpty(token))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -27,13 +26,23 @@ namespace Web.Http
             // Enviar la solicitud
             var response = await base.SendAsync(request, cancellationToken);
 
-            // Manejar el caso de 401 Unauthorized
+            // Manejar el caso de sesión expirada
             if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                _httpContextAccessor.HttpContext.Session.Remove("AccessToken");
 
-                throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
+            {
+                try
+                {
+                    var isExpired = await response.Content.ReadAsStringAsync(cancellationToken) == "Sesión expirada o iniciada en otro dispositivo";
+
+                    if (isExpired)
+                    {
+                        await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        throw new UnauthorizedAccessException("La sesión ha expirado o se ha iniciado en otro dispositivo.");
+                    }
+                }
+                catch
+                { // ignorar si falla
+                }
             }
 
             return response;

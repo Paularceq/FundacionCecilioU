@@ -1,5 +1,4 @@
 ﻿using Api.Database;
-using System;
 using System.Security.Claims;
 
 namespace Api.Middlewares;

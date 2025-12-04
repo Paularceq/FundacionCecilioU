@@ -91,6 +91,7 @@ namespace Api.Services.Application
             });
             return Result<IEnumerable<RoleDto>>.Success(roleDtos);
         }
+
         public async Task<Result> UpdateUserAsync(UpdateUserDto userDto)
         {
             var userToUpdate = await _userRepository.GetUserByIdAsync(userDto.Id);
@@ -117,6 +118,7 @@ namespace Api.Services.Application
             await _userRepository.UpdateUserAsync(userToUpdate);
             return Result.Success();
         }
+
         public async Task<Result<UserDto>> GetUserByIdAsync(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);

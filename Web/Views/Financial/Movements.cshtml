@@ -1,4 +1,4 @@
-@model Web.Models.Financial.FinancialMovementsFilterViewModel
+﻿@model Web.Models.Financial.FinancialMovementsFilterViewModel
 @{
     ViewData["Title"] = "Movimientos Financieros";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
@@ -9,6 +9,7 @@
         body {
             background-color: #e3e6eb;
         }
+
         .stats-card, .table-wrapper {
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -16,6 +17,7 @@
             padding: 1.5rem;
             margin-bottom: 1rem;
         }
+
         .table thead th {
             text-align: center !important;
             vertical-align: middle !important;
@@ -24,6 +26,7 @@
             font-size: 0.85rem;
             color: #333;
         }
+
         .table td {
             vertical-align: middle;
         }
@@ -64,7 +67,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Descripci�n</th>
+                        <th>Descripción</th>
                         <th>Monto</th>
                         <th>Moneda</th>
                         <th>Tipo</th>

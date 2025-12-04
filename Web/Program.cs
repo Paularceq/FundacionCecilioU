@@ -33,6 +33,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Auth/Login";
         options.AccessDeniedPath = "/Auth/Denied";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     });
 
 // Register api services
