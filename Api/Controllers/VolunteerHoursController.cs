@@ -19,18 +19,28 @@ namespace Api.Controllers
             _volunteerRequestService = volunteerRequestService;
         }
 
+        // ===== MÉTODO AUXILIAR PARA EXTRAER ERRORES DE MODELSTATE =====
+        private List<string> GetModelErrors()
+        {
+            return ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? "Error de validación" : e.ErrorMessage)
+                .ToList();
+        }
+
         // ===== CRUD DE HORAS =====
         [HttpPost]
         public async Task<IActionResult> CreateVolunteerHours([FromBody] CreateVolunteerHoursDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = GetModelErrors();
+                return BadRequest(modelErrors);
+            }
 
-            // ✅ REQUERIMIENTO 1: Las validaciones de horas restantes ya están en el Service
-            // ✅ REQUERIMIENTO 3: El manejo de re-registro después de rechazo ya está en el Service
             var result = await _volunteerRequestService.CreateVolunteerHoursAsync(dto);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors); // <-- directamente lista
 
             return Ok(new { message = "Horas registradas correctamente" });
         }
@@ -40,7 +50,7 @@ namespace Api.Controllers
         {
             var result = await _volunteerRequestService.GetHoursByRequestIdAsync(requestId);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(result.Value);
         }
@@ -49,11 +59,14 @@ namespace Api.Controllers
         public async Task<IActionResult> GetHoursByDateRange(int requestId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             if (startDate > endDate)
-                return BadRequest(new { errors = new[] { "La fecha de inicio no puede ser mayor a la fecha de fin" } });
+            {
+                var errors = new List<string> { "La fecha de inicio no puede ser mayor a la fecha de fin" };
+                return BadRequest(errors);
+            }
 
             var result = await _volunteerRequestService.GetHoursByDateRangeAsync(requestId, startDate, endDate);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(result.Value);
         }
@@ -62,18 +75,19 @@ namespace Api.Controllers
         public async Task<IActionResult> UpdateVolunteerHours(int hoursId, [FromBody] CreateVolunteerHoursDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = GetModelErrors();
+                return BadRequest(modelErrors);
+            }
 
-            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de actualizar
+            // Verificar que exista
             var existingHoursResult = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
             if (existingHoursResult.IsFailure)
-                return BadRequest(new { errors = existingHoursResult.Errors });
+                return BadRequest(existingHoursResult.Errors);
 
-            // ✅ REQUERIMIENTO 1: Las validaciones de horas restantes ya están en el Service
-            // ✅ REQUERIMIENTO 3: El manejo de conflictos con rechazos ya está en el Service
             var result = await _volunteerRequestService.UpdateVolunteerHoursAsync(hoursId, dto);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(new { message = "Horas actualizadas correctamente" });
         }
@@ -81,14 +95,13 @@ namespace Api.Controllers
         [HttpDelete("{hoursId}")]
         public async Task<IActionResult> DeleteVolunteerHours(int hoursId)
         {
-            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de eliminar
             var existingHoursResult = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
             if (existingHoursResult.IsFailure)
-                return BadRequest(new { errors = existingHoursResult.Errors });
+                return BadRequest(existingHoursResult.Errors);
 
             var result = await _volunteerRequestService.DeleteVolunteerHoursAsync(hoursId);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(new { message = "Horas eliminadas correctamente" });
         }
@@ -99,7 +112,7 @@ namespace Api.Controllers
         {
             var result = await _volunteerRequestService.GetVolunteerHoursByIdAsync(hoursId);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(result.Value);
         }
@@ -110,16 +123,18 @@ namespace Api.Controllers
         public async Task<IActionResult> ApproveHours(int hoursId, [FromBody] ApproveHoursRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = GetModelErrors();
+                return BadRequest(modelErrors);
+            }
 
-            // Obtener approverId del usuario autenticado (más seguro)
+            // Obtener approverId del usuario autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (int.TryParse(userIdClaim, out int authenticatedUserId))
             {
-                dto.ApproverId = authenticatedUserId; // Sobrescribir por seguridad
+                dto.ApproverId = authenticatedUserId;
             }
 
-            // Crear el DTO que espera el servicio
             var approveDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
@@ -131,7 +146,7 @@ namespace Api.Controllers
 
             var result = await _volunteerRequestService.ApproveHoursAsync(approveDto);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(new { message = "Horas aprobadas correctamente" });
         }
@@ -141,19 +156,23 @@ namespace Api.Controllers
         public async Task<IActionResult> RejectHours(int hoursId, [FromBody] RejectHoursRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = GetModelErrors();
+                return BadRequest(modelErrors);
+            }
 
             if (string.IsNullOrWhiteSpace(dto.RejectionReason))
-                return BadRequest(new { errors = new[] { "Debe proporcionar una razón para el rechazo" } });
+            {
+                return BadRequest(new List<string> { "Debe proporcionar una razón para el rechazo" });
+            }
 
-            // Obtener approverId del usuario autenticado (más seguro)
+            // Obtener approverId del usuario autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (int.TryParse(userIdClaim, out int authenticatedUserId))
             {
-                dto.ApproverId = authenticatedUserId; // Sobrescribir por seguridad
+                dto.ApproverId = authenticatedUserId;
             }
 
-            // Crear el DTO que espera el servicio
             var rejectDto = new ApproveRejectHoursDto
             {
                 HoursId = hoursId,
@@ -165,7 +184,7 @@ namespace Api.Controllers
 
             var result = await _volunteerRequestService.RejectHoursAsync(rejectDto);
             if (result.IsFailure)
-                return BadRequest(new { errors = result.Errors });
+                return BadRequest(result.Errors);
 
             return Ok(new { message = "Horas rechazadas correctamente" });
         }
@@ -181,7 +200,7 @@ namespace Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { errors = new[] { $"Error al obtener horas pendientes: {ex.Message}" } });
+                return BadRequest(new List<string> { $"Error al obtener horas pendientes: {ex.Message}" });
             }
         }
 
@@ -189,10 +208,20 @@ namespace Api.Controllers
         [HttpPost("validate")]
         public async Task<IActionResult> ValidateHours([FromBody] CreateVolunteerHoursDto dto)
         {
+            // Aquí NO devolvemos List<string> directamente porque
+            // el cliente espera { isValid, errors }
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = GetModelErrors();
+                return Ok(new
+                {
+                    isValid = false,
+                    errors = modelErrors
+                });
+            }
 
             var result = await _volunteerRequestService.ValidateHoursAsync(dto);
+
             return Ok(new
             {
                 isValid = result.IsSuccess,

@@ -8,6 +8,8 @@ using Web.Extensions;
 using Web.Models.Volunteer;
 using Web.Services;
 
+
+
 namespace Web.Controllers
 {
     [Authorize(Roles = Roles.Voluntario)]
@@ -30,7 +32,6 @@ namespace Web.Controllers
             int userId = GetCurrentUserId();
             var requests = await _volunteerRequestService.GetAllByVolunteerIDAsync(userId);
 
-            // MEJORADO: Usar VolunteerRequestListViewModel
             var canCreateNew = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
 
             var viewModel = new VolunteerRequestListViewModel
@@ -47,8 +48,6 @@ namespace Web.Controllers
         {
             int userId = GetCurrentUserId();
 
-            // REQUERIMIENTO: No puede haber más de una solicitud activa por voluntario
-            // PERO puede crear nueva si ya cumplió las horas de la anterior
             var canCreate = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
             if (!canCreate)
             {
@@ -72,7 +71,6 @@ namespace Web.Controllers
 
             int userId = GetCurrentUserId();
 
-            // Verificar nuevamente antes de crear
             var canCreate = await _volunteerRequestService.CanCreateNewRequestAsync(userId);
             if (!canCreate)
             {
@@ -100,7 +98,6 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ManageHours(int requestId)
         {
-            // Verificar que la solicitud existe y pertenece al usuario actual
             var request = await _volunteerRequestService.GetRequestByIdAsync(requestId);
             if (request.IsFailure)
             {
@@ -110,121 +107,42 @@ namespace Web.Controllers
 
             var requestDto = request.Value;
 
-            // Verificar que la solicitud pertenece al usuario actual
             if (requestDto.VolunteerId != GetCurrentUserId())
             {
                 this.SetErrorMessage("No tienes permisos para gestionar esta solicitud");
                 return RedirectToAction("Index");
             }
 
-            // Verificar que la solicitud está aprobada
             if (requestDto.State != VolunteerState.Approved)
             {
                 this.SetErrorMessage("Solo se pueden gestionar horas para solicitudes aprobadas");
                 return RedirectToAction("Index");
             }
 
-            // MEJORADO: Usar método del servicio para construir ViewModel
             var viewModel = await _volunteerHoursService.BuildManageHoursViewModelAsync(requestId, requestDto);
 
             return View(viewModel);
         }
 
-        // ✅ NUEVO MÉTODO: Usando CreateVolunteerHoursViewModel
-        [HttpGet]
-        public async Task<IActionResult> CreateHours(int requestId)
-        {
-            // Verificar permisos y validaciones
-            var validationResult = await ValidateRequestAccessAsync(requestId, requireApproved: true);
-            if (validationResult.redirectResult != null)
-                return validationResult.redirectResult;
-
-            var requestDto = validationResult.request;
-
-            // ✅ REQUERIMIENTO 1: No puede registrar horas si ya cumplió las horas comprometidas
-            if (requestDto.RemainingHours <= 0)
-            {
-                this.SetErrorMessage("Ya has cumplido con todas las horas comprometidas para esta solicitud");
-                return RedirectToAction("ManageHours", new { requestId });
-            }
-
-            // ✅ USAR NUEVO MODELO CON VALIDACIONES INTEGRADAS
-            var model = await _volunteerHoursService.BuildCreateHoursViewModelAsync(requestId, requestDto);
-
-            // ✅ CORREGIDO: ViewBag completo para evitar errores
-            SetViewBagRequestInfo(requestDto, false, "", "");
-
-            return View(model);
-        }
-
-        // ✅ NUEVO MÉTODO: Crear horas con validaciones mejoradas
-        [HttpPost]
-        public async Task<IActionResult> CreateHours(CreateVolunteerHoursViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(model.VolunteerRequestId);
-                if (requestInfo.IsSuccess)
-                    SetViewBagRequestInfo(requestInfo.Value, false, "", "");
-                return View(model);
-            }
-
-            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes ANTES DE TODO
-            var hoursValidationResult = await ValidateRemainingHoursBeforeCreate(model.VolunteerRequestId, model.StartTime, model.EndTime);
-            if (hoursValidationResult.IsFailure)
-            {
-                this.SetErrorMessage(hoursValidationResult.Errors);
-                var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(model.VolunteerRequestId);
-                if (requestInfo.IsSuccess)
-                    SetViewBagRequestInfo(requestInfo.Value, false, "", "");
-                return View(model);
-            }
-
-            // ✅ REQUERIMIENTO 1: Validar horas restantes ANTES de enviar
-            if (!model.IsValidHours)
-            {
-                this.SetErrorMessage(model.ValidationMessage);
-                var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(model.VolunteerRequestId);
-                if (requestInfo.IsSuccess)
-                    SetViewBagRequestInfo(requestInfo.Value, false, "", "");
-                return View(model);
-            }
-
-            // Validaciones de permisos
-            var validationResult = await ValidateRequestAccessAsync(model.VolunteerRequestId, requireApproved: true);
-            if (validationResult.redirectResult != null)
-                return validationResult.redirectResult;
-
-            var result = await _volunteerHoursService.CreateVolunteerHoursAsync(model);
-            if (result.IsFailure)
-            {
-                this.SetErrorMessage(result.Errors);
-                SetViewBagRequestInfo(validationResult.request, false, "", "");
-                return View(model);
-            }
-
-            this.SetSuccessMessage("Horas registradas correctamente. Pendiente de aprobación.");
-            return RedirectToAction("ManageHours", new { requestId = model.VolunteerRequestId });
-        }
-
-        // ===== MÉTODOS LEGACY MANTENIDOS PARA COMPATIBILIDAD =====
+        // ===== REGISTRO DE HORAS =====
         [HttpGet]
         public async Task<IActionResult> AddHours(int requestId)
         {
-            // Verificar permisos y validaciones
+            // PASO 1: Validar permisos
             var validationResult = await ValidateRequestAccessAsync(requestId, requireApproved: true);
             if (validationResult.redirectResult != null)
                 return validationResult.redirectResult;
 
             var requestDto = validationResult.request;
 
-            // REQUERIMIENTO: No puede registrar horas si ya cumplió las horas comprometidas
+            // PASO 2: Validar horas restantes
             if (requestDto.RemainingHours <= 0)
             {
                 this.SetErrorMessage("Ya has cumplido con todas las horas comprometidas para esta solicitud");
                 return RedirectToAction("ManageHours", new { requestId });
             }
 
+            // PASO 3: Crear modelo
             var model = new AddHoursViewModel
             {
                 RequestId = requestId,
@@ -233,7 +151,6 @@ namespace Web.Controllers
                 EndTime = TimeSpan.FromHours(17)
             };
 
-            // ✅ CORREGIDO: ViewBag completo para evitar errores
             SetViewBagRequestInfo(requestDto, false, "", "");
 
             return View(model);
@@ -242,13 +159,52 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddHours(AddHoursViewModel model)
         {
+            // PASO 1: Validar ModelState
             if (!ModelState.IsValid)
             {
                 await LoadRequestInfoForView(model.RequestId);
                 return View(model);
             }
 
-            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes ANTES DE TODO
+            // PASO 2: Validar permisos y acceso
+            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
+
+            // PASO 3: Validar que hora fin sea mayor que hora inicio
+            if (model.EndTime <= model.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "La hora de fin debe ser posterior a la hora de inicio");
+                await LoadRequestInfoForView(model.RequestId);
+                return View(model);
+            }
+
+            // PASO 4: Validar rango de horas (1-8 por día)
+            var totalHours = (decimal)(model.EndTime - model.StartTime).TotalHours;
+            if (totalHours < 1 || totalHours > 8)
+            {
+                ModelState.AddModelError("", "Debes registrar entre 1 y 8 horas por día");
+                await LoadRequestInfoForView(model.RequestId);
+                return View(model);
+            }
+
+            // PASO 5: Validar que no haya traslapes de horarios en el mismo día
+            var overlapValidation = await ValidateTimeOverlap(
+                model.RequestId,
+                model.Date,
+                model.StartTime,
+                model.EndTime,
+                null
+            );
+
+            if (overlapValidation.IsFailure)
+            {
+                ModelState.AddModelError("StartTime", overlapValidation.Errors.FirstOrDefault() ?? "Traslape de horarios");
+                await LoadRequestInfoForView(model.RequestId);
+                return View(model);
+            }
+
+            // PASO 6: Validar horas restantes disponibles
             var hoursValidationResult = await ValidateRemainingHoursBeforeCreate(model.RequestId, model.StartTime, model.EndTime);
             if (hoursValidationResult.IsFailure)
             {
@@ -257,11 +213,7 @@ namespace Web.Controllers
                 return View(model);
             }
 
-            // Validaciones de permisos
-            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
-            if (validationResult.redirectResult != null)
-                return validationResult.redirectResult;
-
+            // PASO 7: Crear el registro
             var result = await _volunteerHoursService.CreateVolunteerHoursAsync(model);
             if (result.IsFailure)
             {
@@ -270,14 +222,14 @@ namespace Web.Controllers
                 return View(model);
             }
 
-            this.SetSuccessMessage("Horas registradas correctamente. Pendiente de aprobación.");
+            this.SetSuccessMessage("Horas registradas correctamente. Pendientes de aprobación.");
             return RedirectToAction("ManageHours", new { requestId = model.RequestId });
         }
 
         [HttpGet]
         public async Task<IActionResult> EditHours(int hoursId)
         {
-            // ✅ REQUERIMIENTO 2: Verificar que el registro existe ANTES de continuar
+            // PASO 1: Verificar que el registro existe
             var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
             if (hoursResult.IsFailure)
             {
@@ -287,24 +239,25 @@ namespace Web.Controllers
 
             var hours = hoursResult.Value;
 
-            // Verificar permisos
+            // PASO 2: Validar permisos
             var validationResult = await ValidateRequestAccessAsync(hours.VolunteerRequestId, requireApproved: true);
             if (validationResult.redirectResult != null)
                 return validationResult.redirectResult;
 
-            // ✅ REQUERIMIENTO 3: Permitir editar horas pendientes o rechazadas
+            // PASO 3: Validar que no esté aprobado
             if (hours.State == VolunteerState.Approved)
             {
                 this.SetErrorMessage("No se pueden editar horas ya aprobadas");
                 return RedirectToAction("ManageHours", new { requestId = hours.VolunteerRequestId });
             }
 
-            // ✅ MOSTRAR MENSAJE INFORMATIVO SI ESTÁ RECHAZADA
+            // PASO 4: Mostrar mensaje si está rechazado
             if (hours.State == VolunteerState.Rejected)
             {
                 this.SetInfoMessage($"Editando horas rechazadas. Razón del rechazo: {hours.RejectionReason}");
             }
 
+            // PASO 5: Crear modelo
             var model = new AddHoursViewModel
             {
                 Id = hours.Id,
@@ -316,28 +269,28 @@ namespace Web.Controllers
                 Notes = hours.Notes
             };
 
-            // ✅ CORREGIDO: ViewBag completo para evitar errores
             SetViewBagRequestInfo(validationResult.request, true, hours.State.ToString(), hours.RejectionReason);
-
             return View("AddHours", model);
         }
 
         [HttpPost]
         public async Task<IActionResult> EditHours(AddHoursViewModel model)
         {
+            // PASO 1: Validar ModelState
             if (!ModelState.IsValid)
             {
                 await LoadRequestInfoForEditView(model.Id!.Value);
                 return View("AddHours", model);
             }
 
-            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de actualizar
+            // PASO 2: Verificar que tiene ID
             if (!model.Id.HasValue)
             {
                 this.SetErrorMessage("ID de registro de horas requerido");
                 return RedirectToAction("Index");
             }
 
+            // PASO 3: Verificar que el registro existe
             var existingHoursResult = await _volunteerHoursService.GetHoursByIdAsync(model.Id.Value);
             if (existingHoursResult.IsFailure)
             {
@@ -345,8 +298,61 @@ namespace Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            // ✅ VALIDACIÓN PRINCIPAL: Verificar horas restantes excluyendo las horas actuales
-            var hoursValidationResult = await ValidateRemainingHoursBeforeUpdate(model.RequestId, model.Id.Value, model.StartTime, model.EndTime);
+            var currentHours = existingHoursResult.Value;
+
+            // PASO 4: Validar permisos
+            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
+            if (validationResult.redirectResult != null)
+                return validationResult.redirectResult;
+
+            // PASO 5: Validar que no esté aprobado
+            if (currentHours.State == VolunteerState.Approved)
+            {
+                this.SetErrorMessage("No se pueden editar horas ya aprobadas");
+                return RedirectToAction("ManageHours", new { requestId = model.RequestId });
+            }
+
+            // PASO 6: Validar que hora fin sea mayor que hora inicio
+            if (model.EndTime <= model.StartTime)
+            {
+                ModelState.AddModelError("EndTime", "La hora de fin debe ser posterior a la hora de inicio");
+                await LoadRequestInfoForEditView(model.Id.Value);
+                return View("AddHours", model);
+            }
+
+            // PASO 7: Validar rango de horas (1-8 por día)
+            var totalHours = (decimal)(model.EndTime - model.StartTime).TotalHours;
+            if (totalHours < 1 || totalHours > 8)
+            {
+                ModelState.AddModelError("", "Debes registrar entre 1 y 8 horas por día");
+                await LoadRequestInfoForEditView(model.Id.Value);
+                return View("AddHours", model);
+            }
+
+            // PASO 8: Validar que no haya traslapes (excluyendo el registro actual)
+            var overlapValidation = await ValidateTimeOverlap(
+                model.RequestId,
+                model.Date,
+                model.StartTime,
+                model.EndTime,
+                model.Id.Value
+            );
+
+            if (overlapValidation.IsFailure)
+            {
+                ModelState.AddModelError("StartTime", overlapValidation.Errors.FirstOrDefault() ?? "Traslape de horarios");
+                await LoadRequestInfoForEditView(model.Id.Value);
+                return View("AddHours", model);
+            }
+
+            // PASO 9: Validar horas restantes (excluyendo el registro actual)
+            var hoursValidationResult = await ValidateRemainingHoursBeforeUpdate(
+                model.RequestId,
+                model.Id.Value,
+                model.StartTime,
+                model.EndTime
+            );
+
             if (hoursValidationResult.IsFailure)
             {
                 this.SetErrorMessage(hoursValidationResult.Errors);
@@ -354,11 +360,7 @@ namespace Web.Controllers
                 return View("AddHours", model);
             }
 
-            // Verificar permisos
-            var validationResult = await ValidateRequestAccessAsync(model.RequestId, requireApproved: true);
-            if (validationResult.redirectResult != null)
-                return validationResult.redirectResult;
-
+            // PASO 10: Actualizar el registro
             var result = await _volunteerHoursService.UpdateVolunteerHoursAsync(model.Id.Value, model);
             if (result.IsFailure)
             {
@@ -374,7 +376,7 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteHours(int hoursId, int requestId)
         {
-            // ✅ REQUERIMIENTO 2: Verificar que el registro existe antes de eliminar
+            // PASO 1: Verificar que el registro existe
             var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
             if (hoursResult.IsFailure)
             {
@@ -382,18 +384,19 @@ namespace Web.Controllers
                 return RedirectToAction("ManageHours", new { requestId });
             }
 
-            // Verificar permisos
+            // PASO 2: Validar permisos
             var validationResult = await ValidateRequestAccessAsync(requestId, requireApproved: true);
             if (validationResult.redirectResult != null)
                 return validationResult.redirectResult;
 
-            // ✅ REQUERIMIENTO 3: Permitir eliminar horas pendientes o rechazadas
+            // PASO 3: Validar que no esté aprobado
             if (hoursResult.Value.State == VolunteerState.Approved)
             {
                 this.SetErrorMessage("No se pueden eliminar horas ya aprobadas");
                 return RedirectToAction("ManageHours", new { requestId });
             }
 
+            // PASO 4: Eliminar el registro
             var result = await _volunteerHoursService.DeleteVolunteerHoursAsync(hoursId);
             if (result.IsFailure)
                 this.SetErrorMessage(result.Errors);
@@ -407,51 +410,74 @@ namespace Web.Controllers
         [HttpPost]
         public async Task<JsonResult> ValidateHours([FromBody] AddHoursViewModel model)
         {
-            try
+            var errores = new List<string>();
+
+            // 1. Validar ModelState básico
+            if (model.EndTime <= model.StartTime)
             {
-                var result = await _volunteerHoursService.ValidateHoursAsync(model);
-                return Json(new
-                {
-                    isValid = result.IsSuccess,
-                    errors = result.Errors
-                });
+                errores.Add("La hora de fin debe ser posterior a la hora de inicio.");
             }
-            catch (Exception)
+
+            var totalHours = (decimal)(model.EndTime - model.StartTime).TotalHours;
+            if (totalHours < 1 || totalHours > 8)
             {
-                return Json(new
-                {
-                    isValid = false,
-                    errors = new[] { "Error al validar las horas" }
-                });
+                errores.Add("Debes registrar entre 1 y 8 horas por día.");
             }
+
+            if (!errores.Any())
+            {
+                // 2. Validar traslapes (usando el mismo método del controlador)
+                var overlapValidation = await ValidateTimeOverlap(
+                    model.RequestId,
+                    model.Date,
+                    model.StartTime,
+                    model.EndTime,
+                    model.Id // null si es crear, valor si es editar
+                );
+
+                if (overlapValidation.IsFailure)
+                {
+                    errores.AddRange(overlapValidation.Errors);
+                }
+            }
+
+            if (!errores.Any())
+            {
+                // 3. Validar horas restantes según si es crear o editar
+                Result remainingValidation;
+
+                if (model.Id.HasValue)
+                {
+                    remainingValidation = await ValidateRemainingHoursBeforeUpdate(
+                        model.RequestId,
+                        model.Id.Value,
+                        model.StartTime,
+                        model.EndTime
+                    );
+                }
+                else
+                {
+                    remainingValidation = await ValidateRemainingHoursBeforeCreate(
+                        model.RequestId,
+                        model.StartTime,
+                        model.EndTime
+                    );
+                }
+
+                if (remainingValidation.IsFailure)
+                {
+                    errores.AddRange(remainingValidation.Errors);
+                }
+            }
+
+            return Json(new
+            {
+                isValid = !errores.Any(),
+                errors = errores
+            });
         }
 
-        // ✅ NUEVO ENDPOINT: Validar horas con información de horas restantes
-        [HttpPost]
-        public async Task<JsonResult> ValidateHoursWithRemaining([FromBody] CreateVolunteerHoursViewModel model)
-        {
-            try
-            {
-                var result = await _volunteerHoursService.ValidateHoursWithRemainingHoursAsync(model);
-                return Json(new
-                {
-                    isValid = result.IsSuccess,
-                    errors = result.Errors,
-                    remainingHours = model.RemainingHours,
-                    calculatedHours = model.CalculatedHours
-                });
-            }
-            catch (Exception)
-            {
-                return Json(new
-                {
-                    isValid = false,
-                    errors = new[] { "Error al validar las horas" }
-                });
-            }
-        }
 
-        // ✅ REQUERIMIENTO 3: Endpoint mejorado para verificar registros existentes
         [HttpGet]
         public async Task<JsonResult> CheckHoursForDate(int requestId, DateTime date)
         {
@@ -461,21 +487,19 @@ namespace Web.Controllers
 
                 if (hoursForDate.IsSuccess && hoursForDate.Value?.Any() == true)
                 {
-                    var existingHour = hoursForDate.Value.First();
-                    return Json(new
+                    var existingHours = hoursForDate.Value.Where(h => h.State != VolunteerState.Rejected).ToList();
+
+                    if (existingHours.Any())
                     {
-                        hasHours = true,
-                        state = existingHour.State.ToString(),
-                        canReregister = existingHour.State == VolunteerState.Rejected,
-                        rejectionReason = existingHour.RejectionReason,
-                        message = existingHour.State switch
+                        var hoursList = string.Join(", ", existingHours.Select(h => $"{h.StartTime:hh\\:mm}-{h.EndTime:hh\\:mm}"));
+
+                        return Json(new
                         {
-                            VolunteerState.Approved => "Ya existe un registro aprobado para esta fecha",
-                            VolunteerState.Pending => "Ya existe un registro pendiente para esta fecha",
-                            VolunteerState.Rejected => $"Existe un registro rechazado para esta fecha. Puedes registrar nuevas horas (se reemplazará el anterior). Razón del rechazo: {existingHour.RejectionReason}",
-                            _ => "Ya existe un registro para esta fecha"
-                        }
-                    });
+                            hasHours = true,
+                            message = $"Ya tienes registros para esta fecha: {hoursList}. Los horarios no pueden traslaparse.",
+                            canReregister = true
+                        });
+                    }
                 }
 
                 return Json(new { hasHours = false, canReregister = true, message = "" });
@@ -486,7 +510,190 @@ namespace Web.Controllers
             }
         }
 
+        // ===== MÉTODOS DE VALIDACIÓN =====
+
+        /// <summary>
+        /// VALIDACIÓN: Verificar que no haya traslape de horarios en el mismo día
+        /// Bloquea:
+        ///   - Doble registro exacto (misma fecha, misma hora inicio/fin)
+        ///   - Traslapes parciales o totales
+        /// Permite:
+        ///   - Horas consecutivas (08:00-09:00 y 09:00-10:00)
+        ///   - Horas distintas en el mismo día sin traslape (08:00-09:00 y 13:00-14:00)
+        /// </summary>
+        private async Task<Result> ValidateTimeOverlap(
+            int requestId,
+            DateTime date,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            int? excludeHoursId)
+        {
+            try
+            {
+                var existingHoursForDateResult =
+                    await _volunteerHoursService.GetHoursByDateRangeAsync(requestId, date, date);
+
+                if (!existingHoursForDateResult.IsSuccess || existingHoursForDateResult.Value == null)
+                    return Result.Success();
+
+                var existingHoursForDate = existingHoursForDateResult.Value;
+
+                foreach (var existingHour in existingHoursForDate)
+                {
+                    // Ignorar registros rechazados
+                    if (existingHour.State == VolunteerState.Rejected)
+                        continue;
+
+                    // Si estamos editando, excluir el registro actual
+                    if (excludeHoursId.HasValue && existingHour.Id == excludeHoursId.Value)
+                        continue;
+
+                    // Asegurar misma fecha
+                    if (date.Date != existingHour.Date.Date)
+                        continue;
+
+                    // 1) Duplicado EXACTO: misma fecha + mismo rango
+                    bool esMismoRangoExacto =
+                        existingHour.StartTime == startTime &&
+                        existingHour.EndTime == endTime;
+
+                    if (esMismoRangoExacto)
+                    {
+                        return Result.Failure(
+                            $"Ya tienes un registro con el mismo horario " +
+                            $"({existingHour.StartTime:hh\\:mm} - {existingHour.EndTime:hh\\:mm}) en esta fecha.");
+                    }
+
+                    // 2) Traslape, permitiendo solo consecutivos
+                    //
+                    // Se consideran traslapados si:
+                    //   inicioNuevo < finExistente  Y  finNuevo > inicioExistente
+                    // PERO NO si son consecutivos:
+                    //   inicioNuevo == finExistente  (08-09, 09-10)
+                    //   O finNuevo == inicioExistente
+                    bool hayTraslape =
+                        (startTime < existingHour.EndTime && endTime > existingHour.StartTime) &&
+                        !(startTime == existingHour.EndTime || endTime == existingHour.StartTime);
+
+                    if (hayTraslape)
+                    {
+                        return Result.Failure(
+                            $"El horario {startTime:hh\\:mm} - {endTime:hh\\:mm} se traslapa con un registro existente " +
+                            $"({existingHour.StartTime:hh\\:mm} - {existingHour.EndTime:hh\\:mm}). Estado: {existingHour.State}");
+                    }
+                }
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al validar traslape de horarios: {ex.Message}");
+            }
+        }
+
+
+        /// <summary>
+        /// VALIDACIÓN: Verificar horas restantes antes de crear
+        /// </summary>
+        private async Task<Result> ValidateRemainingHoursBeforeCreate(int requestId, TimeSpan startTime, TimeSpan endTime)
+        {
+            try
+            {
+                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+                if (requestResult.IsFailure)
+                {
+                    return Result.Failure("Solicitud no encontrada");
+                }
+
+                var request = requestResult.Value;
+
+                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
+                if (allHoursResult.IsFailure)
+                {
+                    return Result.Failure("Error al verificar horas existentes");
+                }
+
+                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
+
+                var totalRegisteredHours = allRegisteredHours
+                    .Where(h => h.State != VolunteerState.Rejected)
+                    .Sum(h => h.TotalHours);
+
+                var newHours = (decimal)(endTime - startTime).TotalHours;
+                var remainingHours = request.Hours - totalRegisteredHours;
+
+                if (remainingHours <= 0)
+                {
+                    return Result.Failure("Ya has registrado todas las horas comprometidas para esta solicitud.");
+                }
+
+                if (newHours > remainingHours)
+                {
+                    return Result.Failure(
+                        $"No puedes registrar {newHours:F1} horas. " +
+                        $"Ya tienes {totalRegisteredHours:F1} horas registradas de las {request.Hours} propuestas. " +
+                        $"Solo quedan {remainingHours:F1} horas disponibles."
+                    );
+                }
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VALIDACIÓN: Verificar horas restantes antes de actualizar (excluyendo el registro actual)
+        /// </summary>
+        private async Task<Result> ValidateRemainingHoursBeforeUpdate(int requestId, int currentHoursId, TimeSpan startTime, TimeSpan endTime)
+        {
+            try
+            {
+                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
+                if (requestResult.IsFailure)
+                {
+                    return Result.Failure("Solicitud no encontrada");
+                }
+
+                var request = requestResult.Value;
+
+                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
+                if (allHoursResult.IsFailure)
+                {
+                    return Result.Failure("Error al verificar horas existentes");
+                }
+
+                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
+
+                // Excluir el registro actual que se está editando
+                var totalRegisteredHours = allRegisteredHours
+                    .Where(h => h.Id != currentHoursId && h.State != VolunteerState.Rejected)
+                    .Sum(h => h.TotalHours);
+
+                var newHours = (decimal)(endTime - startTime).TotalHours;
+                var remainingHours = request.Hours - totalRegisteredHours;
+
+                if (newHours > remainingHours)
+                {
+                    return Result.Failure(
+                        $"No puedes registrar {newHours:F1} horas. " +
+                        $"Ya tienes {totalRegisteredHours:F1} horas registradas en otros días. " +
+                        $"Solo quedan {remainingHours:F1} horas disponibles."
+                    );
+                }
+
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
+            }
+        }
+
         // ===== MÉTODOS AUXILIARES =====
+
         private async Task<(IActionResult? redirectResult, VolunteerRequestDto request)> ValidateRequestAccessAsync(int requestId, bool requireApproved = false)
         {
             var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
@@ -498,14 +705,12 @@ namespace Web.Controllers
 
             var request = requestResult.Value;
 
-            // Verificar que pertenece al usuario actual
             if (request.VolunteerId != GetCurrentUserId())
             {
                 this.SetErrorMessage("No tienes permisos para acceder a esta solicitud");
                 return (RedirectToAction("Index"), null!);
             }
 
-            // Verificar que está aprobada si se requiere
             if (requireApproved && request.State != VolunteerState.Approved)
             {
                 this.SetErrorMessage("Solo se pueden gestionar horas para solicitudes aprobadas");
@@ -515,7 +720,6 @@ namespace Web.Controllers
             return (null, request);
         }
 
-        // ✅ CORREGIDO: Método para establecer ViewBag completo
         private void SetViewBagRequestInfo(VolunteerRequestDto request, bool isEditing, string currentState, string rejectionReason)
         {
             ViewBag.RequestInfo = new
@@ -530,7 +734,6 @@ namespace Web.Controllers
             };
         }
 
-        // ✅ CORREGIDO: Método legacy actualizado
         private async Task LoadRequestInfoForView(int requestId)
         {
             var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(requestId);
@@ -540,7 +743,6 @@ namespace Web.Controllers
             }
         }
 
-        // ✅ NUEVO: Método para cargar información al editar
         private async Task LoadRequestInfoForEditView(int hoursId)
         {
             var hoursResult = await _volunteerHoursService.GetHoursByIdAsync(hoursId);
@@ -549,133 +751,13 @@ namespace Web.Controllers
                 var requestInfo = await _volunteerRequestService.GetRequestByIdAsync(hoursResult.Value.VolunteerRequestId);
                 if (requestInfo.IsSuccess)
                 {
-                    SetViewBagRequestInfo(requestInfo.Value, true, hoursResult.Value.State.ToString(), hoursResult.Value.RejectionReason);
+                    SetViewBagRequestInfo(
+                        requestInfo.Value,
+                        true,
+                        hoursResult.Value.State.ToString(),
+                        hoursResult.Value.RejectionReason
+                    );
                 }
-            }
-        }
-
-        // ✅ NUEVA VALIDACIÓN PRINCIPAL: Verificar horas restantes antes de crear
-        private async Task<Result> ValidateRemainingHoursBeforeCreate(int requestId, TimeSpan startTime, TimeSpan endTime)
-        {
-            try
-            {
-                Console.WriteLine($"DEBUG CONTROLLER: Validando horas restantes para crear - RequestId: {requestId}");
-
-                // 1. Obtener información de la solicitud principal
-                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-                if (requestResult.IsFailure)
-                {
-                    Console.WriteLine("DEBUG CONTROLLER: Solicitud no encontrada");
-                    return Result.Failure("Solicitud no encontrada");
-                }
-
-                var request = requestResult.Value;
-                Console.WriteLine($"DEBUG CONTROLLER: Solicitud encontrada - Horas propuestas: {request.Hours}");
-
-                // 2. Obtener TODAS las horas registradas para esta solicitud (todos los estados)
-                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
-                if (allHoursResult.IsFailure)
-                {
-                    Console.WriteLine("DEBUG CONTROLLER: Error al obtener horas existentes");
-                    return Result.Failure("Error al verificar horas existentes");
-                }
-
-                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
-                Console.WriteLine($"DEBUG CONTROLLER: Total de registros de horas encontrados: {allRegisteredHours.Count}");
-
-                // 3. Sumar TODAS las horas registradas (Pending + Approved - rejected)
-                var totalRegisteredHours = allRegisteredHours
-                    .Where(h => h.State != VolunteerState.Rejected)
-                    .Sum(h => h.TotalHours);
-
-                // 4. Calcular horas de la nueva solicitud
-                var newHours = (decimal)(endTime - startTime).TotalHours;
-                Console.WriteLine($"DEBUG CONTROLLER: Nuevas horas a registrar: {newHours}");
-
-                // 5. Calcular horas restantes disponibles
-                var remainingHours = request.Hours - totalRegisteredHours;
-                Console.WriteLine($"DEBUG CONTROLLER: Horas restantes disponibles: {remainingHours}");
-
-                // 6. VALIDACIÓN PRINCIPAL: tiempo_solicitado <= tiempo_restante
-                if (newHours > remainingHours)
-                {
-                    var errorMessage = $"No puedes registrar {newHours:F1} horas. Ya tienes {totalRegisteredHours:F1} horas registradas de las {request.Hours} horas propuestas. Solo quedan {remainingHours:F1} horas disponibles.";
-                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA - {errorMessage}");
-                    return Result.Failure(errorMessage);
-                }
-
-                // 7. Validación adicional: no permitir si ya completó las horas
-                if (remainingHours <= 0)
-                {
-                    var errorMessage = "Ya has registrado todas las horas comprometidas para esta solicitud.";
-                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA - {errorMessage}");
-                    return Result.Failure(errorMessage);
-                }
-
-                Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN EXITOSA - Puede registrar {newHours:F1} horas");
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"DEBUG CONTROLLER: Error en validación de horas restantes: {ex.Message}");
-                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
-            }
-        }
-
-        // ✅ NUEVA VALIDACIÓN PARA EDICIÓN: Verificar horas restantes excluyendo las horas actuales
-        private async Task<Result> ValidateRemainingHoursBeforeUpdate(int requestId, int currentHoursId, TimeSpan startTime, TimeSpan endTime)
-        {
-            try
-            {
-                Console.WriteLine($"DEBUG CONTROLLER: Validando horas restantes para actualizar - RequestId: {requestId}, HoursId: {currentHoursId}");
-
-                // 1. Obtener información de la solicitud principal
-                var requestResult = await _volunteerRequestService.GetRequestByIdAsync(requestId);
-                if (requestResult.IsFailure)
-                {
-                    return Result.Failure("Solicitud no encontrada");
-                }
-
-                var request = requestResult.Value;
-
-                // 2. Obtener TODAS las horas registradas para esta solicitud
-                var allHoursResult = await _volunteerHoursService.GetHoursByRequestIdAsync(requestId);
-                if (allHoursResult.IsFailure)
-                {
-                    return Result.Failure("Error al verificar horas existentes");
-                }
-
-                var allRegisteredHours = allHoursResult.Value ?? new List<VolunteerHoursDto>();
-
-                // 3. Sumar TODAS las horas EXCEPTO las del registro que se está editando
-                var totalRegisteredHours = allRegisteredHours 
-                    .Where(h => h.Id != currentHoursId && h.State != VolunteerState.Rejected)
-                    .Sum(h => h.TotalHours);
-                Console.WriteLine($"DEBUG CONTROLLER: Total horas registradas (excluyendo actual): {totalRegisteredHours}");
-
-                // 4. Calcular nuevas horas a registrar
-                var newHours = (decimal)(endTime - startTime).TotalHours;
-                Console.WriteLine($"DEBUG CONTROLLER: Nuevas horas a registrar: {newHours}");
-
-                // 5. Calcular horas restantes disponibles
-                var remainingHours = request.Hours - totalRegisteredHours;
-                Console.WriteLine($"DEBUG CONTROLLER: Horas restantes disponibles para edición: {remainingHours}");
-
-                // 6. VALIDACIÓN PRINCIPAL: tiempo_solicitado <= tiempo_restante
-                if (newHours > remainingHours)
-                {
-                    var errorMessage = $"No puedes registrar {newHours:F1} horas. Ya tienes {totalRegisteredHours:F1} horas registradas en otros días de las {request.Hours} horas propuestas. Solo quedan {remainingHours:F1} horas disponibles.";
-                    Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN FALLIDA EN EDICIÓN - {errorMessage}");
-                    return Result.Failure(errorMessage);
-                }
-
-                Console.WriteLine($"DEBUG CONTROLLER: VALIDACIÓN DE EDICIÓN EXITOSA - Puede actualizar a {newHours:F1} horas");
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"DEBUG CONTROLLER: Error en validación de horas para edición: {ex.Message}");
-                return Result.Failure($"Error al validar horas restantes: {ex.Message}");
             }
         }
 
