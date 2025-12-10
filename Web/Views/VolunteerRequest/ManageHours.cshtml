@@ -11,19 +11,6 @@
             background-color: #e3e6eb;
         }
 
-        .stats-card {
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            background-color: #ffffff;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            transition: transform 0.2s ease-in-out;
-        }
-
-            .stats-card:hover {
-                transform: translateY(-2px);
-            }
-
         .table-wrapper {
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -31,60 +18,86 @@
             padding: 1rem;
         }
 
-        .hours-summary {
-            background-color: #12263a;
-            color: white;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 2rem;
+        .table-hover tbody tr:hover {
+            background-color: #f9f9f9;
+            transition: background-color 0.2s ease-in-out;
         }
 
-        .btn-add-hours {
-            background-color: #12263a;
-            border: none;
-            color: white;
-            padding: 0.75rem 1.5rem;
+        .table thead th {
+            text-align: center !important;
+            vertical-align: middle !important;
+            background-color: #f8f9fa;
             font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
         }
 
-            .btn-add-hours:hover {
-                background-color: #12263a;
-                color: white;
+        .table td {
+            vertical-align: middle;
+            text-align: center !important;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+
+        .dropdown-menu li a i {
+            width: 16px;
+        }
+
+        .btn {
+            border-radius: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+            .empty-state i {
+                font-size: 4rem;
+                color: #dee2e6;
+                margin-bottom: 1rem;
             }
 
-        .progress-section {
-            background: white;
+        .modal-content {
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: none;
         }
 
-        .hours-remaining {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .modal-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            border: none;
+        }
+
+            .modal-header .btn-close {
+                filter: brightness(0) invert(1);
+            }
+
+        .delete-icon {
+            font-size: 3rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
         }
     </style>
 }
 
 <div class="container">
-    <!-- Header -->
     <div class="mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-            <div>
-                <h1 class="h3 fw-bold text-primary">
-                    <i class="fas fa-clock me-2"></i>Gestión de Horas - @Model.VolunteerName
-                </h1>
-                @* <p class="text-muted mb-0">@Model.VolunteerName/p> *@
-            </div>
-            <div>
-                <a asp-action="Index" class="btn btn-outline-secondary me-2">
+            <h1 class="h3 fw-bold d-flex align-items-center text-primary">
+                <i class="fas fa-clock me-2"></i> Gestión de Horas - @Model.VolunteerName
+            </h1>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Volver a Solicitudes
                 </a>
                 @if (Model.CanAddMore)
                 {
-                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
+                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-success">
                         <i class="fas fa-plus me-2"></i>Registrar Horas
                     </a>
                 }
@@ -98,91 +111,27 @@
         </div>
     </div>
 
-    <!-- Progreso y Horas Restantes -->
-    <div class="progress-section mb-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5><i class="fas fa-chart-line me-2 text-primary"></i>Progreso de Horas</h5>
-                            <span class="badge bg-primary">@Model.TotalHoursApproved / @Model.TotalHoursRequested hrs</span>
-                        </div>
-
-                        @{
-                            decimal percentage = Model.TotalHoursRequested > 0
-                            ? (Model.TotalHoursApproved / Model.TotalHoursRequested) * 100
-                            : 0;
-                        }
-
-                        <div class="progress" style="height: 10px; border-radius: 50px;">
-                            <div class="progress-bar bg-success"
-                                 style="width: @percentage.ToString("0")%; border-radius: 50px;"
-                                 role="progressbar">
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-2">
-                            <small class="text-muted">@percentage.ToString("0")% completado</small>
-                            @if (Model.RemainingHours > 0)
-                            {
-                                <small class="text-warning">@Model.RemainingHours hrs restantes</small>
-                            }
-                            else
-                            {
-                                <small class="text-success">✓ Completado</small>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resumen de Horas -->
-    <div class="hours-summary">
-        <div class="row text-center">
-            <div class="col-md-3">
-                <h3 class="mb-1">@Model.TotalHoursRequested</h3>
-                <p class="mb-0">Horas Solicitadas</p>
-            </div>
-            <div class="col-md-3">
-                <h3 class="mb-1">@Model.TotalHoursApproved.ToString("N1")</h3>
-                <p class="mb-0">Horas Aprobadas</p>
-            </div>
-            <div class="col-md-3">
-                <h3 class="mb-1">@Model.TotalHoursPending.ToString("N1")</h3>
-                <p class="mb-0">Horas Pendientes</p>
-            </div>
-            <div class="col-md-3">
-                <h3 class="mb-1">@Model.TotalDaysWorked</h3>
-                <p class="mb-0">Días Trabajados</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabla de Horas -->
     <div class="table-wrapper">
         @if (Model.HoursList.Any())
         {
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">
-                    <i class="fas fa-list me-2 text-primary"></i>Registros de Horas (@Model.HoursList.Count)
+                    Registros de Horas (@Model.HoursList.Count)
                 </h5>
                 <div class="text-muted small">
                     Total trabajado: <strong>@Model.TotalHoursWorked.ToString("N1")h</strong>
                 </div>
             </div>
 
-            <table class="table table-hover align-middle">
+            <table class="table table-bordered table-hover align-middle">
                 <thead class="table-light">
                     <tr>
                         <th>Fecha</th>
                         <th>Horario</th>
-                        <th class="text-center">Total Horas</th>
+                        <th>Total Horas</th>
                         <th>Actividades</th>
-                        <th class="text-center">Estado</th>
-                        <th class="text-center">Acciones</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -194,13 +143,13 @@
                                 <br><small class="text-muted">@hours.Date.ToString("dddd", new System.Globalization.CultureInfo("es-ES"))</small>
                             </td>
                             <td>
-                                <strong>@hours.StartTime.ToString(@"hh\:mm") - @hours.EndTime.ToString(@"hh\:mm")</strong>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-info fs-6">@hours.TotalHours.ToString("N1") h</span>
+                                @hours.StartTime.ToString(@"hh\:mm") - @hours.EndTime.ToString(@"hh\:mm")
                             </td>
                             <td>
-                                <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                @hours.TotalHours.ToString("N1") h
+                            </td>
+                            <td>
+                                <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0 auto;"
                                      title="@hours.ActivitiesDescription">
                                     @hours.ActivitiesDescription
                                 </div>
@@ -212,54 +161,68 @@
                                     </small>
                                 }
                             </td>
-                            <td class="text-center">
+                            <td>
                                 @if (hours.State == Shared.Enums.VolunteerState.Pending)
                                 {
                                     <span class="badge bg-warning">
-                                        <i class="fas fa-hourglass-half"></i> Pendiente
+                                        <i class="fas fa-hourglass-half me-1"></i> Pendiente
                                     </span>
                                 }
                                 else if (hours.State == Shared.Enums.VolunteerState.Approved)
                                 {
                                     <span class="badge bg-success">
-                                        <i class="fas fa-check"></i> Aprobada
+                                        <i class="fas fa-check me-1"></i> Aprobada
                                     </span>
                                     @if (hours.ApprovedAt.HasValue)
                                     {
                                         <br>
-                        
                                         <small class="text-muted">@hours.ApprovedAt.Value.ToString("dd/MM/yyyy")</small>
                                     }
                                 }
                                 else if (hours.State == Shared.Enums.VolunteerState.Rejected)
                                 {
                                     <span class="badge bg-danger" title="@hours.RejectionReason">
-                                        <i class="fas fa-times"></i> Rechazada
+                                        <i class="fas fa-times me-1"></i> Rechazada
                                     </span>
+                                    @if (!string.IsNullOrEmpty(hours.RejectionReason))
+                                    {
+                                        <br>
+                                        <small class="text-danger" title="@hours.RejectionReason">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            @(hours.RejectionReason.Length > 30 ? hours.RejectionReason.Substring(0, 30) + "..." : hours.RejectionReason)
+                                        </small>
+                                    }
                                 }
                             </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-      @*                               <button class="btn btn-info btn-sm"
-                                            onclick="showHoursDetails(@hours.Id, '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")', '@Html.Raw(hours.ActivitiesDescription)', '@Html.Raw(hours.Notes)', '@hours.RejectionReason', '@hours.StateDescription')"
-                                            title="Ver detalles">
-                                        <i class="fas fa-eye"></i>
-                                    </button> *@
-
-                                    @if (hours.State == Shared.Enums.VolunteerState.Pending)
-                                    {
-                                        <a asp-action="EditHours" asp-route-hoursId="@hours.Id"
-                                           class="btn btn-warning btn-sm" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                        <button class="btn btn-danger btn-sm"
-                                                onclick="deleteHours(@hours.Id, '@Model.RequestId')"
-                                                title="Eliminar">
-                                            <i class="fas fa-trash"></i>
+                            <td>
+                                @if (hours.State == Shared.Enums.VolunteerState.Pending || hours.State == Shared.Enums.VolunteerState.Rejected)
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-vertical fa-fw"></i>
                                         </button>
-                                    }
-                                </div>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-action="EditHours" asp-route-hoursId="@hours.Id">
+                                                    <i class="fas fa-pen-to-square me-2 text-primary"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider" /></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)"
+                                                   onclick="showDeleteModal(@hours.Id, '@Model.RequestId', '@hours.Date.ToString("dd/MM/yyyy")', '@hours.StartTime.ToString(@"hh\:mm")', '@hours.EndTime.ToString(@"hh\:mm")')">
+                                                    <i class="fas fa-trash-alt me-2"></i>Eliminar
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                                else if (hours.State == Shared.Enums.VolunteerState.Approved)
+                                {
+                                    <span class="text-muted small">
+                                        <i class="fas fa-lock me-1"></i>Aprobada
+                                    </span>
+                                }
                             </td>
                         </tr>
                     }
@@ -268,13 +231,13 @@
         }
         else
         {
-            <div class="text-center py-5">
-                <i class="fas fa-clock fa-5x text-muted mb-3"></i>
-                <h5>No hay registros de horas</h5>
-                <p class="text-muted">Comienza registrando tus primeras horas de voluntariado</p>
+            <div class="empty-state">
+                <i class="fas fa-clock"></i>
+                <h5 class="mb-3">No hay registros de horas</h5>
+                <p class="text-muted mb-4">Comienza registrando tus primeras horas de voluntariado</p>
                 @if (Model.CanAddMore)
                 {
-                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-add-hours">
+                    <a asp-action="AddHours" asp-route-requestId="@Model.RequestId" class="btn btn-success">
                         <i class="fas fa-plus me-2"></i>Registrar Primera Hora
                     </a>
                 }
@@ -290,21 +253,33 @@
     </div>
 </div>
 
-<!-- Modal para Detalles -->
-<div class="modal fade" id="hoursDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-info-circle text-info"></i> Detalles del Registro
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="hoursDetailsContent">
-                <!-- Contenido dinámico -->
+            <div class="modal-body text-center">
+                <i class="fas fa-trash-alt delete-icon"></i>
+                <h5 class="mb-3">¿Está seguro que desea eliminar este registro?</h5>
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Fecha:</strong> <span id="deleteDate"></span><br>
+                    <strong>Horario:</strong> <span id="deleteTime"></span>
+                </div>
+                <p class="text-muted">Esta acción no se puede deshacer.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt me-2"></i>Eliminar
+                </button>
             </div>
         </div>
     </div>
@@ -312,76 +287,22 @@
 
 @section Scripts {
     <script>
-        function showHoursDetails(id, date, startTime, endTime, activities, notes, rejectionReason, state) {
-            const modal = new bootstrap.Modal(document.getElementById('hoursDetailsModal'));
-            const content = document.getElementById('hoursDetailsContent');
+        let deleteHoursId = null;
+        let deleteRequestId = null;
 
-            const totalHours = calculateHours(startTime, endTime);
-            const parsedActivities = JSON.parse(activities);
-            const parsedNotes = notes ? JSON.parse(notes) : '';
+        function showDeleteModal(hoursId, requestId, date, startTime, endTime) {
+            deleteHoursId = hoursId;
+            deleteRequestId = requestId;
 
-            // Determinar el estado y su estilo
-            let statusBadge = '';
-            if (state === 'Pendiente') {
-                statusBadge = '<span class="badge bg-warning"><i class="fas fa-hourglass-half"></i> Pendiente</span>';
-            } else if (state === 'Aprobado') {
-                statusBadge = '<span class="badge bg-success"><i class="fas fa-check"></i> Aprobado</span>';
-            } else if (state === 'Rechazado') {
-                statusBadge = '<span class="badge bg-danger"><i class="fas fa-times"></i> Rechazado</span>';
-            }
+            document.getElementById('deleteDate').textContent = date;
+            document.getElementById('deleteTime').textContent = startTime + ' - ' + endTime;
 
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-calendar me-2 text-primary"></i>Información General</h6>
-                        <p><strong>ID:</strong> #${id}</p>
-                        <p><strong>Fecha:</strong> ${date}</p>
-                        <p><strong>Horario:</strong> ${startTime} - ${endTime}</p>
-                        <p><strong>Total:</strong> <span class="badge bg-info">${totalHours} horas</span></p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle me-2 text-info"></i>Estado</h6>
-                        <p>${statusBadge}</p>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-12">
-                        <h6><i class="fas fa-tasks me-2 text-success"></i>Actividades Realizadas</h6>
-                        <p class="bg-light p-3 rounded">${parsedActivities || 'No especificadas'}</p>
-                    </div>
-                </div>
-                ${parsedNotes ? `
-                <div class="row">
-                    <div class="col-12">
-                        <h6><i class="fas fa-sticky-note me-2 text-warning"></i>Notas Adicionales</h6>
-                        <p class="bg-light p-3 rounded">${parsedNotes}</p>
-                    </div>
-                </div>
-                ` : ''}
-                ${rejectionReason ? `
-                <div class="row">
-                    <div class="col-12">
-                        <h6><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Razón del Rechazo</h6>
-                        <p class="bg-danger bg-opacity-10 p-3 rounded text-danger">${rejectionReason}</p>
-                    </div>
-                </div>
-                ` : ''}
-            `;
-
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }
 
-        function calculateHours(startTime, endTime) {
-            const start = new Date('1970-01-01T' + startTime + ':00');
-            const end = new Date('1970-01-01T' + endTime + ':00');
-            const diffMs = end - start;
-            const diffHours = diffMs / (1000 * 60 * 60);
-            return diffHours.toFixed(1);
-        }
-
-        function deleteHours(hoursId, requestId) {
-            if (confirm('¿Está seguro que desea eliminar este registro de horas?\n\nEsta acción no se puede deshacer.')) {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (deleteHoursId && deleteRequestId) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '@Url.Action("DeleteHours", "VolunteerRequest")';
@@ -389,12 +310,12 @@
                 const hoursIdInput = document.createElement('input');
                 hoursIdInput.type = 'hidden';
                 hoursIdInput.name = 'hoursId';
-                hoursIdInput.value = hoursId;
+                hoursIdInput.value = deleteHoursId;
 
                 const requestIdInput = document.createElement('input');
                 requestIdInput.type = 'hidden';
                 requestIdInput.name = 'requestId';
-                requestIdInput.value = requestId;
+                requestIdInput.value = deleteRequestId;
 
                 const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]').cloneNode();
 
@@ -405,7 +326,7 @@
                 document.body.appendChild(form);
                 form.submit();
             }
-        }
+        });
     </script>
     @Html.AntiForgeryToken()
 }
