@@ -68,7 +68,12 @@
                     <nav class="sb-sidenav-menu-nested nav">
                         @if (User.IsInRole(Roles.Voluntario) && !User.IsInRole(Roles.AdminUsuarios))
                         {
-                            <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">Mis Solicitudes</a>
+                            <a asp-controller="VolunteerRequest" asp-action="Index" class="nav-link">
+                                <i class="fas fa-list me-1"></i>Mis Solicitudes
+                            </a>
+                            <a asp-controller="VolunteerRequest" asp-action="Create" class="nav-link">
+                                <i class="fas fa-plus-circle me-1"></i>Nueva Solicitud
+                            </a>                            
                         }
                         @if (User.IsInRole(Roles.AdminUsuarios))
                         {
@@ -78,6 +83,7 @@
                     </nav>
                 </div>
             }
+            
             
             @* Gestion de Becas *@
             @if (User.IsInRole(Roles.AdminBecas) || User.IsInRole(Roles.Estudiante) || User.IsInRole(Roles.AdminSistema))
