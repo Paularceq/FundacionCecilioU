@@ -2,15 +2,13 @@
     ViewData["Title"] = "Contáctanos";
     Layout = "~/Views/Shared/_LayoutPublic.cshtml";
 }
-
 <section class="py-5 bg-light">
     <div class="container px-5 my-5">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-primary">Contáctanos</h2>
             <p class="lead text-muted">¿Tienes preguntas, sugerencias o deseas colaborar? Estamos aquí para escucharte.</p>
         </div>
-
-        <div class="row gx-5">
+        @*         <div class="row gx-5">
             <!-- Formulario de contacto -->
             <div class="col-md-6 mb-5">
                 <form>
@@ -34,26 +32,59 @@
                         <button class="btn btn-primary btn-lg" type="submit">Enviar Mensaje</button>
                     </div>
                 </form>
-            </div>
+            </div> *@
+        <!-- Información de contacto -->
+        <!-- Tarjeta de información centrada -->
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <div class="bg-white p-4 p-md-5 rounded shadow h-100">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-envelope-heart text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold text-primary mt-3 mb-4">Información de contacto</h5>
+                    </div>
 
-            <!-- Información de contacto -->
-            <div class="col-md-6 mb-5 ps-md-5">
-                <div class="bg-white p-4 rounded shadow-sm h-100">
-                    <h5 class="fw-bold text-primary mb-3">Información de contacto</h5>
-                    <p class="mb-2"><strong>Dirección:</strong> Frente a la Iglesia de Moravia, San José, Costa Rica</p>
-                    <p class="mb-2"><strong>Teléfono:</strong> (506) 2256-0503</p>
-                    <p class="mb-2"><strong>Correo:</strong> contacto@fundacioncecilio.cr</p>
-                    <hr />
-                    <p class="mb-2"><strong>Horario de atención:</strong><br />Lunes a Viernes, 9:00 a.m. - 5:00 p.m.</p>
-                    <div class="mt-3">
-                        <p class="mb-1"><strong>Síguenos:</strong></p>
-                        <a href="https://www.facebook.com/profile.php?id=61576607051958" target="_blank" class="text-decoration-none me-3">
-                            <i class="bi bi-facebook"></i> Facebook
-                        </a>
-                        @*  <a href="#" class="text-decoration-none"><i class="bi bi-instagram"></i> Instagram</a> *@
+                    <div class="contact-info">
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                            <strong>Dirección:</strong>
+                            <p class="mb-0 mt-1 ms-4">Frente a la Iglesia de Moravia, San José, Costa Rica</p>
+                        </div>
+
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <i class="bi bi-telephone-fill text-primary me-2"></i>
+                            <strong>Teléfono:</strong>
+                            <p class="mb-0 mt-1 ms-4">
+                                <a href="tel:+50622560503" class="text-decoration-none text-dark">(506) 2256-0503</a>
+                            </p>
+                        </div>
+
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <i class="bi bi-envelope-fill text-primary me-2"></i>
+                            <strong>Correo:</strong>
+                            <p class="mb-0 mt-1 ms-4">
+                                <a href="mailto:contacto@fundacioncecilio.cr" class="text-decoration-none text-dark">fundacioncecilioumana44@gmail.com</a>
+                            </p>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <i class="bi bi-clock-fill text-primary me-2"></i>
+                            <strong>Horario de atención:</strong>
+                            <p class="mb-0 mt-1 ms-4">Lunes a Viernes<br>9:00 a.m. - 5:00 p.m.</p>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="text-center">
+                            <p class="mb-3"><strong>Síguenos en redes sociales:</strong></p>
+                            <a href="https://www.facebook.com/profile.php?id=61576607051958"
+                               target="_blank"
+                               class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-facebook me-2"></i>Síguenos en Facebook
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> <!-- ✅ CIERRE DEL ROW -->
     </div>
 </section>
