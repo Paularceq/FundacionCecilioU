@@ -103,22 +103,38 @@ namespace Api.Controllers
         }
 
         // POST: api/SolicitudesBeca
-
         [HttpPost]
         public async Task<IActionResult> CrearSolicitud([FromBody] SolicitudBecaDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // Verificar si existe una solicitud previa
             var solicitudExistente = await _context.SolicitudesBeca
-                .AnyAsync(s => s.CedulaEstudiante == dto.CedulaEstudiante);
+                .Where(s => s.CedulaEstudiante == dto.CedulaEstudiante)
+                .OrderByDescending(s => s.FechaSolicitud)
+                .FirstOrDefaultAsync();
 
-            if (solicitudExistente)
+            if (solicitudExistente != null)
             {
-                return Conflict(new
+                // Si existe una solicitud Pendiente o Aprobada, no permitir nueva solicitud
+                if (solicitudExistente.Estado == EstadoSolicitud.Pendiente)
                 {
-                    mensaje = "Ya existe una solicitud de beca con esta cédula."
-                });
+                    return Conflict(new
+                    {
+                        mensaje = "Ya tiene una solicitud de beca pendiente. Debe esperar a que sea procesada."
+                    });
+                }
+
+                if (solicitudExistente.Estado == EstadoSolicitud.Aprobada)
+                {
+                    return Conflict(new
+                    {
+                        mensaje = "Ya tiene una beca aprobada activa."
+                    });
+                }
+
+                // Si está Rechazada, permitir nueva solicitud (continúa el flujo)
             }
 
             var solicitud = new SolicitudBeca
@@ -139,6 +155,7 @@ namespace Api.Controllers
                 Estado = EstadoSolicitud.Pendiente,
                 EsFormularioManual = dto.EsFormularioManual
             };
+
             try
             {
                 _context.SolicitudesBeca.Add(solicitud);
@@ -158,11 +175,6 @@ namespace Api.Controllers
                 // Para cualquier otro tipo de excepción
                 return StatusCode(500, new { error = ex.Message });
             }
-
-            //_context.SolicitudesBeca.Add(solicitud);
-            //await _context.SaveChangesAsync();
-
-            // return CreatedAtAction(nameof(GetById), new { id = solicitud.Id }, solicitud);
         }
 
         // PUT: api/SolicitudesBeca/5
@@ -229,40 +241,44 @@ namespace Api.Controllers
         [HttpGet("detalles-beca/{id}")]
         public async Task<IActionResult> GetDetallesBeca(int id)
         {
-            var detallesBeca = await (from s in _context.SolicitudesBeca
-                join b in _context.Scholarships on s.Id equals b.RequestId
-                where s.Id == id
-                select new ScholarshipDetailsDto
-                {
-                    // Datos de la beca
-                    ScholarshipId = b.Id,
-                    Amount = b.Amount,
-                    Currency = b.Currency,
-                    Frequency = b.Frequency,
-                    StartDate = b.StartDate,
-                    EndDate = b.EndDate,
-                    LastPayment = b.LastPayment,
-                    IsActive = b.IsActive,
+            // Primero obtenemos la solicitud
+            var solicitud = await _context.SolicitudesBeca
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-                    // Datos de la solicitud
-                    SolicitudId = s.Id,
-                    CedulaEstudiante = s.CedulaEstudiante,
-                    NombreEstudiante = s.NombreEstudiante,
-                    CorreoContacto = s.CorreoContacto,
-                    TelefonoContacto = s.TelefonoContacto,
-                    Direccion = s.Direccion,
-                    Colegio = s.Colegio,
-                    NivelEducativo = s.NivelEducativo,
-                    FechaSolicitud = s.FechaSolicitud,
-                    Estado = s.Estado.ToString(),
-                    ComentarioAdministrador = s.ComentarioAdministrador
-                })
-                .FirstOrDefaultAsync();
+            if (solicitud == null)
+                return NotFound(new { mensaje = "Solicitud no encontrada" });
 
-            if (detallesBeca == null)
-                return NotFound();
+            // Buscamos si existe una beca asociada (LEFT JOIN)
+            var beca = await _context.Scholarships
+                .FirstOrDefaultAsync(b => b.RequestId == id);
 
-            return Ok(detallesBeca);
+            var detalles = new ScholarshipDetailsDto
+            {
+                // Datos de la solicitud (siempre presentes)
+                SolicitudId = solicitud.Id,
+                CedulaEstudiante = solicitud.CedulaEstudiante,
+                NombreEstudiante = solicitud.NombreEstudiante,
+                CorreoContacto = solicitud.CorreoContacto,
+                TelefonoContacto = solicitud.TelefonoContacto,
+                Direccion = solicitud.Direccion,
+                Colegio = solicitud.Colegio,
+                NivelEducativo = solicitud.NivelEducativo,
+                FechaSolicitud = solicitud.FechaSolicitud,
+                Estado = solicitud.Estado.ToString(),
+                ComentarioAdministrador = solicitud.ComentarioAdministrador ?? string.Empty,
+
+                // Datos de la beca (valores por defecto si no existe)
+                ScholarshipId = beca?.Id ?? 0,
+                Amount = beca?.Amount ?? 0,
+                Currency = beca?.Currency ?? Currency.CRC,
+                Frequency = beca?.Frequency ?? ScholarshipFrequency.Monthly,
+                StartDate = beca?.StartDate ?? DateTime.MinValue,
+                EndDate = beca?.EndDate,
+                LastPayment = beca?.LastPayment,
+                IsActive = beca?.IsActive ?? false
+            };
+
+            return Ok(detalles);
         }
     }
 }

@@ -1,4 +1,4 @@
-@model Web.Models.Inventory.RegisterProductViewModel
+ï»¿@model Web.Models.Inventory.RegisterProductViewModel
 
 @{
     ViewData["Title"] = "Registrar Producto";
@@ -60,13 +60,13 @@
                         <div class="mb-3 col-md-4">
                             <label asp-for="SelectedUnitOfMeasure" class="form-label">Unidad de medida</label>
                             <select asp-for="SelectedUnitOfMeasure" asp-items="Model.UnitsOfMeasure" class="form-select">
-                                <option value="">Seleccione una opción...</option>
+                                <option value="">Seleccione una opciÃ³n...</option>
                             </select>
                             <span asp-validation-for="SelectedUnitOfMeasure" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3 col-md-4">
-                            <label asp-for="MinimumStock" class="form-label">Stock mínimo</label>
+                            <label asp-for="MinimumStock" class="form-label">Stock mÃ­nimo</label>
                             <input asp-for="MinimumStock" class="form-control" placeholder="Ej: 50" />
                             <span asp-validation-for="MinimumStock" class="text-danger"></span>
                         </div>
