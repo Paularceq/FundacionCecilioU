@@ -150,113 +150,111 @@
 
     @if (Model.Requests.Any())
     {
-      
+
 
         <!-- Tabla de Solicitudes -->
         <div class="table-wrapper">
-            <table class="table table-bordered table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Institución</th>
-                        <th>Profesión</th>
-                        <th>Solicitadas</th>
-                        <th>Trabajadas</th>
-                        <th>Restantes</th>
-                        <th>Fecha Creación</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var request in Model.Requests.OrderByDescending(r => r.CreatedAt))
-                    {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td class="text-center">
-                                <strong class="text-primary">#@request.Id</strong>
-                            </td>
-                            <td>
-                                <div>
-                                    <strong>@request.Institution</strong>
-                                    @if (!string.IsNullOrEmpty(request.ApproverName))
-                                    {
-                                        <br />
-                                        <small class="text-muted">
-                                            <i class="fas fa-user-check"></i> @request.ApproverName
-                                        </small>
-                                    }
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <strong>@request.Profession</strong>
-                            </td>
-                            <td class="text-center">
-                                <strong>@request.Hours h</strong>
-                            </td>
-                            <td class="text-center">
-                                <strong class="text-success">@request.HoursWorked.ToString("N1") h</strong>
-                            </td>
-                            <td class="text-center">
-                                <strong>@request.RemainingHours.ToString("N1") h</strong>
-                            </td>
-                            <td class="text-center">
-                                <div>
-                                    <strong>@request.CreatedAt.ToString("dd/MM/yyyy")</strong>
-                                    <br /><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                @Html.Raw(GetStateBadge(request.State))
-                            </td>
-                            <td class="text-center">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-vertical fa-fw"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        @if (request.State == Shared.Enums.VolunteerState.Approved)
+                            <th>Institución</th>
+                            <th>Profesión</th>
+                            <th>Solicitadas</th>
+                            <th>Trabajadas</th>
+                            <th>Restantes</th>
+                            <th>Fecha Creación</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var request in Model.Requests.OrderByDescending(r => r.CreatedAt))
+                        {
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>@request.Institution</strong>
+                                        @if (!string.IsNullOrEmpty(request.ApproverName))
                                         {
-                                            <li>
-                                                <a href="@Url.Action("ManageHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
-                                                    <i class="fas fa-clock me-2 text-primary"></i>Gestionar Horas
-                                                </a>
-                                            </li>
-                                            @if (request.RemainingHours > 0)
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="fas fa-user-check"></i> @request.ApproverName
+                                            </small>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <strong>@request.Profession</strong>
+                                </td>
+                                <td class="text-center">
+                                    <strong>@request.Hours h</strong>
+                                </td>
+                                <td class="text-center">
+                                    <strong class="text-success">@request.HoursWorked.ToString("N1") h</strong>
+                                </td>
+                                <td class="text-center">
+                                    <strong>@request.RemainingHours.ToString("N1") h</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div>
+                                        <strong>@request.CreatedAt.ToString("dd/MM/yyyy")</strong>
+                                        <br /><small class="text-muted">@request.CreatedAt.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @Html.Raw(GetStateBadge(request.State))
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-vertical fa-fw"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            @if (request.State == Shared.Enums.VolunteerState.Approved)
                                             {
                                                 <li>
-                                                    <a href="@Url.Action("AddHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
-                                                        <i class="fas fa-plus me-2 text-success"></i>Registrar Horas
+                                                    <a href="@Url.Action("ManageHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
+                                                        <i class="fas fa-clock me-2 text-primary"></i>Gestionar Horas
+                                                    </a>
+                                                </li>
+                                                @if (request.RemainingHours > 0)
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("AddHours", "VolunteerRequest", new { requestId = request.Id })" class="dropdown-item">
+                                                            <i class="fas fa-plus me-2 text-success"></i>Registrar Horas
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                            else @if (request.State == Shared.Enums.VolunteerState.Rejected)
+                                            {
+                                                <li>
+                                                    <a href="javascript:void(0)" class="dropdown-item"
+                                                       data-id="@request.Id"
+                                                       data-approver="@(request.ApproverName ?? "Sin especificar")"
+                                                       data-reason="@(request.RejectionReason ?? "No se proporcionó una razón específica.")"
+                                                       onclick="showRejectReasonFromData(this)">
+                                                        <i class="fas fa-info-circle me-2 text-warning"></i>Ver Razón
                                                     </a>
                                                 </li>
                                             }
-                                        }
-                                        else @if (request.State == Shared.Enums.VolunteerState.Rejected)
-                                        {
+
+                                            <li><hr class="dropdown-divider" /></li>
                                             <li>
-                                                <a href="javascript:void(0)" class="dropdown-item"
-                                                   data-id="@request.Id"
-                                                   data-approver="@(request.ApproverName ?? "Sin especificar")"
-                                                   data-reason="@(request.RejectionReason ?? "No se proporcionó una razón específica.")"
-                                                   onclick="showRejectReasonFromData(this)">
-                                                    <i class="fas fa-info-circle me-2 text-warning"></i>Ver Razón
+                                                <a href="#" class="dropdown-item"
+                                                   onclick="showRequestDetails(@request.Id, '@request.Institution', '@request.Profession', '@request.Description', @request.Hours)">
+                                                    <i class="fas fa-eye me-2 text-secondary"></i>Ver Detalles
                                                 </a>
                                             </li>
-                                        }
-
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li>
-                                            <a href="#" class="dropdown-item"
-                                               onclick="showRequestDetails(@request.Id, '@request.Institution', '@request.Profession', '@request.Description', @request.Hours)">
-                                                <i class="fas fa-eye me-2 text-secondary"></i>Ver Detalles
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Información adicional -->
