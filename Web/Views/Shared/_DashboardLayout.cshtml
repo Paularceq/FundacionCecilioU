@@ -9,8 +9,101 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Web.styles.css" asp-append-version="true" />
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet" />
     @RenderSection("Styles", required: false)
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        /* Estilos globales para tablas responsive */
+        .table-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0;
+        }
+
+        /* Forzar ancho mínimo en todas las tablas */
+        table.table {
+            min-width: 800px;
+            margin-bottom: 0;
+        }
+
+
+        {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+
+        .table-wrapper {
+            padding: 0.5rem !important;
+            margin-bottom: 1rem;
+        }
+
+        .table {
+            font-size: 0.85rem;
+        }
+
+            .table th,
+            .table td {
+                padding: 0.5rem !important;
+            }
+
+        /* Hacer botones más pequeños en móvil */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Ajustar dropdowns */
+        .dropdown-menu {
+            font-size: 0.85rem;
+        }
+
+        }
+
+        /* Scroll indicator para móviles */
+        .table-responsive::after {
+            content: '← Desliza →';
+            display: none;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+
+        {
+            position: relative;
+        }
+
+        .table-responsive::after {
+            display: block;
+        }
+
+        }
+
+        /* DataTables responsive */
+        table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
+            background-color: #007bff;
+        }
+
+        table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed > tbody > tr.parent > th.dtr-control:before {
+            background-color: #dc3545;
+        }
+    </style>
 </head>
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -51,35 +144,65 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function () {
-            const table = $('#dataTable').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-                },
-                columnDefs: [
-                    { orderable: false, targets: -1 }
-                ],
-                pageLength: 10,
-                lengthChange: false,
-                responsive: true,
-                initComplete: function () {
-                    const filter = $('#dataTable_filter');
-                    filter.appendTo('#customFilterContainer');
+            // Inicializar DataTables si existe
+            if ($('#dataTable').length) {
+                const table = $('#dataTable').DataTable({
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                    },
+                    columnDefs: [
+                        { orderable: false, targets: -1 }
+                    ],
+                    pageLength: 10,
+                    lengthChange: false,
+                    responsive: true,
+                    autoWidth: false,
+                    initComplete: function () {
+                        const filter = $('#dataTable_filter');
+                        if ($('#customFilterContainer').length) {
+                            filter.appendTo('#customFilterContainer');
 
-                    filter.find('label').contents().filter(function () {
-                        return this.nodeType === 3;
-                    }).remove();
+                            filter.find('label').contents().filter(function () {
+                                return this.nodeType === 3;
+                            }).remove();
 
-                    const input = filter.find('input[type="search"]');
-                    input.attr('placeholder', 'Buscar');
-                    input.wrap('<div class="input-group"></div>');
-                    input.before(`
-                        <span class="input-group-text" id="basic-addon1">
-                            <i class="fas fa-search"></i>
-                        </span>
-                    `);
-                    input.removeClass('form-control-sm');
+                            const input = filter.find('input[type="search"]');
+                            input.attr('placeholder', 'Buscar');
+                            input.wrap('<div class="input-group"></div>');
+                            input.before(`
+                                <span class="input-group-text" id="basic-addon1">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            `);
+                            input.removeClass('form-control-sm');
+                        }
+                    }
+                });
+            }
+
+            // Envolver TODAS las tablas que no estén dentro de .table-responsive
+            $('table').each(function() {
+                const $table = $(this);
+
+                // Si la tabla ya está dentro de .table-responsive, no hacer nada
+                if ($table.parent().hasClass('table-responsive')) {
+                    return;
+                }
+
+                // Si la tabla ya está dentro de .table-wrapper > .table-responsive, no hacer nada
+                if ($table.parent().hasClass('table-responsive') &&
+                    $table.parent().parent().hasClass('table-wrapper')) {
+                    return;
+                }
+
+                // Envolver la tabla
+                if (!$table.parent().parent().hasClass('table-wrapper')) {
+                    $table.wrap('<div class="table-responsive"></div>');
+                    $table.parent().wrap('<div class="table-wrapper"></div>');
                 }
             });
         });
